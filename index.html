@@ -1796,10 +1796,6 @@ let selectedConnectionTargetId = null;
         let zoomLevel = 1;
         let panX = 0;
         let panY = 0;
-        let isPanning = false;
-        let startPanX = 0;
-        let startPanY = 0;
-
         let activeDrag = null;
 let currentDropTargetSim = null;
 let isPanning = false;
@@ -2588,6 +2584,7 @@ async function loadSimsFromStorage() {
                 node.classList.remove('selected');
             }
 
+            function setupSimDragAndDrop(node, sim) {
             node.setAttribute('draggable', 'true');
 node.addEventListener('dragstart', (e) => {
     activeDrag = sim.id;
@@ -2905,7 +2902,7 @@ node.addEventListener('drop', (e) => {
     const relType = prompt("Válassz kapcsolat típust (házas / gyerek / szülő / pet):", "házas");
     if (!relType) return;
 
-    const currentTree = getCurrentTree();
+    const currentTree = typeof getCurrentTree === 'function' ? getCurrentTree() : null;
     if (!currentTree) return;
 
     const sim1 = currentTree.sims.find(s => s.id === draggedId);
@@ -2929,8 +2926,8 @@ node.addEventListener('drop', (e) => {
         sim1.occult = 'pet';
     }
 
-    saveTreesToStorage();
-    loadCurrentTreeCanvas();
+    if (typeof saveTreesToStorage === 'function') saveTreesToStorage();
+    if (typeof loadCurrentTreeCanvas === 'function') loadCurrentTreeCanvas();
 }
 
         function addNewSimDialog() {
