@@ -1690,31 +1690,25 @@ function startDragSim(e, simId) {
     
     startX = e.clientX - sim.x * scale;
     startY = e.clientY - sim.y * scale;
-}
 
-        function onMouseUp(event) {
+    function onMouseUp(event) {
         window.removeEventListener('mousemove', onMouseMove);
         window.removeEventListener('mouseup', onMouseUp);
 
         if (!draggingSimId) return;
 
-        // Megnézzük, hogy mikor elengedtük az egeret, egy másik sim kártya felett vagyunk-e
         const elementUnderMouse = document.elementFromPoint(event.clientX, event.clientY);
         const targetCard = elementUnderMouse ? elementUnderMouse.closest('.timeline-card') : null;
 
         if (targetCard) {
-            // Megkeressük a cél sim azonosítóját (kell, hogy a kártyán tárold az id-t vagy az attribútumot)
-            // Feltételezve, hogy a kártyához hozzá van rendelve a simId, pl. targetCard.dataset.simId = entry.id
             const targetSimId = targetCard.dataset.simId;
-
             if (targetSimId && targetSimId !== draggingSimId) {
-                // Itt ugrik fel a kapcsolat választó ablak!
                 openLinkTypeModal(draggingSimId, targetSimId);
             }
         }
 
         draggingSimId = null;
-        render(); // Visszaállítja a sim eredeti pozícióját vagy helyén hagyja
+        render();
     }
 
     function onMouseMove(event) {
@@ -1729,6 +1723,7 @@ function startDragSim(e, simId) {
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+}
         
         async function loadTreeBackground(treeId) {
         const { data, error } = await supabaseClient
