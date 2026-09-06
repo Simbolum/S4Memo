@@ -1008,6 +1008,7 @@
                 <div class="accordion-content">
                     <div id="treeTabsList"></div>
                     <button class="add-tree-btn" onclick="createNewTree()">+ Családfa hozzáadása</button>
+                    <button class="add-tree-btn" id="btn-link-mode" onclick="toggleLinkMode()" style="margin-top: 8px; background: #2a303c; border: 1px solid #d4af37; color: #f0f2f5;">🔗 Kapcsolat Mód</button>
                 </div>
             </div>
 
@@ -1591,6 +1592,101 @@
         const zoomPercentLabel = document.getElementById('zoomPercentLabel');
 
         let currentView = 'home';
+
+        let linkModeActive = false;
+let firstSelectedSimId = null;
+let draggingSimId = null;
+let startX = 0, startY = 0;
+
+function toggleLinkMode() {
+    linkModeActive = !linkModeActive;
+    firstSelectedSimId = null;
+    const btn = document.getElementById('btn-link-mode');
+    const bar = document.getElementById('notification');
+
+    if (linkModeActive) {
+        if(btn) btn.classList.add('btn-mode-active');
+        if(bar) {
+            bar.style.display = 'block';
+            bar.innerText = 'Kapcsolat mód aktív: Kattints az első simre!';
+        }
+    } else {
+        if(btn) btn.classList.remove('btn-mode-active');
+        if(bar) bar.style.display = 'none';
+    }
+    render();
+}
+
+function handleSimClick(simId) {
+    if (!linkModeActive) {
+        openEditSimModal(simId);
+        return;
+    }
+
+    if (!firstSelectedSimId) {
+        firstSelectedSimId = simId;
+        const sim = sims.find(s => s.id === simId);
+        const bar = document.getElementById('notification');
+        if(bar && sim) bar.innerText = `Kiválasztva: ${sim.name}. Most kattints a második simre!`;
+        render();
+    } else {
+        if (firstSelectedSimId === simId) return;
+        openLinkTypeModal(firstSelectedSimId, simId);
+    }
+}
+
+let pendingLink = null;
+function openLinkTypeModal(id1, id2) {
+    const s1 = sims.find(s => s.id === id1);
+    const s2 = sims.find(s => s.id === id2);
+    pendingLink = { from: id1, to: id2 };
+    
+    const desc = document.getElementById('link-modal-desc');
+    if(desc && s1 && s2) desc.innerText = `Kapcsolat létesítése eközött: ${s1.name} és ${s2.name}`;
+    const modal = document.getElementById('link-modal');
+    if(modal) modal.classList.add('active');
+}
+
+function confirmLink(type) {
+    if (!pendingLink) return;
+    
+    const exists = connections.some(c => 
+        (c.from === pendingLink.from && c.to === pendingLink.to && c.type === type) ||
+        (type === 'spouse' && c.from === pendingLink.to && c.to === pendingLink.from && c.type === 'spouse')
+    );
+
+    if (!exists) {
+        connections.push({ type: type, from: pendingLink.from, to: pendingLink.to });
+        if (type === 'spouse') {
+            const s1 = sims.find(s => s.id === pendingLink.from);
+            const s2 = sims.find(s => s.id === pendingLink.to);
+            if(s1 && !s1.spouses.includes(s2.id)) s1.spouses.push(s2.id);
+            if(s2 && !s2.spouses.includes(s1.id)) s2.spouses.push(s1.id);
+        } else if (type === 'parent') {
+            const child = sims.find(s => s.id === pendingLink.to);
+            if(child && !child.parents.includes(pendingLink.from)) child.parents.push(pendingLink.from);
+        }
+    }
+
+    cancelLink();
+    toggleLinkMode();
+    render();
+}
+
+function cancelLink() {
+    pendingLink = null;
+    const modal = document.getElementById('link-modal');
+    if(modal) modal.classList.remove('active');
+}
+
+function startDragSim(e, simId) {
+    if (linkModeActive) return;
+    e.stopPropagation();
+    draggingSimId = simId;
+    const sim = sims.find(s => s.id === simId);
+    startX = e.clientX - sim.x * scale;
+    startY = e.clientY - sim.y * scale;
+}
 
         async function loadTreeBackground(treeId) {
         const { data, error } = await supabaseClient
@@ -2480,6 +2576,9 @@ async function loadSimsFromStorage() {
             allEntries.forEach(entry => {
                 const card = document.createElement('div');
                 card.className = 'timeline-card';
+
+                card.onmousedown = (e) => startDragSim(e, entry.id);
+    card.onclick = (e) => { e.stopPropagation(); handleSimClick(entry.id); };
 
                 const icon = document.createElement('div');
                 icon.className = 'timeline-icon';
