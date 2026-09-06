@@ -1008,7 +1008,6 @@
                 <div class="accordion-content">
                     <div id="treeTabsList"></div>
                     <button class="add-tree-btn" onclick="createNewTree()">+ Családfa hozzáadása</button>
-                    <button class="add-tree-btn" id="btn-link-mode" onclick="toggleLinkMode()" style="margin-top: 8px; background: #2a303c; border: 1px solid #d4af37; color: #f0f2f5;">🔗 Kapcsolat Mód</button>
                 </div>
             </div>
 
@@ -1679,15 +1678,58 @@ function cancelLink() {
     if(modal) modal.classList.remove('active');
 }
 
+let draggingSimId = null;
+let startX = 0, startY = 0;
+
 function startDragSim(e, simId) {
-    if (linkModeActive) return;
     e.stopPropagation();
     draggingSimId = simId;
     const sim = sims.find(s => s.id === simId);
+    if (!sim) return;
+    
     startX = e.clientX - sim.x * scale;
     startY = e.clientY - sim.y * scale;
 }
 
+        function onMouseUp(event) {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+
+        if (!draggingSimId) return;
+
+        // Megnézzük, hogy mikor elengedtük az egeret, egy másik sim kártya felett vagyunk-e
+        const elementUnderMouse = document.elementFromPoint(event.clientX, event.clientY);
+        const targetCard = elementUnderMouse ? elementUnderMouse.closest('.timeline-card') : null;
+
+        if (targetCard) {
+            // Megkeressük a cél sim azonosítóját (kell, hogy a kártyán tárold az id-t vagy az attribútumot)
+            // Feltételezve, hogy a kártyához hozzá van rendelve a simId, pl. targetCard.dataset.simId = entry.id
+            const targetSimId = targetCard.dataset.simId;
+
+            if (targetSimId && targetSimId !== draggingSimId) {
+                // Itt ugrik fel a kapcsolat választó ablak!
+                openLinkTypeModal(draggingSimId, targetSimId);
+            }
+        }
+
+        draggingSimId = null;
+        render(); // Visszaállítja a sim eredeti pozícióját vagy helyén hagyja
+    }
+
+    function onMouseMove(event) {
+        if (!draggingSimId) return;
+        const sim = sims.find(s => s.id === draggingSimId);
+        if (sim) {
+            sim.x = (event.clientX - startX) / scale;
+            sim.y = (event.clientY - startY) / scale;
+            render();
+        }
+    }
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+}
+        
         async function loadTreeBackground(treeId) {
         const { data, error } = await supabaseClient
             .from('trees') // Cseréld le a táblád nevére, ha nem 'trees'
@@ -2576,6 +2618,7 @@ async function loadSimsFromStorage() {
             allEntries.forEach(entry => {
                 const card = document.createElement('div');
                 card.className = 'timeline-card';
+                card.dataset.simId = entry.id;
 
                 card.onmousedown = (e) => startDragSim(e, entry.id);
     card.onclick = (e) => { e.stopPropagation(); handleSimClick(entry.id); };
