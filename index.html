@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
+            
             --bg-color: #f4ede6;
             --bg-pattern: radial-gradient(#d5c4b3 1.5px, transparent 1.5px);
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -1071,38 +1072,39 @@
 
     <!-- TESTRESZABÁSI PANEL -->
     <div class="style-panel-drawer" id="styleDrawer">
-        <div class="style-panel-header" onclick="toggleStyleDrawer()">
-            <span>🎨 Testreszabás</span>
-            <span id="drawerArrow">▲</span>
-        </div>
-        <div class="style-panel-content">
-            <div class="style-group">
-                <label>Háttér Stílusa</label>
-<select id="bgStyleSelect" onchange="changeBgStyle(this.value)">
-    <optgroup label="Alapértelmezett minták">
-        <option value="dots" selected>Pöttyös</option>
-        <option value="clean">Letisztult</option>
-        <option value="grid">Rácsos</option>
-    </optgroup>
-    <optgroup label="Sims 4 Világok">
-        <option value="sims-willow">Willow Creek</option>
-        <option value="sims-oasis">Oasis Springs</option>
-        <option value="sims-sulani">Sulani Tengerpart</option>
-        <option value="sims-sanmyshuno">San Myshuno</option>
-    </optgroup>
-</select>
-
-<div id="imageSettingsContainer" style="display: none; margin-top: 4px;" class="style-group">
+        <div class="style-panel-header" onclick="togglestyledrawer()">
+    <span>🎨 Testreszabás</span>
+    <span id="drawerArrow">▲</span>
+</div>
+<div class="style-panel-content">
     <div class="style-group">
-        <label>Kép Méretezése</label>
-        <select id="bgSizeSelect" onchange="changeBgSize(this.value)">
-            <option value="cover" selected>Kitöltés (Cover)</option>
-            <option value="contain">Illesztés (Contain)</option>
-            <option value="100% 100%">Nyújtás (Stretch)</option>
-            <option value="auto">Eredeti Méret (Original)</option>
+        <label>Háttér Stílusa</label>
+        <select id="bgStyleSelect" onchange="changeBgStyle(this.value)">
+            <optgroup label="Alapértelmezett minták">
+                <option value="dots" selected>Pöttyös</option>
+                <option value="clean">Letisztult</option>
+                <option value="grid">Rácsos</option>
+            </optgroup>
+            <optgroup label="Sims 4 Világok">
+                <option value="sims-willow">Willow Creek</option>
+                <option value="sims-oasis">Oasis Springs</option>
+                <option value="sims-sulani">Sulani Tengerpart</option>
+                <option value="sims-sanmyshuno">San Myshuno</option>
+            </optgroup>
         </select>
     </div>
-</div>
+    
+    <div id="imageSettingsContainer" style="display: none; margin-top: 4px;" class="style-group">
+        <div class="style-group">
+            <label>Kép Méretezése</label>
+            <select id="bgSizeSelect" onchange="changeBgSize(this.value)">
+                <option value="cover" selected>Kitöltés (Cover)</option>
+                <option value="contain">Illesztés (Contain)</option>
+                <option value="100% 100%">Nyújtás (Stretch)</option>
+                <option value="auto">Eredeti Méret (Original)</option>
+            </select>
+        </div>
+    </div>
                     <div style="margin-top: 6px;" class="style-group">
                         <label>Kép Igazítása</label>
                         <select id="bgPosSelect" onchange="changeBgPosition(this.value)">
