@@ -13,7 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            
             --bg-color: #f4ede6;
             --bg-pattern: radial-gradient(#d5c4b3 1.5px, transparent 1.5px);
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -195,6 +194,11 @@
             padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border-color);
             background-color: var(--input-bg); color: var(--text-color); font-weight: 700; font-size: 11px; outline: none;
         }
+
+        option[value="custom"], 
+#customBgContainer {
+    display: none !important;
+}
         
         .style-group input[type="range"] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
 
@@ -1072,39 +1076,43 @@
 
     <!-- TESTRESZABÁSI PANEL -->
     <div class="style-panel-drawer" id="styleDrawer">
-        <div class="style-panel-header" onclick="togglestyledrawer()">
-    <span>🎨 Testreszabás</span>
-    <span id="drawerArrow">▲</span>
-</div>
-<div class="style-panel-content">
-    <div class="style-group">
-        <label>Háttér Stílusa</label>
-        <select id="bgStyleSelect" onchange="changeBgStyle(this.value)">
-            <optgroup label="Alapértelmezett minták">
-                <option value="dots" selected>Pöttyös</option>
-                <option value="clean">Letisztult</option>
-                <option value="grid">Rácsos</option>
-            </optgroup>
-            <optgroup label="Sims 4 Világok">
-                <option value="sims-willow">Willow Creek</option>
-                <option value="sims-oasis">Oasis Springs</option>
-                <option value="sims-sulani">Sulani Tengerpart</option>
-                <option value="sims-sanmyshuno">San Myshuno</option>
-            </optgroup>
-        </select>
-    </div>
-    
-    <div id="imageSettingsContainer" style="display: none; margin-top: 4px;" class="style-group">
-        <div class="style-group">
-            <label>Kép Méretezése</label>
-            <select id="bgSizeSelect" onchange="changeBgSize(this.value)">
-                <option value="cover" selected>Kitöltés (Cover)</option>
-                <option value="contain">Illesztés (Contain)</option>
-                <option value="100% 100%">Nyújtás (Stretch)</option>
-                <option value="auto">Eredeti Méret (Original)</option>
-            </select>
+        <div class="style-panel-header" onclick="toggleStyleDrawer()">
+            <span>🎨 Testreszabás</span>
+            <span id="drawerArrow">▲</span>
         </div>
-    </div>
+        <div class="style-panel-content">
+            <div class="style-group">
+                <label>Háttér Stílusa</label>
+                <select id="bgStyleSelect" onchange="changeBgStyle(this.value)">
+                    <optgroup label="Alapértelmezett minták">
+                        <option value="dots" selected>Pöttyös</option>
+                        <option value="clean">Letisztult</option>
+                        <option value="grid">Rácsos</option>
+                    </optgroup>
+                    <optgroup label="Sims 4 Világok">
+                        <option value="sims-willow">Willow Creek</option>
+                        <option value="sims-oasis">Oasis Springs</option>
+                        <option value="sims-sulani">Sulani Tengerpart</option>
+                        <option value="sims-sanmyshuno">San Myshuno</option>
+                    </optgroup>
+                    <optgroup label="Egyéni">
+                        <option value="custom">Saját kép (Feltöltés)</option>
+                    </optgroup>
+                </select>
+                <div id="customBgContainer" style="display: none; margin-top: 4px;">
+                    <label for="bgFileInput" class="custom-file-btn">📁 Kép tallózása...</label>
+                    <input type="file" id="bgFileInput" class="custom-file-upload" accept="image/*" onchange="handleCustomBgUpload(event)">
+                </div>
+                <div id="imageSettingsContainer" style="display: none; margin-top: 4px;" class="style-group">
+                    <div class="style-group">
+                        <label>Kép Méretezése</label>
+                        <select id="bgSizeSelect" onchange="changeBgSize(this.value)">
+                            <option value="cover" selected>Kitöltés (Cover)</option>
+                            <option value="contain">Illesztés (Contain)</option>
+                            <option value="100% 100%">Nyújtás (Stretch)</option>
+                            <option value="auto">Eredeti Méret (Original)</option>
+                        </select>
+                    </div>
                     <div style="margin-top: 6px;" class="style-group">
                         <label>Kép Igazítása</label>
                         <select id="bgPosSelect" onchange="changeBgPosition(this.value)">
