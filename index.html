@@ -1678,8 +1678,9 @@ function cancelLink() {
     if(modal) modal.classList.remove('active');
 }
 
-let draggingSimId = null;
-let startX = 0, startY = 0;
+draggingSimId = null;
+startX = 0;
+startY = 0;
 
 function startDragSim(e, simId) {
     e.stopPropagation();
