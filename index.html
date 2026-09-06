@@ -1684,9 +1684,15 @@ startY = 0;
 
 function startDragSim(e, simId) {
     e.stopPropagation();
+    console.log("1. Megfogva a sim ID:", simId);
     draggingSimId = simId;
+    
+    // Biztosan megvan a sim?
     const sim = sims.find(s => s.id === simId);
-    if (!sim) return;
+    if (!sim) {
+        console.log("HIBA: Nem található a sim az adatok között!");
+        return;
+    }
     
     startX = e.clientX - sim.x * scale;
     startY = e.clientY - sim.y * scale;
@@ -1695,23 +1701,29 @@ function startDragSim(e, simId) {
         window.removeEventListener('mousemove', onMouseMove);
         window.removeEventListener('mouseup', onMouseUp);
 
+        console.log("2. Egér elengedve. Célpont keresése...");
         if (!draggingSimId) return;
 
         const elementsUnderMouse = document.elementsFromPoint(event.clientX, event.clientY);
-    let targetCard = null;
-    for (let el of elementsUnderMouse) {
-        const card = el.closest('.timeline-card');
-        if (card && card.dataset.simId !== draggingSimId) {
-            targetCard = card;
-            break;
+        console.log("Elemek az egér alatt:", elementsUnderMouse);
+
+        let targetCard = null;
+        for (let el of elementsUnderMouse) {
+            const card = el.closest('.timeline-card');
+            if (card && card.dataset.simId !== draggingSimId) {
+                targetCard = card;
+                break;
+            }
         }
-    }
 
         if (targetCard) {
             const targetSimId = targetCard.dataset.simId;
+            console.log("3. Siker! Cél sim ID:", targetSimId);
             if (targetSimId && targetSimId !== draggingSimId) {
                 openLinkTypeModal(draggingSimId, targetSimId);
             }
+        } else {
+            console.log("3. Nem találtunk másik sim kártyát az elengedés helyén.");
         }
 
         draggingSimId = null;
