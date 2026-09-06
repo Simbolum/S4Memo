@@ -1597,18 +1597,25 @@
 
         let currentView = 'home';
 
-        async function loadTreeBackground(treeId) {
-        const { data, error } = await supabaseClient
-            .from('trees') // Cseréld le a táblád nevére, ha nem 'trees'
-            .select('bg_type')
-            .eq('id', treeId)
-            .single();
+        async function loadTreeBackground() {
+    // HA NEM VAGYUNK A CSALÁDFA NÉZETBEN, AKKOR NE TÖLTSE BE A HÁTTÉRT!
+    if (typeof currentView !== 'undefined' && currentView !== 'tree') return;
 
-        if (data && data.bg_type) {
-            const treeWorld = document.getElementById('treeWorld');
-            treeWorld.className = data.bg_type; 
+    if (!currentTreeId) return;
+
+    const { data, error } = await supabaseClient
+        .from('trees')
+        .select('bg_type')
+        .eq('id', currentTreeId)
+        .single();
+
+    if (data && data.bg_type) {
+        const treeworld = document.getElementById('treeworld');
+        if (treeworld) {
+            treeworld.className = data.bg_type;
         }
     }
+}
 
         async function updateTreeBackground(treeId, newBgType) {
     const { error } = await supabaseClient
