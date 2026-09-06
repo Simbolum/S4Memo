@@ -2117,8 +2117,8 @@ async function loadSimsFromStorage() {
 }
         
         window.switchView = function(viewName) {
-    if (viewName !== 'tree') {
-        // 1. Takarítjuk a treeworld-öt (ha van ilyen ID-ú elem)
+    // Csak akkor takarítunk, ha NEM a 'tree' ÉS NEM a 'sims' nézetre megyünk:
+    if (viewName !== 'tree' && viewName !== 'sims') {
         const treeworld = document.getElementById('treeworld') || document.getElementById('treeWorld');
         if (treeworld) {
             treeworld.className = '';
@@ -2126,7 +2126,6 @@ async function loadSimsFromStorage() {
             treeworld.style.filter = '';
         }
 
-        // 2. Takarítjuk a body-t is, ahová a háttér szintén bekerülhetett
         document.body.className = '';
         document.body.style.backgroundImage = '';
     }
