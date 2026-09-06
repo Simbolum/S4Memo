@@ -1796,11 +1796,14 @@ let selectedConnectionTargetId = null;
         let zoomLevel = 1;
         let panX = 0;
         let panY = 0;
+        let isPanning = false;
+        let startPanX = 0;
+        let startPanY = 0;
+
         let activeDrag = null;
-let currentDropTargetSim = null;
-let isPanning = false;
-let startPanX = 0;
-let startPanY = 0;
+        let dragStartMouse = { x: 0, y: 0 };
+        let dragStartSimPos = { x: 0, y: 0 };
+        let currentDropTargetSim = null;
 
         function triggerFileInput() { document.getElementById('editImageInput').click(); }
         function triggerLifeGalleryUpload() { document.getElementById('lifeGalleryFileInput').click(); }
@@ -2584,38 +2587,6 @@ async function loadSimsFromStorage() {
                 node.classList.remove('selected');
             }
 
-            function setupSimDragAndDrop(node, sim) {
-            node.setAttribute('draggable', 'true');
-node.addEventListener('dragstart', (e) => {
-    activeDrag = sim.id;
-    e.dataTransfer.setData('text/plain', sim.id);
-});
-
-node.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    if (activeDrag && activeDrag !== sim.id) {
-        currentDropTargetSim = sim.id;
-        node.classList.add('drop-target');
-    }
-});
-
-node.addEventListener('dragleave', () => {
-    if (currentDropTargetSim === sim.id) {
-        currentDropTargetSim = null;
-        node.classList.remove('drop-target');
-    }
-});
-
-node.addEventListener('drop', (e) => {
-    e.preventDefault();
-    node.classList.remove('drop-target');
-    if (currentDropTargetSim && activeDrag !== currentDropTargetSim) {
-        handleSimDropOnSim(activeDrag, currentDropTargetSim);
-    }
-    activeDrag = null;
-    currentDropTargetSim = null;
-});
-            
             let badgesHtml = '';
             if (sim.occult && sim.occult !== 'Ember' && sim.occult !== 'pet' && occultIcons[sim.occult]) {
                 badgesHtml += `<div class="sim-top-icon" title="${sim.occult}">${occultIcons[sim.occult]}</div>`;
@@ -2862,17 +2833,17 @@ node.addEventListener('drop', (e) => {
         });
 
         treeViewport.addEventListener('mousedown', (e) => {
-    if (e.button === 0 && !e.target.closest('.sim-node')) {
-        isPanning = true;
-        startPanX = e.clientX - panX;
-        startPanY = e.clientY - panY;
+            if (e.button === 0 && !e.target.closest('.sim-node')) {
+                isPanning = true;
+                startPanX = e.clientX - panX;
+                startPanY = e.clientY - panY;
 
-        selectedSimId = null;
-        hideContextMenu();
-        hideGalleryContextMenu();
-        loadCurrentTreeCanvas();
-    }
-});
+                selectedSimId = null;
+                hideContextMenu();
+                hideGalleryContextMenu();
+                loadCurrentTreeCanvas();
+            }
+        });
 
         treeViewport.addEventListener('wheel', (e) => {
             e.preventDefault();
@@ -2899,36 +2870,39 @@ node.addEventListener('drop', (e) => {
         }
 
         function handleSimDropOnSim(draggedId, targetId) {
-    const relType = prompt("Válassz kapcsolat típust (házas / gyerek / szülő / pet):", "házas");
-    if (!relType) return;
+            const relType = prompt("Válassz kapcsolat típust (házas / gyerek / testvér / pet):", "házas");
+            if (!relType) return;
 
-    const currentTree = typeof getCurrentTree === 'function' ? getCurrentTree() : null;
-    if (!currentTree) return;
+            const currentTree = getCurrentTree();
+            if (!currentTree) return;
 
-    const sim1 = currentTree.sims.find(s => s.id === draggedId);
-    const sim2 = currentTree.sims.find(s => s.id === targetId);
+            const sim1 = currentTree.sims.find(s => s.id === draggedId);
+            const sim2 = currentTree.sims.find(s => s.id === targetId);
 
-    if (!sim1 || !sim2) return;
+            if (!sim1 || !sim2) return;
 
-    const typeLower = relType.toLowerCase().trim();
-    if (typeLower === 'házas' || typeLower === 'pár') {
-        sim1.partnerId = sim2.id;
-        sim2.partnerId = sim1.id;
-    } else if (typeLower === 'gyerek') {
-        if (!sim2.parentIds) sim2.parentIds = [];
-        if (!sim2.parentIds.includes(sim1.id)) sim2.parentIds.push(sim1.id);
-    } else if (typeLower === 'szülő') {
-        if (!sim1.parentIds) sim1.parentIds = [];
-        if (!sim1.parentIds.includes(sim2.id)) sim1.parentIds.push(sim2.id);
-    } else if (typeLower === 'pet' || typeLower === 'állat') {
-        if (!sim2.petIds) sim2.petIds = [];
-        if (!sim2.petIds.includes(sim1.id)) sim2.petIds.push(sim1.id);
-        sim1.occult = 'pet';
-    }
+            const typeLower = relType.toLowerCase().trim();
+            if (typeLower === 'házas' || typeLower === 'pár') {
+                sim1.partnerId = sim2.id;
+                sim2.partnerId = sim1.id;
+            } else if (typeLower === 'gyerek') {
+                if (!sim2.parentIds) sim2.parentIds = [];
+                if (!sim2.parentIds.includes(sim1.id)) sim2.parentIds.push(sim1.id);
+            } else if (typeLower === 'szülő') {
+                if (!sim1.parentIds) sim1.parentIds = [];
+                if (!sim1.parentIds.includes(sim2.id)) sim1.parentIds.push(sim2.id);
+            } else if (typeLower === 'pet' || typeLower === 'állat') {
+                if (!sim2.petIds) sim2.petIds = [];
+                if (!sim2.petIds.includes(sim1.id)) sim2.petIds.push(sim1.id);
+                sim1.occult = 'pet';
+            } else {
+                if (!sim1.customRelations) sim1.customRelations = [];
+                sim1.customRelations.push({ targetId: sim2.id, type: relType });
+            }
 
-    if (typeof saveTreesToStorage === 'function') saveTreesToStorage();
-    if (typeof loadCurrentTreeCanvas === 'function') loadCurrentTreeCanvas();
-}
+            saveTreesToStorage();
+            loadCurrentTreeCanvas();
+        }
 
         function addNewSimDialog() {
             const currentTree = getCurrentTree();
