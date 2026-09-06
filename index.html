@@ -1675,12 +1675,8 @@ function changeBgStyle(styleValue) {
     const treeworld = document.getElementById('treeworld');
     if (!treeworld) return;
 
-    // Ha egyéni kép van feltöltve, azt külön kezeljük, 
-    // de itt beállítjuk a kiválasztott stílusnak megfelelő osztályt/értéket
     treeworld.className = styleValue;
-    
-    // Opcionálisan: ha el is szeretnéd menteni adatbázisba azonnal
-    // updateTreeBackground(currentTreeId, styleValue);
+
 }
 
 // 2. Háttér méretezése (background-size)
@@ -2121,7 +2117,8 @@ async function loadSimsFromStorage() {
 }
         
         window.switchView = function(viewName) {
-            if (viewName !== 'tree') {
+    // Ha NEM a 'tree' nézetben vagyunk, azonnal leszedjük a hátteret:
+    if (viewName !== 'tree') {
         const treeworld = document.getElementById('treeworld');
         if (treeworld) {
             treeworld.className = '';
