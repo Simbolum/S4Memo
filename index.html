@@ -402,6 +402,7 @@
         .sim-node.selected { animation: simFloat 3s ease-in-out infinite; z-index: 10 !important; }
         .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px var(--accent-color), 0 8px 25px var(--active-glow) !important; }
         .sim-node.drop-target .sim-node-avatar { box-shadow: 0 0 0 4px #00ff87 !important; transform: scale(1.1); }
+        .sim-node.dragging { opacity: 0.6; z-index: 1000 !important; }
 
         .sim-node[data-is-pet="true"] {
             display: none !important;
@@ -1152,6 +1153,49 @@
         <div class="context-menu-item" onclick="contextAction('disconnect')">✂️ Kapcsolatok törlése</div>
         <div class="context-menu-item" onclick="contextAction('lock')" id="contextLockLabel">🔒 Zárolás</div>
         <div class="context-menu-item" style="color: #ff5e7e;" onclick="contextAction('delete')">🗑️ Karakter törlése</div>
+    </div>
+    
+<!-- KAPCSOLAT VÁLASZTÓ MODAL (SIM-SIM RÁHÚZÁSHOZ) -->
+    <div class="modal-overlay" id="connectionModal">
+        <div class="modal-card">
+            <h2 class="modal-title">Kapcsolat Hozzáadása</h2>
+            <p style="font-size: 12px; color: var(--subtext-color); margin-bottom: 12px;">Válaszd ki, milyen kapcsolatban legyen a két Sim:</p>
+
+            <div class="selected-sim-preview" style="margin-bottom: 12px;">
+                <div class="sim-avatar-preview" id="dragSourceAvatar">👤</div>
+                <div>
+                    <strong id="dragSourceName" style="font-size: 13px;">-</strong>
+                    <div style="font-size: 11px; color: var(--subtext-color);">Kezdeményező Sim</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; font-weight: bold; color: var(--accent-color); margin: 4px 0;">⬇️ Ráhúzva erre ⬇️</div>
+
+            <div class="selected-sim-preview" style="margin-bottom: 14px;">
+                <div class="sim-avatar-preview" id="dragTargetAvatar">👤</div>
+                <div>
+                    <strong id="dragTargetName" style="font-size: 13px;">-</strong>
+                    <div style="font-size: 11px; color: var(--subtext-color);">Cél Sim</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Kapcsolat Típusa</label>
+                <select id="dragRelationTypeSelect">
+                    <option value="Házas">Házas (Rózsaszín kötél)</option>
+                    <option value="Jegyes">Jegyes (Rózsaszín kötél)</option>
+                    <option value="Szerelmes">Szerelmes (Rózsaszín kötél)</option>
+                    <option value="Gyerek">Gyerek (Zöld kötél)</option>
+                    <option value="Szülő">Szülő (Zöld kötél)</option>
+                    <option value="Testvér">Testvér (Kék kötél)</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeConnectionModal()">Mégse</button>
+                <button type="button" class="btn-primary" onclick="confirmDragConnection()">Kapcsolat Létrehozása</button>
+            </div>
+        </div>
     </div>
 
     <!-- GALLÉRIA KÉP CONTEXT MENU -->
