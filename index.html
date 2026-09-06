@@ -407,6 +407,29 @@
             display: none !important;
         }
 
+        node.className = 'sim-node';
+node.id = sim.id;
+node.setAttribute('draggable', 'true');
+
+        node.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', sim.id);
+    // Esetleg jelölhetjük globális változóban is:
+    activeDrag = sim.id; 
+});
+        
+        node.addEventListener('dragover', (e) => {
+    e.preventDefault();
+});
+            node.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData('text/plain') || activeDrag;
+    const targetId = sim.id;
+    
+    if (sourceId && sourceId !== targetId) {
+        handleSimDropOnSim(sourceId, targetId); // Itt hívódik meg a te függvényed!
+    }
+});
+                
         /* KIS IKON HÁTTÉR/BADGE A SIM FEJE FELETT & BAL OLDALI ÁLLAT BUBORÉKOK (TÖBB ÁLLATHOZ ISTÁLLÓZVA) */
         .sim-badge-container {
             position: absolute;
