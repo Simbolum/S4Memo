@@ -1697,8 +1697,15 @@ function startDragSim(e, simId) {
 
         if (!draggingSimId) return;
 
-        const elementUnderMouse = document.elementFromPoint(event.clientX, event.clientY);
-        const targetCard = elementUnderMouse ? elementUnderMouse.closest('.timeline-card') : null;
+        const elementsUnderMouse = document.elementsFromPoint(event.clientX, event.clientY);
+    let targetCard = null;
+    for (let el of elementsUnderMouse) {
+        const card = el.closest('.timeline-card');
+        if (card && card.dataset.simId !== draggingSimId) {
+            targetCard = card;
+            break;
+        }
+    }
 
         if (targetCard) {
             const targetSimId = targetCard.dataset.simId;
