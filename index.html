@@ -13,13 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            
-            }
-
-body:not(.tree-view-active) #treeworld {
-    display: none !important;
-}
-        
             --bg-color: #f4ede6;
             --bg-pattern: radial-gradient(#d5c4b3 1.5px, transparent 1.5px);
             --card-bg: rgba(255, 255, 255, 0.85);
@@ -1604,25 +1597,18 @@ body:not(.tree-view-active) #treeworld {
 
         let currentView = 'home';
 
-        async function loadTreeBackground() {
-    // HA NEM VAGYUNK A CSALÁDFA NÉZETBEN, AKKOR NE TÖLTSE BE A HÁTTÉRT!
-    if (typeof currentView !== 'undefined' && currentView !== 'tree') return;
+        async function loadTreeBackground(treeId) {
+        const { data, error } = await supabaseClient
+            .from('trees') // Cseréld le a táblád nevére, ha nem 'trees'
+            .select('bg_type')
+            .eq('id', treeId)
+            .single();
 
-    if (!currentTreeId) return;
-
-    const { data, error } = await supabaseClient
-        .from('trees')
-        .select('bg_type')
-        .eq('id', currentTreeId)
-        .single();
-
-    if (data && data.bg_type) {
-        const treeworld = document.getElementById('treeworld');
-        if (treeworld) {
-            treeworld.className = data.bg_type;
+        if (data && data.bg_type) {
+            const treeWorld = document.getElementById('treeWorld');
+            treeWorld.className = data.bg_type; 
         }
     }
-}
 
         async function updateTreeBackground(treeId, newBgType) {
     const { error } = await supabaseClient
@@ -1652,6 +1638,7 @@ body:not(.tree-view-active) #treeworld {
         }
     }
 
+    // ---- IDE MÁSOLHD BE AZ ÚJ ESEMÉNYKEZELŐKET IS: ----
     const bgStyleSelect = document.getElementById('bgStyleSelect');
     if (bgStyleSelect) {
         bgStyleSelect.addEventListener('change', (e) => {
