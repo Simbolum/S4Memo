@@ -97,6 +97,7 @@
         * {
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         body {
@@ -106,8 +107,6 @@
             color: var(--text-color);
             overflow-x: hidden;
             min-height: 100vh;
-            background-image: var(--bg-pattern);
-            background-size: 24px 24px;
         }
 
         /* ANIMÁCIÓK */
@@ -206,72 +205,34 @@
         }
 
         /* UI ELEMEK & STÍLUSOS FEJLÉC */
-        .top-nav-container {
-            padding: 16px 24px 0 24px;
-            position: relative;
-            z-index: 1100;
-        }
+        .top-nav-container { padding: 16px 24px 0 24px; position: relative; z-index: 1100; }
         .top-nav {
-            background-color: var(--nav-bg);
-            padding: 10px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-radius: 24px;
-            box-shadow: 0 8px 25px var(--shadow-color);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(16px);
+            background-color: var(--nav-bg); padding: 10px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-radius: 24px; box-shadow: 0 8px 25px var(--shadow-color); border: 1px solid var(--border-color);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
         .nav-left { display: flex; align-items: center; gap: 24px; }
         .nav-right { display: flex; align-items: center; gap: 10px; }
         .nav-links { display: flex; gap: 8px; align-items: center; }
-        
-        .top-nav button.nav-item {
-            background: none;
-            border: none;
-            text-decoration: none;
-            font-size: 14px;
-            color: var(--subtext-color);
-            padding: 8px 16px;
-            border-radius: 14px;
-            font-weight: 700;
-            cursor: pointer;
+        .top-nav a.nav-item {
+            text-decoration: none; font-size: 14px; color: var(--subtext-color);
+            padding: 8px 16px; border-radius: 14px; font-weight: 700; cursor: pointer;
         }
-        .top-nav button.nav-item:hover {
-            color: var(--text-color);
-            background-color: rgba(255,255,255,0.1);
-        }
-        .top-nav button.nav-item.active {
-            color: #ffffff;
-            background-color: var(--accent-color);
-            box-shadow: 0 4px 14px var(--active-glow);
-        }
+        .top-nav a.nav-item:hover { color: var(--text-color); background-color: rgba(255,255,255,0.1); }
+        .top-nav a.nav-item.active { color: #ffffff; background-color: var(--accent-color); box-shadow: 0 4px 14px var(--active-glow); }
         
         body.tree-view-active #topNavContainer { display: none !important; }
 
-        .theme-toggle-btn, .user-profile-btn {
-            background-color: var(--card-solid);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
+        .user-profile-btn, .theme-toggle-btn {
+            background-color: var(--card-solid); color: var(--text-color);
+            border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 16px;
+            font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 2px 8px var(--shadow-color);
         }
-    </style>
-</head>
-<body>
+        .user-profile-btn:hover, .theme-toggle-btn:hover { border-color: var(--accent-color); color: var(--accent-color); transform: translateY(-1px); }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--text-color);
-            font-family: 'Playfair Display', serif;
-        }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: var(--text-color); letter-spacing: -0.5px; font-family: 'Playfair Display', serif; }
         
         @keyframes plumbobFloat {
             0% { transform: translateY(0) rotate(0deg); }
@@ -286,32 +247,14 @@
         }
 
         /* NÉZETEK */
-        .page-view {
-            display: none;
-            padding: 30px 20px;
-            max-width: 1100px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 10;
-        }
-        .page-view.active {
-            display: block;
-        }
-
+        .page-view { display: none; padding: 30px 20px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 10; }
+        .page-view.active { display: block; }
         .main-card {
-            background-color: var(--card-bg);
-            padding: 40px;
-            border-radius: 32px;
-            box-shadow: 0 16px 40px var(--shadow-color);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(16px);
+            background-color: var(--card-bg); padding: 40px; border-radius: 32px;
+            box-shadow: 0 16px 40px var(--shadow-color); border: 1px solid var(--border-color);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
-        .main-card h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
-            margin-top: 0;
-            color: var(--text-color);
-        }
+        .main-card h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin-top: 0; }
 
         .page-view#treeView {
             display: none; padding: 0; max-width: 100%; width: 100vw; height: 100vh;
@@ -1025,45 +968,40 @@
     <div id="bgBlurOverlay"></div>
 
     <!-- NAVIGÁCIÓ -->
-    <div class="top-nav-container">
+    <div class="top-nav-container" id="topNavContainer">
         <nav class="top-nav">
             <div class="nav-left">
-                <div class="logo">
-                    <span style="color:var(--accent-color)">◆</span> S4Memo
-                </div>
+                <div class="logo"><span class="plumbob"></span> S4Memo</div>
                 <div class="nav-links">
-                    <button class="nav-item active" onclick="switchPage('homePage', this)">Főoldal</button>
-                    <button class="nav-item" onclick="switchPage('treesPage', this)">Családfák</button>
-                    <button class="nav-item" onclick="switchPage('simsPage', this)">Simek</button>
-                    <button class="nav-item" onclick="switchPage('activityPage', this)">Aktivitás</button>
-                    <button class="nav-item" onclick="switchPage('publicPage', this)">Publikum</button>
+                    <a class="nav-item active" id="navHome" onclick="switchView('home')">Főoldal</a>
+<a class="nav-item" id="navTree" onclick="switchView('tree')">Családfák</a>
+<a class="nav-item" id="navActivity" onclick="switchView('activity')">Aktivitás</a>
+<a class="nav-item" id="navPublic" onclick="switchView('public')">Publikum</a>
                 </div>
             </div>
             <div class="nav-right">
-                <button class="theme-toggle-btn" onclick="toggleTheme()">Téma 🌙</button>
-                <button class="user-profile-btn" onclick="openAuthModal()">Fiók 🌿</button>
-            </div>
+    <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+    <button class="user-profile-btn" onclick="openProfile()">👤 <span>Profilom</span></button>
+</div>
         </nav>
     </div>
 
     <!-- 1. FŐOLDAL -->
-    <div id="homePage" class="page-view active">
-        <div class="main-card">
-            <h1>Üdvözöl az S4Memo oldalon! 🌿</h1>
-            <p>Ez a Főoldal teljesen független a többi szekciótól. Itt láthatod a legfontosabb összesítőket.</p>
-        </div>
+    <div class="page-view active" id="homeView">
+        <main class="main-card">
+            <h1>Üdvözöllek a Sims 4 Memorable oldalán!</h1>
+            <p>Készíts interaktív Sims családfákat, animált vonalakkal és szabad karaktermintákkal.</p>
+        </main>
     </div>
 
     <!-- 2. CSALÁDFÁK NÉZET -->
-    <div id="treesPage" class="page-view">
-        <div class="main-card">
+    <div class="page-view" id="treeView">
+        <div class="tree-left-sidebar">
             <div class="accordion-group open" id="dynastyAccordion">
                 <button class="accordion-header" onclick="toggleAccordion('dynastyAccordion')">
                     <div class="header-title">
                         <span>⋮⋮</span>
-                        <h1>Családfák kezelése 🌳</h1>
                         <span>Családfák</span>
-                        <p>Itt szerkesztheted és tekintheted meg a családok fáit anélkül, hogy az adatok átkerülnének más oldalakra.</p>
                     </div>
                     <span class="chevron">▲</span>
                 </button>
@@ -1073,13 +1011,6 @@
                 </div>
             </div>
 
-            <div id="simsPage" class="page-view">
-        <div class="main-card">
-            <h1>Simek adatbázisa 🧍‍♂️</h1>
-            <p>A Simek listája és egyéni tulajdonságai különálló lapon kaptak helyet.</p>
-        </div>
-    </div>
-            
             <div class="accordion-group" id="journalAccordion">
                 <button class="accordion-header" onclick="toggleAccordion('journalAccordion')">
                     <div class="header-title">
@@ -1112,11 +1043,11 @@
 
     
     <!-- 3. AKTIVITÁS / TÖRTÉNETEK NÉZET -->
-    <div id="activityPage" class="page-view">
-        <div class="main-card">
+    <div class="page-view" id="activityView">
+        <main class="main-card">
             <div class="activity-header">
                 <div class="activity-header-left">
-                    <h1>Aktivitás napló 📜</h1>
+                    <h1>Aktivitás & Történetek</h1>
                     <p>Kövesd nyomon a Sims dinasztiáid történeteit, mérföldköveit és naplóbejegyzéseit egyetlen idővonalon.</p>
                 </div>
                 <div class="activity-controls">
@@ -1132,10 +1063,9 @@
     </div>
 
     <!-- 4. PUBLIKUM -->
-    <div id="publicPage" class="page-view">
-        <div class="main-card">
-            <h1>Publikum / Közösség ✨</h1>
-            <p>Más játékosok megosztott emlékei és publikus tartalmai.</p>
+    <div class="page-view" id="publicView">
+        <main class="main-card">
+            <h1>Publikum / Közösségi Családfák</h1>
         </main>
     </div>
 
@@ -3881,18 +3811,14 @@ function openAddSimModalFromView() {
         }
 
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            if (currentTheme === 'dark') {
+            const current = document.documentElement.getAttribute('data-theme');
+            if (current === 'dark') {
                 document.documentElement.removeAttribute('data-theme');
                 themeBtn.innerText = '🌙 Dark';
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 themeBtn.innerText = '☀️ Light';
             }
-        }
-
-        function openAuthModal() {
-            alert('Fiók kezelés ablak (Külön modulos logika).');
         }
 
         function openProfile() { alert("Profil beállítások hamarosan!"); }
@@ -3925,26 +3851,21 @@ function openAddSimModalFromView() {
     applyPageBackground();
 };
 
-       function switchPage(pageId, btnElement) {
+        function switchPageView(pageName, element) {
     // ... a meglévő kódod (ami elrejti a többi nézetet és leszedi az active classt) ...
 
     // ADD HOZZÁ EZT A RÉSZT IS:
     if (pageName === 'sims') {
-        const pages = document.querySelectorAll('.page-view');
-        pages.forEach(page => page.classList.remove('active'));
-
-        const navButtons = document.querySelectorAll('.top-nav .nav-item');
-            navButtons.forEach(btn => btn.classList.remove('active'));
+        const simsView = document.getElementById('simsView');
+        if (simsView) simsView.classList.add('active');
+        if (element) element.classList.add('active');
         
-        const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.add('active');
-            }
-            if (btnElement) {
-                btnElement.classList.add('active');
-            }
+        // Ha van külön logikád a simek listázására, itt meghívhatod:
+        if (typeof renderSimsDirectory === 'function') {
+            renderSimsDirectory();
         }
-           
+    }
+}
         function toggleTreeDropdown() {
     const wrapper = document.getElementById('treeDropdownWrapper');
     const subMenu = document.getElementById('treeSubMenu');
@@ -4093,16 +4014,22 @@ function openAddSimModalFromView() {
     }
 
     // Családfák betöltése a bejelentkezett felhasználóhoz
-    const { data: trees, error } = await supabaseClient
-                .from('trees')
-                .select('*');
+    async function loadUserTrees() {
+        const { data: trees, error } = await supabaseClient
+            .from('trees') // A családfák táblád neve
+            .select('*');
 
-            if (error) {
-                console.error('Hiba a fák betöltésekor:', error.message);
-                return;
-            }
-            console.log('Fák betöltve:', trees);
+        if (error) {
+            console.error('Hiba a fák betöltésekor:', error.message);
+            return;
         }
-    </script>
+
+        // Itt hívod meg azt a függvényt, ami kirajzolja a fákat a képernyőre
+        if (typeof renderTreesOnScreen === 'function') {
+            renderTreesOnScreen(trees);
+        }
+    }
+</script>
+
 </body>
 </html>
