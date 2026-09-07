@@ -775,12 +775,29 @@ node.setAttribute('draggable', 'true');
         .context-menu-item:hover { background-color: var(--card-solid); color: var(--accent-color); transform: translateX(2px); }
 
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(0, 0, 0, 0.4); z-index: 3000;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-        }
-        .modal-overlay.active { display: flex; }
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+}
+.modal-content {
+    background: var(--card-solid, #222);
+    padding: 24px; border-radius: 16px;
+    width: 320px; text-align: center;
+    border: 1px solid var(--border-color, #444);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    color: #fff;
+}
+.relation-options {
+    display: flex; flex-direction: column; gap: 10px; margin: 20px 0;
+}
+.relation-btn {
+    padding: 10px; border-radius: 8px; border: none;
+    background: var(--accent-color, #ff758c); color: #fff;
+    font-weight: bold; cursor: pointer; transition: opacity 0.2s;
+}
+.relation-btn:hover { opacity: 0.85; }
         
         .modal-card {
             background-color: var(--card-bg); border: 1px solid var(--border-color);
@@ -1195,18 +1212,24 @@ node.setAttribute('draggable', 'true');
     </div>
 
     <!-- SIM CARD & SZERKESZTŐ MODAL -->
-    <div class="modal-overlay" id="simModal">
-        <div class="modal-card">
-            <button type="button" class="close-btn" onclick="closeSimModal()">&times;</button>
-
-            <div class="modal-header">
-                <h3 class="modal-title">Sim Card</h3>
-                <div class="tab-menu">
-                    <button type="button" class="tab-btn active" onclick="switchSimTab('info')">Információk</button>
-                    <button type="button" class="tab-btn" onclick="switchSimTab('diary')">Napló</button>
-                    <button type="button" class="tab-btn" onclick="switchSimTab('avatars')">Avatárok <span class="badge" id="avatarBadgeCount">1</span></button>
-                </div>
-            </div>
+    <div class="modal-overlay" id="relationModal" style="display: none;">
+    Kapcsolat kiválasztása: <span id="relationSimNames"></span>
+    <div class="modal-content">
+        <h3>Kapcsolat beállítása</h3>
+        <p id="relationModalText">Válaszd ki, milyen kapcsolatban áll a két Sim:</p>
+        
+        <div class="relation-options">
+            <button class="relation-btn" data-relation="spouse">Házastárs / Partner</button>
+            <button class="relation-btn" data-relation="parent">Szülő</button>
+            <button class="relation-btn" data-relation="child">Gyermek</button>
+            <button class="relation-btn" data-relation="sibling">Testvér</button>
+        </div>
+        
+        <div class="modal-actions">
+            <button id="closeRelationModal" class="btn-secondary">Mégse</button>
+        </div>
+    </div>
+</div>
 
             <!-- FÜL 1: Szerkesztő és profil infók -->
             <div class="tab-content active" id="tabContentInfo">
@@ -1653,6 +1676,10 @@ node.setAttribute('draggable', 'true');
     }
 }
 
+        document.getElementById('closeRelationModal').addEventListener('click', () => {
+    document.getElementById('relationModal').style.display = 'none';
+});
+        
     document.addEventListener('DOMContentLoaded', async () => {
     // A te meglévő Supabase lekérdezésed:
     const { data, error } = await supabaseClient
@@ -1667,6 +1694,17 @@ node.setAttribute('draggable', 'true');
         }
     }
 
+        document.addEventListener('DOMContentLoaded', () => {
+    // Bezárás gomb eseménykezelője
+    const closeBtn = document.getElementById('closeRelationModal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            const modal = document.getElementById('relationModal');
+            if (modal) modal.style.display = 'none';
+        });
+    }
+});
+        
     // ---- IDE MÁSOLHD BE AZ ÚJ ESEMÉNYKEZELŐKET IS: ----
     const bgStyleSelect = document.getElementById('bgStyleSelect');
     if (bgStyleSelect) {
@@ -1815,6 +1853,8 @@ let editingJournalTreeId = null;
 let contextSimId = null;
 let selectedSimId = null;
 let selectedConnectionTargetId = null;
+        let draggedSimId = null;
+let targetSimId = null;
 
         let selectedParent1Id = null;
         let selectedParent2Id = null;
@@ -1839,6 +1879,57 @@ let selectedConnectionTargetId = null;
         let dragStartSimPos = { x: 0, y: 0 };
         let currentDropTargetSim = null;
 
+        function setupSimDragAndDrop(nodeElement, simId) {
+    if (!nodeElement) return;
+
+    // Engedélyezzük a HTML5 drag and drop-ot
+    nodeElement.setAttribute('draggable', 'true');
+
+    // Amikor elkezded húzni a Simet
+    nodeElement.addEventListener('dragstart', (e) => {
+        draggedSimId = simId;
+        e.dataTransfer.setData('text/plain', simId);
+    });
+
+    // Amikor egy másik Sim fölött húzod (szükséges a drop engedélyezéséhez)
+    nodeElement.addEventListener('dragover', (e) => {
+        e.preventDefault(); 
+    });
+
+    // Amikor ráejted a Simet egy másik Simre
+    nodeElement.addEventListener('drop', (e) => {
+        e.preventDefault();
+        targetSimId = simId;
+
+        // Csak akkor nyitjuk meg, ha nem saját magára húzta
+        if (draggedSimId && targetSimId && draggedSimId !== targetSimId) {
+            openRelationModal(draggedSimId, targetSimId);
+        }
+    });
+}
+
+        function openRelationModal(sourceId, targetId) {
+    const modal = document.getElementById('relationModal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+
+    // Kiválasztjuk a modaln belüli gombokat
+    const buttons = modal.querySelectorAll('.relation-btn');
+    buttons.forEach(btn => {
+        // Ellenőrizzük, hogy korábbi kattintások ne adódjanak össze (egyszeri futás per gomb)
+        btn.onclick = async () => {
+            const relationType = btn.getAttribute('data-relation');
+            
+            // Itt hívod meg a mentést (pl. Supabase-be)
+            await saveRelationToDatabase(sourceId, targetId, relationType);
+            
+            // Bezárjuk a modalt
+            modal.style.display = 'none';
+        };
+    });
+}
+        
         function triggerFileInput() { document.getElementById('editImageInput').click(); }
         function triggerLifeGalleryUpload() { document.getElementById('lifeGalleryFileInput').click(); }
 
@@ -2128,6 +2219,11 @@ async function loadSimsFromStorage() {
     }
 }
 
+        async function saveRelationToDatabase(sourceId, targetId, type) {
+    console.log(`Kapcsolat mentése: Sim #${sourceId} -> Sim #${targetId} (${type})`);
+    
+    try {
+        
         async function saveBackgroundToSupabase(bgClass) {
     // 1. Azonnal beállítjuk vizuálisan is, hogy ne legyen laggolásérzet
     document.body.className = bgClass;
@@ -2284,6 +2380,18 @@ async function loadSimsFromStorage() {
             .eq('id', treeId)
             .eq('user_id', user.id);
 
+        const { error } = await supabaseClient
+            .from('relationships')
+            .insert([{ sim_id_1: sourceId, sim_id_2: targetId, relation_type: type }]);
+if (error) throw error;
+if (typeof loadFamilyTree === 'function') {
+            loadFamilyTree();
+        }
+ } catch (err) {
+        console.error('Hiba történt a kapcsolat mentése során:', err.message);
+    }
+}
+            
         if (error) {
             console.error("Hiba a fa törlésekor a Supabase-ből:", error);
             return; // Ha hiba van, ne lépjünk tovább
