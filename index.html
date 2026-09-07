@@ -529,10 +529,21 @@ node.setAttribute('draggable', 'true');
             border: 1px solid var(--border-color); margin-bottom: 15px;
         }
         .avatar-crop-view {
-            width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-color);
-            overflow: hidden; position: relative; background-color: var(--card-solid);
-            box-shadow: 0 4px 14px var(--shadow-color); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+    width: 100px; 
+    height: 100px; 
+    aspect-ratio: 1 / 1;    /* Biztosítja, hogy mindig tökéletes 1:1 arányú maradjon */
+    flex-shrink: 0;         /* Megakadályozza, hogy a flexbox összenyomja */
+    border-radius: 50%; 
+    border: 3px solid var(--accent-color);
+    overflow: hidden; 
+    position: relative; 
+    background-color: var(--card-solid);
+    box-shadow: 0 4px 14px var(--shadow-color); 
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
         }
         .avatar-crop-img { width: 100%; height: 100%; object-fit: cover; transform-origin: center center; }
         .avatar-crop-overlay {
