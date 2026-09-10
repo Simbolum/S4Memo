@@ -988,18 +988,28 @@
 
     <script>
         // Supabase konfiguráció
-        const SUPABASE_URL = 'https://ipvcthmgqbzsiuiilgtc.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_zZPHUc8VX9uT6peK4qOiVw_0Dd1TLDu';
+        const SUPABASE_URL = 'https://mzmwchyepqhqcyydngeo.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Zea0--loQ_Q44nd13y5yPA_wl8L-pB_';
 
         let supabaseClient = null;
         try {
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                db: {
+                    schema: 'public'
+                },
+                global: {
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                }
+            });
         } catch (e) {
             console.error("Supabase hiba:", e);
         }
 
         let currentUser = null;
         let isSignUpMode = false;
+        let userProfile = { name: '', avatar: '', bio: '' };
 
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggleBtn');
@@ -1759,7 +1769,7 @@
             try {
                 const defaultName = user.email.split('@')[0];
                 const { error } = await supabaseClient.from('profiles').insert([
-                    { id: user.id, display_name: defaultName, avatar_url: userProfile.avatar, bio: '' }
+                    { id: user.id, display_name: defaultName, avatar_url: '', bio: '' }
                 ]);
 
                 if (error) {
@@ -1767,6 +1777,9 @@
                     // Nem blokkoljuk a folyamatot, ha a profil létrehozása hibásan sikerül
                 } else {
                     console.log("Profil sikeresen létrehozva:", defaultName);
+                    userProfile.name = defaultName;
+                    userProfile.avatar = '';
+                    userProfile.bio = '';
                 }
             } catch (error) {
                 console.error("Váratlan hiba a profil létrehozásakor:", error);
@@ -1829,12 +1842,12 @@
 
                 if (data) {
                     userProfile.name = data.display_name || currentUser.email.split('@')[0];
-                    userProfile.avatar = data.avatar_url || userProfile.avatar;
+                    userProfile.avatar = data.avatar_url || '';
                     userProfile.bio = data.bio || '';
                 } else {
                     const defaultName = currentUser.email.split('@')[0];
                     const { error: insertError } = await supabaseClient.from('profiles').insert([
-                        { id: currentUser.id, display_name: defaultName, avatar_url: userProfile.avatar, bio: '' }
+                        { id: currentUser.id, display_name: defaultName, avatar_url: '', bio: '' }
                     ]);
 
                     if (insertError) {
@@ -1844,6 +1857,8 @@
                     }
 
                     userProfile.name = defaultName;
+                    userProfile.avatar = '';
+                    userProfile.bio = '';
                     console.log("Profil sikeresen létrehozva:", defaultName);
                 }
                 updateProfileButton();
@@ -1856,11 +1871,14 @@
             if (!currentUser || !supabaseClient) return;
 
             try {
+                // Cache busting: hozzáadunk egy véletlenszerű timestamp-et
+                const timestamp = Date.now();
                 const { data, error } = await supabaseClient
                     .from('family_trees')
-                    .select('*')
+                    .select('id, name, background_config, sims, journal, created_at, updated_at')
                     .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false });
+                    .order('created_at', { ascending: false })
+                    .limit(100);
 
                 if (error) {
                     console.error('Hiba a családfák betöltésekor:', error);
@@ -1906,13 +1924,42 @@
                         name: tree.name,
                         background_config: tree.bgConfig,
                         sims: tree.sims,
-                        journal: tree.journal,
+                        journal: tree.journal || [],
                         updated_at: new Date()
+                    }, {
+                        onConflict: 'id'
                     });
 
                 if (error) {
                     console.error("Hiba a családfa mentésekor:", error);
-                    alert("Hiba a családfa mentésekor: " + error.message);
+                    
+                    // Ha schema cache hiba, próbáljuk meg újra
+                    if (error.message && error.message.includes('journal')) {
+                        console.log("Schema cache hiba - kényszerített újrapróbálkozás...");
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        const retryResult = await supabaseClient
+                            .from('family_trees')
+                            .upsert({
+                                id: tree.id,
+                                user_id: currentUser.id,
+                                name: tree.name,
+                                background_config: tree.bgConfig,
+                                sims: tree.sims,
+                                journal: tree.journal || [],
+                                updated_at: new Date()
+                            }, {
+                                onConflict: 'id'
+                            });
+                            
+                        if (retryResult.error) {
+                            alert("Hiba a családfa mentésekor: " + retryResult.error.message);
+                        } else {
+                            console.log("Családfa sikeresen mentve (újrapróbálkozás):", tree.name);
+                        }
+                    } else {
+                        alert("Hiba a családfa mentésekor: " + error.message);
+                    }
                 } else {
                     console.log("Családfa sikeresen mentve:", tree.name);
                 }
