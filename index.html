@@ -620,7 +620,7 @@
             <span class="zoom-percentage-text" id="zoomPercentLabel" onclick="resetZoom()" title="Visszaállítás">100%</span>
         </div>
 
-        <button class="add-sim-floating-btn" onclick="addNewSimDialog()">+ Új Sim Hozzáadása</button>
+        <button class="add-sim-floating-btn" id="addSimBtn" onclick="addNewSimDialog()" style="display: none;">+ Új Sim Hozzáadása</button>
 
         <div class="tree-canvas-viewport" id="treeViewport">
             <div class="tree-canvas-world style-glow" id="treeWorld">
@@ -1179,6 +1179,7 @@
                 renderTreeTabs();
                 renderJournalEntries();
                 loadCurrentTreeCanvas();
+                updateAddSimButtonVisibility();
             } else if (viewName === 'activity') {
                 document.getElementById('activityView').classList.add('active');
                 document.getElementById('navActivity').classList.add('active');
@@ -1577,20 +1578,21 @@
             renderJournalEntries();
             applyPageBackground();
             loadCurrentTreeCanvas();
+            updateAddSimButtonVisibility();
         }
 
         function createNewTree() {
             const name = prompt("Új családfa neve:", "Új családfa");
             if (!name || name.trim() === "") return;
-            
-            const newTree = { 
-                id: 'tree_' + Date.now(), 
-                name: name.trim(), 
+
+            const newTree = {
+                id: 'tree_' + Date.now(),
+                name: name.trim(),
                 bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
                 sims: [],
                 journal: []
             };
-            
+
             familyTrees.push(newTree);
             currentTreeId = newTree.id;
             saveTreesToStorage();
@@ -1598,6 +1600,7 @@
             renderJournalEntries();
             applyPageBackground();
             loadCurrentTreeCanvas();
+            updateAddSimButtonVisibility();
         }
 
         function deleteTree(treeId) {
@@ -1606,20 +1609,30 @@
 
             if (confirm(`Biztosan törölni szeretnéd a(z) "${treeToDelete.name}" családfát? Ez a művelet nem visszavonható!`)) {
                 familyTrees = familyTrees.filter(t => t.id !== treeId);
-                
+
                 if (currentTreeId === treeId) {
                     currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
                 }
-                
+
                 saveTreesToStorage();
                 renderTreeTabs();
                 renderJournalEntries();
                 applyPageBackground();
                 loadCurrentTreeCanvas();
+                updateAddSimButtonVisibility();
             }
         }
 
         function getCurrentTree() { return familyTrees.find(t => t.id === currentTreeId); }
+
+        function updateAddSimButtonVisibility() {
+            const addSimBtn = document.getElementById('addSimBtn');
+            if (currentTreeId && familyTrees.length > 0) {
+                addSimBtn.style.display = 'block';
+            } else {
+                addSimBtn.style.display = 'none';
+            }
+        }
 
         function loadCurrentTreeCanvas() {
             const nodes = treeWorld.querySelectorAll('.sim-node');
