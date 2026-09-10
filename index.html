@@ -556,7 +556,7 @@
 <body class="bg-dots">
 
     <!-- BEJELENTKEZÉSI / REGISZTRÁCIÓS NÉZET -->
-    <div id="authContainer" class="modal-overlay" style="display: none;">
+    <div id="authContainer" class="modal-overlay active">
         <div class="modal-card">
             <h2 id="authTitle" style="text-align: center; margin-bottom: 20px;">S4Memo Bejelentkezés</h2>
             <form id="authForm" onsubmit="handleAuthSubmit(event)">
@@ -582,6 +582,9 @@
     </div>
 
     <div id="bgBlurOverlay"></div>
+
+    <!-- FŐ TARTALOM (Hitelesítés után látható) -->
+    <div id="mainContent" style="display: none;">
 
     <!-- NAVIGÁCIÓ -->
     <div class="top-nav-container" id="topNavContainer">
@@ -685,6 +688,8 @@
             <h1>Publikum / Közösségi Családfák</h1>
         </main>
     </div>
+
+    </div> <!-- mainContent vége -->
 
     <!-- TESTRESZABÁSI PANEL (CSALÁDFÁK NÉZETRE) -->
     <div class="style-panel-drawer" id="styleDrawer" style="display: none;">
@@ -1728,15 +1733,21 @@
                 if (error) {
                     alert('Regisztrációs hiba: ' + error.message);
                 } else {
-                    alert('Sikeres regisztráció! Kérlek ellenőrizd az emailed a megerősítéshez, vagy jelentkezz be.');
-                    isSignUpMode = false;
-                    toggleAuthMode();
+                    // Regisztráció után automatikus bejelentkezés
+                    const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    if (signInError) {
+                        alert('Sikeres regisztráció, de a bejelentkezés sikertelen: ' + signInError.message);
+                        isSignUpMode = false;
+                        toggleAuthMode();
+                    }
+                    // Sikeres regisztráció és bejelentkezés - a handleSession automatikusan lefut
                 }
             } else {
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                 if (error) {
                     alert('Bejelentkezési hiba: ' + error.message);
                 }
+                // Sikeres bejelentkezés - a handleSession automatikusan lefut
             }
         }
 
@@ -1747,15 +1758,22 @@
         async function handleSession(session) {
             currentUser = session?.user || null;
             if (currentUser) {
+                // Bejelentkezett felhasználó
                 document.getElementById('authContainer').classList.remove('active');
+                document.getElementById('mainContent').style.display = 'block';
                 document.getElementById('logoutBtn').style.display = 'block';
                 await loadOrCreateUserProfile();
                 updateProfileButton();
                 await fetchFamilyTreesFromSupabase();
+                // Bejelentkezés után alapértelmezetten a Főoldalra megyünk
+                switchView('home');
             } else {
+                // Nincs bejelentkezve - megjelenítjük a hitelesítési felületet
                 document.getElementById('authContainer').classList.add('active');
+                document.getElementById('mainContent').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'none';
                 updateProfileButton();
+                // Nincs bejelentkezve, nem töltünk be családfákat
                 familyTrees = [];
                 currentTreeId = null;
                 renderTreeTabs();
