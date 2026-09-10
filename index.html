@@ -312,7 +312,6 @@
             border-radius: 50%;
             overflow: hidden;
             position: relative;
-            border: 3px solid var(--accent-color);
             box-shadow: 0 0 20px rgba(201, 160, 120, 0.3);
             cursor: grab;
         }
@@ -519,7 +518,7 @@
         .timeline-icon {
             position: absolute; left: -50px; top: 16px; width: 34px; height: 34px; border-radius: 50%;
             background-color: var(--accent-color); color: #ffffff; display: flex; align-items: center; justify-content: center;
-            font-size: 15px; box-shadow: 0 4px 12px var(--active-glow); z-index: 2; border: 2px solid var(--card-solid);
+            font-size: 15px; box-shadow: 0 4px 12px var(--active-glow); z-index: 2;
         }
         .timeline-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .timeline-tree-badge { background-color: var(--nav-bg); color: var(--accent-color); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 10px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 4px; }
@@ -607,7 +606,7 @@
             position: absolute; width: 24px; height: 24px; color: white;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 8px var(--shadow-color);
-            border: 2px solid #ffffff; z-index: 20;
+            z-index: 20;
         }
         .add-partner-btn { right: -6px; top: 50%; transform: translateY(-50%); background-color: var(--btn-pink); }
         .add-child-btn { bottom: -6px; left: 50%; transform: translateX(-50%); background-color: var(--btn-green); }
@@ -619,7 +618,7 @@
             border: 1px solid var(--border-color); margin-bottom: 15px;
         }
         .avatar-crop-view {
-            width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-color);
+            width: 100px; height: 100px; border-radius: 50%;
             overflow: hidden; position: relative; background-color: var(--card-solid);
             box-shadow: 0 4px 14px var(--shadow-color); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
@@ -721,7 +720,7 @@
         .btn-danger { background-color: #ff5e7e; border: none; color: white; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 12px; margin-right: auto; }
 
         .selected-sim-preview { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 12px; background-color: var(--input-bg); border-radius: 14px; border: 1px solid var(--border-color); }
-        .sim-avatar-preview { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent-color); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 20px; background-color: var(--card-solid); }
+        .sim-avatar-preview { width: 44px; height: 44px; border-radius: 50%; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 20px; background-color: var(--card-solid); }
 
         .right-sidebar {
             position: fixed; top: 20px; right: -290px; width: 270px; height: calc(100vh - 40px);
