@@ -285,6 +285,67 @@
             color: var(--accent-color);
         }
 
+        /* KÉPVÁGÓ MODAL */
+        .image-crop-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .crop-preview-area {
+            width: 300px;
+            height: 300px;
+            background-color: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .crop-circle-mask {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(46, 213, 115, 0.3);
+            cursor: grab;
+        }
+
+        .crop-circle-mask:active {
+            cursor: grabbing;
+        }
+
+        .crop-circle-mask img {
+            max-width: none;
+            max-height: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.1s ease;
+            pointer-events: none;
+        }
+
+        .crop-circle-mask.dragging img {
+            transition: none;
+        }
+
+        .crop-instructions {
+            text-align: center;
+            color: var(--subtext-color);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .crop-instructions p {
+            margin: 4px 0;
+        }
+
         /* UI ELEMEK & STÍLUSOS FEJLÉC */
         .top-nav-container { padding: 16px 24px 0 24px; position: relative; z-index: 1100; }
         .top-nav {
@@ -860,6 +921,31 @@
     </div>
 
     <!-- SIM CARD & SZERKESZTŐ MODAL -->
+    <!-- KÉPVÁGÓ MODAL -->
+    <div class="modal-overlay" id="imageCropModal">
+        <div class="modal-card" style="max-width: 500px;">
+            <button type="button" class="close-btn" onclick="closeImageCropModal()">&times;</button>
+            <h3 class="modal-title">Profilkép beállítása</h3>
+            
+            <div class="image-crop-container">
+                <div class="crop-preview-area">
+                    <div class="crop-circle-mask">
+                        <img id="cropImage" src="" alt="Kép vágás" style="display:none;">
+                    </div>
+                </div>
+                <div class="crop-instructions">
+                    <p>🖱️ Húzd a képet az elmozgatáshoz</p>
+                    <p>🔄 Görgővel közelíts vagy távolíts</p>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeImageCropModal()">Mégse</button>
+                <button type="button" class="btn-primary" onclick="saveCropedImage()">Mentés</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="simModal">
         <div class="modal-card">
             <button type="button" class="close-btn" onclick="closeSimModal()">&times;</button>
@@ -888,11 +974,8 @@
                         </div>
                     </div>
 
-                    <!-- INTERAKTÍV KÉPSZERKESZTŐ VEZÉRLŐK -->
+                    <!-- Egyszerűsített filter választó -->
                     <div class="image-controls-mini" id="imageEditorBox" style="display: none;">
-                        <button type="button" class="mini-btn" onclick="zoomImage(-0.1)">➖</button>
-                        <button type="button" class="mini-btn" onclick="zoomImage(0.1)">➕</button>
-                        <button type="button" class="mini-btn" onclick="resetImageTransform()">↺</button>
                         <button type="button" class="mini-btn" onclick="rotateImage()">🔄</button>
                         <select id="imgFilterSelect" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-solid); color: var(--text-color); font-size: 10px;" onchange="updateImageTransform()">
                             <option value="none" selected>Normál</option>
@@ -1143,6 +1226,16 @@
         let imageStartOffsetX = 0;
         let imageStartOffsetY = 0;
         let hasDragged = false;
+        
+        // KÉPVÁGÓ MODAL VÁLTOZÓK
+        let cropImageScale = 1;
+        let cropImageOffsetX = 0;
+        let cropImageOffsetY = 0;
+        let isDraggingCropImage = false;
+        let cropDragStartX = 0;
+        let cropDragStartY = 0;
+        let cropImageStartOffsetX = 0;
+        let cropImageStartOffsetY = 0;
 
         let zoomLevel = 1;
         let panX = 0;
@@ -1163,94 +1256,120 @@
         function handleAvatarClick() {
             if (!tempUploadedImage) {
                 triggerFileInput();
+            } else {
+                openImageCropModal();
             }
         }
 
-        // INTERAKTÍV KÉPSZERKESZTŐ FUNKCIÓK
-        function zoomImage(delta) {
-            imageScale = Math.max(0.5, Math.min(3, imageScale + delta));
+        // KÉPVÁGÓ MODAL FUNKCIÓK
+        function openImageCropModal() {
+            const cropModal = document.getElementById('imageCropModal');
+            const cropImage = document.getElementById('cropImage');
+            
+            cropImage.src = tempUploadedImage;
+            cropImage.style.display = 'block';
+            
+            // Reset crop variables
+            cropImageScale = 1;
+            cropImageOffsetX = 0;
+            cropImageOffsetY = 0;
+            
+            cropModal.classList.add('active');
+            updateCropImageTransform();
+            initCropImageDrag();
+        }
+
+        function closeImageCropModal() {
+            const cropModal = document.getElementById('imageCropModal');
+            cropModal.classList.remove('active');
+        }
+
+        function saveCropedImage() {
+            // A crop beállításokat átvisszük a fő változókba
+            imageScale = cropImageScale;
+            imageOffsetX = cropImageOffsetX;
+            imageOffsetY = cropImageOffsetY;
+            
+            // Frissítjük a modális avatar-t
             updateImageTransform();
+            
+            closeImageCropModal();
         }
 
-        function resetImageTransform() {
-            imageScale = 1;
-            imageOffsetX = 0;
-            imageOffsetY = 0;
-            currentRotation = 0;
-            updateImageTransform();
+        function updateCropImageTransform() {
+            const cropImage = document.getElementById('cropImage');
+            cropImage.style.transform = `scale(${cropImageScale}) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
         }
 
-        function initImageDrag() {
-            const cropView = document.getElementById('avatarCropView');
-            if (!cropView) return;
+        function initCropImageDrag() {
+            const cropMask = document.querySelector('.crop-circle-mask');
+            if (!cropMask) return;
 
-            cropView.classList.add('has-image');
-            cropView.addEventListener('mousedown', startImageDrag);
-            cropView.addEventListener('touchstart', startImageDrag, { passive: false });
-            cropView.addEventListener('wheel', handleImageWheel, { passive: false });
+            cropMask.addEventListener('mousedown', startCropImageDrag);
+            cropMask.addEventListener('touchstart', startCropImageDrag, { passive: false });
+            cropMask.addEventListener('wheel', handleCropImageWheel, { passive: false });
         }
 
-        function startImageDrag(e) {
-            if (!tempUploadedImage) return;
+        function startCropImageDrag(e) {
             e.preventDefault();
             
-            hasDragged = false;
-            isDraggingImage = true;
-            const cropView = document.getElementById('avatarCropView');
-            cropView.classList.add('dragging');
+            isDraggingCropImage = true;
+            const cropMask = document.querySelector('.crop-circle-mask');
+            cropMask.classList.add('dragging');
 
             const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
             const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
 
-            dragStartX = clientX;
-            dragStartY = clientY;
-            imageStartOffsetX = imageOffsetX;
-            imageStartOffsetY = imageOffsetY;
+            cropDragStartX = clientX;
+            cropDragStartY = clientY;
+            cropImageStartOffsetX = cropImageOffsetX;
+            cropImageStartOffsetY = cropImageOffsetY;
 
-            document.addEventListener('mousemove', dragImage);
-            document.addEventListener('mouseup', stopImageDrag);
-            document.addEventListener('touchmove', dragImage, { passive: false });
-            document.addEventListener('touchend', stopImageDrag);
+            document.addEventListener('mousemove', dragCropImage);
+            document.addEventListener('mouseup', stopCropImageDrag);
+            document.addEventListener('touchmove', dragCropImage, { passive: false });
+            document.addEventListener('touchend', stopCropImageDrag);
         }
 
-        function dragImage(e) {
-            if (!isDraggingImage) return;
+        function dragCropImage(e) {
+            if (!isDraggingCropImage) return;
             e.preventDefault();
 
             const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
             const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
 
-            const deltaX = clientX - dragStartX;
-            const deltaY = clientY - dragStartY;
+            const deltaX = clientX - cropDragStartX;
+            const deltaY = clientY - cropDragStartY;
 
-            // Ha több mint 5px-t mozgunk, akkor az húzásnak számít
-            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-                hasDragged = true;
-            }
+            cropImageOffsetX = cropImageStartOffsetX + deltaX;
+            cropImageOffsetY = cropImageStartOffsetY + deltaY;
 
-            imageOffsetX = imageStartOffsetX + deltaX;
-            imageOffsetY = imageStartOffsetY + deltaY;
-
-            updateImageTransform();
+            updateCropImageTransform();
         }
 
-        function stopImageDrag() {
-            isDraggingImage = false;
-            const cropView = document.getElementById('avatarCropView');
-            if (cropView) cropView.classList.remove('dragging');
+        function stopCropImageDrag() {
+            isDraggingCropImage = false;
+            const cropMask = document.querySelector('.crop-circle-mask');
+            if (cropMask) cropMask.classList.remove('dragging');
 
-            document.removeEventListener('mousemove', dragImage);
-            document.removeEventListener('mouseup', stopImageDrag);
-            document.removeEventListener('touchmove', dragImage);
-            document.removeEventListener('touchend', stopImageDrag);
+            document.removeEventListener('mousemove', dragCropImage);
+            document.removeEventListener('mouseup', stopCropImageDrag);
+            document.removeEventListener('touchmove', dragCropImage);
+            document.removeEventListener('touchend', stopCropImageDrag);
         }
 
-        function handleImageWheel(e) {
-            if (!tempUploadedImage) return;
+        function handleCropImageWheel(e) {
             e.preventDefault();
 
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            zoomImage(delta);
+            cropImageScale = Math.max(0.5, Math.min(3, cropImageScale + delta));
+            updateCropImageTransform();
+        }
+
+        // Régi képszerkesztő funkciók eltávolítva - most a képvágó modalt használjuk
+        function rotateImage() {
+            currentRotation = (currentRotation + 90) % 360;
+            updateImageTransform();
         }
 
         function toggleAccordion(groupId) {
@@ -2334,6 +2453,7 @@
             imageScale = transform.scale || 1;
             imageOffsetX = transform.offsetX || 0;
             imageOffsetY = transform.offsetY || 0;
+            currentRotation = transform.rotate || 0;
             document.getElementById('imgFilterSelect').value = transform.filter || 'none';
 
             if (tempUploadedImage) {
@@ -2622,7 +2742,6 @@
 
                     document.getElementById('imageEditorBox').style.display = 'flex';
                     updateImageTransform();
-                    initImageDrag();
                 };
                 reader.readAsDataURL(file);
             }
