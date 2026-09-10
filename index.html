@@ -433,7 +433,7 @@
 
         /* ÚJ MODERN CSALÁDFÁK FLOATING BAR */
         .tree-left-sidebar {
-            position: absolute; top: 20px; left: 24px; width: 280px;
+            position: absolute; top: 20px; left: 24px; width: 260px;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
             border-radius: 20px; padding: 12px; box-shadow: 0 12px 32px var(--shadow-color);
             z-index: 1050; display: flex; flex-direction: column; gap: 8px;
@@ -574,7 +574,7 @@
         }
         .sim-node:hover { transform: scale(1.08); z-index: 5; }
         .sim-node.selected { animation: simFloat 3s ease-in-out infinite; z-index: 10 !important; }
-        .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px var(--accent-color), 0 8px 25px var(--active-glow) !important; }
+        .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px #6bcf7f, 0 8px 25px rgba(107, 207, 127, 0.5) !important; }
         .sim-node.drop-target .sim-node-avatar { box-shadow: 0 0 0 4px #6bcf7f !important; transform: scale(1.1); }
 
         .sim-node-avatar {
@@ -1532,7 +1532,7 @@
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'none');
             } else if (shape === 'plumbob') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
-                document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)');
+                document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 85% 50%, 50% 100%, 15% 50%)');
             } else if (shape === 'hexagon') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)');
