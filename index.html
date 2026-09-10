@@ -988,8 +988,8 @@
 
     <script>
         // Supabase konfiguráció
-        const SUPABASE_URL = 'https://mzmwchyepqhqcyydngeo.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_Zea0--loQ_Q44nd13y5yPA_wl8L-pB_';
+        const SUPABASE_URL = 'https://ipvcthmgqbzsiuiilgtc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_zZPHUc8VX9uT6peK4qOiVw_0Dd1TLDu';
 
         let supabaseClient = null;
         try {
@@ -1739,8 +1739,10 @@
                         alert('Sikeres regisztráció, de a bejelentkezés sikertelen: ' + signInError.message);
                         isSignUpMode = false;
                         toggleAuthMode();
+                    } else {
+                        // Sikeres regisztráció és bejelentkezés - profil létrehozása közvetlenül
+                        await createProfileForNewUser(signInData.user);
                     }
-                    // Sikeres regisztráció és bejelentkezés - a handleSession automatikusan lefut
                 }
             } else {
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -1748,6 +1750,26 @@
                     alert('Bejelentkezési hiba: ' + error.message);
                 }
                 // Sikeres bejelentkezés - a handleSession automatikusan lefut
+            }
+        }
+
+        async function createProfileForNewUser(user) {
+            if (!user || !supabaseClient) return;
+
+            try {
+                const defaultName = user.email.split('@')[0];
+                const { error } = await supabaseClient.from('profiles').insert([
+                    { id: user.id, display_name: defaultName, avatar_url: userProfile.avatar, bio: '' }
+                ]);
+
+                if (error) {
+                    console.error("Hiba a profil létrehozásakor:", error);
+                    // Nem blokkoljuk a folyamatot, ha a profil létrehozása hibásan sikerül
+                } else {
+                    console.log("Profil sikeresen létrehozva:", defaultName);
+                }
+            } catch (error) {
+                console.error("Váratlan hiba a profil létrehozásakor:", error);
             }
         }
 
