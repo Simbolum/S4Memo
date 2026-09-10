@@ -922,7 +922,7 @@
 
     <!-- SIM CARD & SZERKESZTŐ MODAL -->
     <!-- KÉPVÁGÓ MODAL -->
-    <div class="modal-overlay" id="imageCropModal">
+    <div class="modal-overlay" id="imageCropModal" style="z-index: 2000;">
         <div class="modal-card" style="max-width: 500px;">
             <button type="button" class="close-btn" onclick="closeImageCropModal()">&times;</button>
             <h3 class="modal-title">Profilkép beállítása</h3>
@@ -940,6 +940,7 @@
             </div>
             
             <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="triggerFileInput()">📁 Új kép tallózása</button>
                 <button type="button" class="btn-secondary" onclick="closeImageCropModal()">Mégse</button>
                 <button type="button" class="btn-primary" onclick="saveCropedImage()">Mentés</button>
             </div>
@@ -1257,6 +1258,7 @@
             if (!tempUploadedImage) {
                 triggerFileInput();
             } else {
+                // Ha van kép, akkor megnyitjuk a képvágó modalt
                 openImageCropModal();
             }
         }
@@ -2742,6 +2744,20 @@
 
                     document.getElementById('imageEditorBox').style.display = 'flex';
                     updateImageTransform();
+                    
+                    // Ha a képvágó modal nyitva van, frissítjük azt is
+                    const cropModal = document.getElementById('imageCropModal');
+                    if (cropModal.classList.contains('active')) {
+                        const cropImage = document.getElementById('cropImage');
+                        cropImage.src = tempUploadedImage;
+                        cropImage.style.display = 'block';
+                        
+                        // Reset crop variables
+                        cropImageScale = 1;
+                        cropImageOffsetX = 0;
+                        cropImageOffsetY = 0;
+                        updateCropImageTransform();
+                    }
                 };
                 reader.readAsDataURL(file);
             }
