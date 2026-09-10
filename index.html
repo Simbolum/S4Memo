@@ -9,26 +9,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #f4ede6;
-            --bg-pattern: radial-gradient(#d5c4b3 1.5px, transparent 1.5px);
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --card-solid: #ffffff;
-            --text-color: #2c221e;
-            --subtext-color: #7a6a60;
-            --border-color: rgba(213, 196, 179, 0.5);
-            --accent-color: #2ed573;
-            --accent-hover: #26af5f;
-            --active-glow: rgba(46, 213, 115, 0.35);
-            --shadow-color: rgba(44, 34, 30, 0.08);
-            --nav-bg: rgba(255, 255, 255, 0.75);
-            --input-bg: #fcf9f6;
+            --bg-color: #2d2416;
+            --bg-pattern: radial-gradient(#4a3a28 1.5px, transparent 1.5px);
+            --card-bg: rgba(45, 36, 22, 0.85);
+            --card-solid: #3d3020;
+            --text-color: #e8d5b7;
+            --subtext-color: #b8a896;
+            --border-color: rgba(180, 150, 120, 0.4);
+            --accent-color: #d4a574;
+            --accent-hover: #e8b584;
+            --active-glow: rgba(212, 165, 116, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --nav-bg: rgba(40, 32, 20, 0.9);
+            --input-bg: #3d3020;
 
-            --btn-pink: #ff5e7e;
-            --btn-pink-hover: #e04867;
-            --btn-green: #2ed573;
-            --btn-green-hover: #24b05d;
-            --line-pink: #ff5e7e;
-            --line-green: #2ed573;
+            --btn-pink: #c88070;
+            --btn-pink-hover: #d89080;
+            --btn-green: #a89068;
+            --btn-green-hover: #b8a078;
+            --line-pink: #c88070;
+            --line-green: #a89068;
 
             --sim-node-clip-path: none;
             --sim-node-radius: 50%;
@@ -40,26 +40,26 @@
         }
 
         [data-theme="dark"] {
-            --bg-color: #121110;
-            --bg-pattern: radial-gradient(#2a2623 1.5px, transparent 1.5px);
-            --card-bg: rgba(30, 26, 24, 0.85);
-            --card-solid: #1e1a18;
-            --text-color: #f5ebe6;
-            --subtext-color: #a39288;
-            --border-color: rgba(60, 50, 45, 0.6);
-            --accent-color: #2ed573;
-            --accent-hover: #3be380;
-            --active-glow: rgba(46, 213, 115, 0.4);
-            --shadow-color: rgba(0, 0, 0, 0.4);
-            --nav-bg: rgba(24, 20, 18, 0.75);
-            --input-bg: #26211e;
+            --bg-color: #1a1210;
+            --bg-pattern: radial-gradient(#2a2018 1.5px, transparent 1.5px);
+            --card-bg: rgba(30, 24, 18, 0.9);
+            --card-solid: #251c16;
+            --text-color: #e8d5b7;
+            --subtext-color: #a89886;
+            --border-color: rgba(140, 120, 100, 0.5);
+            --accent-color: #d4a574;
+            --accent-hover: #e8b584;
+            --active-glow: rgba(212, 165, 116, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.6);
+            --nav-bg: rgba(25, 20, 16, 0.9);
+            --input-bg: #251c16;
 
-            --btn-pink: #ff5e7e;
-            --btn-pink-hover: #ff3b61;
-            --btn-green: #2ed573;
-            --btn-green-hover: #219d52;
-            --line-pink: #ff5e7e;
-            --line-green: #2ed573;
+            --btn-pink: #c88070;
+            --btn-pink-hover: #d89080;
+            --btn-green: #a89068;
+            --btn-green-hover: #b8a078;
+            --line-pink: #c88070;
+            --line-green: #a89068;
         }
 
         #bgBlurOverlay {
@@ -313,7 +313,7 @@
             overflow: hidden;
             position: relative;
             border: 3px solid var(--accent-color);
-            box-shadow: 0 0 20px rgba(46, 213, 115, 0.3);
+            box-shadow: 0 0 20px rgba(201, 160, 120, 0.3);
             cursor: grab;
         }
 
@@ -394,9 +394,9 @@
             100% { transform: translateY(0) rotate(360deg); }
         }
         .plumbob {
-            width: 14px; height: 22px; background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            width: 14px; height: 22px; background: linear-gradient(135deg, #c9a078 0%, #e8c8a8 100%);
             clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); display: inline-block;
-            filter: drop-shadow(0 0 8px rgba(0, 255, 135, 0.8));
+            filter: drop-shadow(0 0 8px rgba(201, 160, 120, 0.8));
             animation: plumbobFloat 5s ease-in-out infinite;
         }
 
@@ -458,7 +458,7 @@
         .tree-delete-btn:hover { opacity: 1; background-color: rgba(217, 83, 79, 0.15); }
 
         .add-tree-btn {
-            background-color: rgba(46, 213, 115, 0.1); color: var(--accent-color); border: 1px dashed var(--accent-color);
+            background-color: rgba(201, 160, 120, 0.1); color: var(--accent-color); border: 1px dashed var(--accent-color);
             padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer; text-align: center;
             width: 100%; margin-top: 4px;
         }
@@ -510,12 +510,12 @@
 
         .add-sim-floating-btn {
             position: absolute; bottom: 24px; right: 24px; z-index: 1050;
-            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
-            color: #1a2a20; border: none; padding: 14px 24px;
+            background: linear-gradient(135deg, #c9a078 0%, #e8c8a8 100%);
+            color: #3a2f20; border: none; padding: 14px 24px;
             border-radius: 20px; font-weight: 800; font-size: 14px; cursor: pointer;
-            box-shadow: 0 8px 25px rgba(0, 255, 135, 0.4); text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+            box-shadow: 0 8px 25px rgba(201, 160, 120, 0.4); text-shadow: 0 1px 0 rgba(255,255,255,0.4);
         }
-        .add-sim-floating-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(0, 255, 135, 0.6); }
+        .add-sim-floating-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(201, 160, 120, 0.6); }
 
         .zoom-controls {
             position: absolute; bottom: 24px; left: 280px; z-index: 1050;
