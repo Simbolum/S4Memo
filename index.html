@@ -346,11 +346,16 @@
             margin: 4px 0;
         }
 
+        #imageCropModal {
+            z-index: 99999 !important;
+        }
+        
         #imageCropModal .modal-card {
-            position: absolute;
+            position: fixed;
             top: 20%;
             left: 50%;
             transform: translate(-50%, 0);
+            z-index: 100000 !important;
         }
 
         /* UI ELEMEK & STÍLUSOS FEJLÉC */
@@ -929,7 +934,7 @@
 
     <!-- SIM CARD & SZERKESZTŐ MODAL -->
     <!-- KÉPVÁGÓ MODAL -->
-    <div class="modal-overlay" id="imageCropModal" style="z-index: 3000;">
+    <div class="modal-overlay" id="imageCropModal" style="z-index: 9999;">
         <div class="modal-card" style="max-width: 500px;">
             <button type="button" class="close-btn" onclick="closeImageCropModal()">&times;</button>
             <h3 class="modal-title">Profilkép beállítása</h3>
