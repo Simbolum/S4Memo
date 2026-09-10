@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S4Memo - Sims 4 Memorable</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Supabase JS kliens -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #f4ede6;
@@ -553,6 +555,42 @@
 </head>
 <body class="bg-dots">
 
+    <!-- BEJELENTKEZÉSI / REGISZTRÁCIÓS NÉZET -->
+    <div id="authContainer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-md" style="display: none;">
+        <div class="bg-white/90 dark:bg-stone-900/90 w-full max-w-md p-8 rounded-[2.5rem] relative overflow-hidden shadow-2xl border border-stone-200/50 dark:border-stone-800 backdrop-blur-16px">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center gap-3 mb-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rotate-45 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/40">
+                        <div class="w-4 h-4 bg-white rotate-45 rounded-xs"></div>
+                    </div>
+                    <span class="text-2xl font-bold" style="font-family: 'Playfair Display', serif;">S4Memo</span>
+                </div>
+                <p id="authSubtitle" class="text-xs text-stone-600 dark:text-stone-400 font-medium mt-1">Jelentkezz be a saját dinasztiád kezeléséhez</p>
+            </div>
+
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1.5 ml-1">Email cím</label>
+                    <input type="email" id="authEmail" required placeholder="pelda@simsmail.com" class="w-full px-4 py-3 bg-white/90 dark:bg-stone-900/80 border border-stone-200 dark:border-stone-700 rounded-2xl text-sm text-stone-800 dark:text-stone-100 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/25 transition shadow-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1.5 ml-1">Jelszó</label>
+                    <input type="password" id="authPassword" required placeholder="••••••••" class="w-full px-4 py-3 bg-white/90 dark:bg-stone-900/80 border border-stone-200 dark:border-stone-700 rounded-2xl text-sm text-stone-800 dark:text-stone-100 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/25 transition shadow-sm">
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold rounded-2xl text-sm shadow-lg shadow-green-500/30 transition-all transform active:scale-95 duration-200">
+                    Bejelentkezés
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-xs text-stone-600 dark:text-stone-400 hover:text-green-600 dark:hover:text-green-400 font-medium transition underline underline-offset-4">
+                    Nincs még fiókod? Regisztrálj most!
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="bgBlurOverlay"></div>
 
     <!-- NAVIGÁCIÓ -->
@@ -954,6 +992,20 @@
     <button class="toggle-btn" id="toggleBtn"><span class="arrow-icon">◀</span></button>
 
     <script>
+        // Supabase konfiguráció
+        const SUPABASE_URL = 'https://ipvcthmgqbzsiuiilgtc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_zZPHUc8VX9uT6peK4qOiVw_0Dd1TLDu';
+
+        let supabaseClient = null;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+            console.error("Supabase hiba:", e);
+        }
+
+        let currentUser = null;
+        let isSignUpMode = false;
+
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggleBtn');
         const themeBtn = document.getElementById('themeBtn');
@@ -1139,6 +1191,15 @@
         }
 
         function saveTreesToStorage() {
+            // Mentés a Supabase-ba
+            if (currentUser && supabaseClient) {
+                const tree = getCurrentTree();
+                if (tree) {
+                    saveFamilyTreeToSupabase(tree);
+                }
+            }
+
+            // Mentés a localStorage-ba (biztonsági mentés)
             try {
                 localStorage.setItem('s4memo_family_trees', JSON.stringify(familyTrees));
             } catch (e) {
@@ -1147,6 +1208,13 @@
         }
 
         function loadTreesFromStorage() {
+            // Ha van bejelentkezett felhasználó, akkor a Supabase-ból töltünk
+            if (currentUser && supabaseClient) {
+                fetchFamilyTreesFromSupabase();
+                return familyTrees;
+            }
+
+            // Egyébként a localStorage-ból töltünk
             try {
                 const saved = localStorage.getItem('s4memo_family_trees');
                 if (saved) return JSON.parse(saved);
@@ -1631,6 +1699,142 @@
                 addSimBtn.style.display = 'block';
             } else {
                 addSimBtn.style.display = 'none';
+            }
+        }
+
+        // SUPABASE HITELESÍTÉS FÜGGVÉNYEK
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            const subtitle = document.getElementById('authSubtitle');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const toggleBtn = document.getElementById('authToggleBtn');
+
+            if (isSignUpMode) {
+                subtitle.textContent = "Hozz létre fiókot a családfád online mentéséhez";
+                submitBtn.textContent = "Regisztráció";
+                toggleBtn.textContent = "Már van fiókod? Jelentkezz be!";
+            } else {
+                subtitle.textContent = "Jelentkezz be a saját dinasztiád kezeléséhez";
+                submitBtn.textContent = "Bejelentkezés";
+                toggleBtn.textContent = "Nincs még fiókod? Regisztrálj most!";
+            }
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            if (isSignUpMode) {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) {
+                    alert('Regisztrációs hiba: ' + error.message);
+                } else {
+                    alert('Sikeres regisztráció! Kérlek ellenőrizd az emailed a megerősítéshez, vagy jelentkezz be.');
+                    isSignUpMode = false;
+                    toggleAuthMode();
+                }
+            } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert('Bejelentkezési hiba: ' + error.message);
+                }
+            }
+        }
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+        }
+
+        async function handleSession(session) {
+            currentUser = session?.user || null;
+            if (currentUser) {
+                document.getElementById('authContainer').style.display = 'none';
+                await loadOrCreateUserProfile();
+                await fetchFamilyTreesFromSupabase();
+            } else {
+                document.getElementById('authContainer').style.display = 'flex';
+                familyTrees = [];
+                currentTreeId = null;
+                renderTreeTabs();
+                loadCurrentTreeCanvas();
+            }
+        }
+
+        async function loadOrCreateUserProfile() {
+            if (!currentUser || !supabaseClient) return;
+
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (data) {
+                userProfile.name = data.display_name || currentUser.email.split('@')[0];
+                userProfile.avatar = data.avatar_url || userProfile.avatar;
+                userProfile.bio = data.bio || '';
+            } else {
+                const defaultName = currentUser.email.split('@')[0];
+                await supabaseClient.from('profiles').insert([
+                    { id: currentUser.id, display_name: defaultName, avatar_url: userProfile.avatar, bio: '' }
+                ]);
+                userProfile.name = defaultName;
+            }
+        }
+
+        async function fetchFamilyTreesFromSupabase() {
+            if (!currentUser || !supabaseClient) return;
+
+            const { data, error } = await supabaseClient
+                .from('family_trees')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Hiba a családfák betöltésekor:', error);
+                return;
+            }
+
+            if (data && data.length > 0) {
+                familyTrees = data.map(tree => ({
+                    id: tree.id,
+                    name: tree.name,
+                    bgConfig: tree.background_config || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
+                    sims: tree.sims || [],
+                    journal: tree.journal || []
+                }));
+
+                if (familyTrees.length > 0) {
+                    currentTreeId = familyTrees[0].id;
+                }
+            } else {
+                familyTrees = [];
+                currentTreeId = null;
+            }
+
+            renderTreeTabs();
+            loadCurrentTreeCanvas();
+        }
+
+        async function saveFamilyTreeToSupabase(tree) {
+            if (!currentUser || !supabaseClient) return;
+
+            const { error } = await supabaseClient
+                .from('family_trees')
+                .upsert({
+                    id: tree.id,
+                    user_id: currentUser.id,
+                    name: tree.name,
+                    background_config: tree.bgConfig,
+                    sims: tree.sims,
+                    journal: tree.journal,
+                    updated_at: new Date()
+                });
+
+            if (error) {
+                console.error("Hiba a családfa mentésekor:", error);
             }
         }
 
@@ -2174,7 +2378,36 @@
             closeSimModal();
         }
 
-        initTheme();
+        // SUPABASE INITIALIZATION
+        window.addEventListener('DOMContentLoaded', async () => {
+            initTheme();
+
+            if (!supabaseClient) {
+                console.warn("Supabase kliens nem elérhető");
+                // Ha nincs Supabase, akkor a localStorage-ból töltünk
+                familyTrees = loadTreesFromStorage();
+                if (familyTrees.length > 0) {
+                    currentTreeId = familyTrees[0].id;
+                }
+                return;
+            }
+
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                await handleSession(session);
+
+                supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    await handleSession(session);
+                });
+            } catch (error) {
+                console.warn("Supabase hiba:", error);
+                // Hiba esetén localStorage fallback
+                familyTrees = loadTreesFromStorage();
+                if (familyTrees.length > 0) {
+                    currentTreeId = familyTrees[0].id;
+                }
+            }
+        });
     </script>
 </body>
 </html>
