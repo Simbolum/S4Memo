@@ -9,26 +9,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #f5e6d3;
-            --bg-pattern: radial-gradient(#e8d4c0 1.5px, transparent 1.5px);
-            --card-bg: rgba(255, 250, 245, 0.85);
-            --card-solid: #fffaf8;
-            --text-color: #3d2a1f;
-            --subtext-color: #7a6a5a;
-            --border-color: rgba(180, 160, 140, 0.5);
-            --accent-color: #d4a574;
-            --accent-hover: #e8b584;
-            --active-glow: rgba(212, 165, 116, 0.3);
-            --shadow-color: rgba(61, 42, 31, 0.12);
-            --nav-bg: rgba(255, 250, 245, 0.9);
-            --input-bg: #fffaf8;
+            --bg-color: #e8d4c0;
+            --bg-pattern: radial-gradient(#d4c4a8 1.5px, transparent 1.5px);
+            --card-bg: rgba(245, 235, 220, 0.85);
+            --card-solid: #f0e8dc;
+            --text-color: #2d1f16;
+            --subtext-color: #6a5a4a;
+            --border-color: rgba(160, 140, 120, 0.5);
+            --accent-color: #c99564;
+            --accent-hover: #d9a574;
+            --active-glow: rgba(201, 149, 100, 0.3);
+            --shadow-color: rgba(45, 31, 22, 0.15);
+            --nav-bg: rgba(245, 235, 220, 0.9);
+            --input-bg: #f0e8dc;
 
-            --btn-pink: #e8a090;
-            --btn-pink-hover: #f8b0a0;
-            --btn-green: #6bcf7f;
-            --btn-green-hover: #7cdf91;
-            --line-pink: #e8a090;
-            --line-green: #6bcf7f;
+            --btn-pink: #d89080;
+            --btn-pink-hover: #e8a090;
+            --btn-green: #5abf6f;
+            --btn-green-hover: #6acf7f;
+            --line-pink: #d89080;
+            --line-green: #5abf6f;
 
             --sim-node-clip-path: none;
             --sim-node-radius: 50%;
@@ -158,8 +158,8 @@
         .style-panel-drawer {
             position: fixed; bottom: 24px; left: 24px; z-index: 1060;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
-            border-radius: 20px; box-shadow: 0 12px 32px var(--shadow-color);
-            width: 240px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 16px; box-shadow: 0 12px 32px var(--shadow-color);
+            width: 200px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
 
@@ -433,10 +433,10 @@
 
         /* ÚJ MODERN CSALÁDFÁK FLOATING BAR */
         .tree-left-sidebar {
-            position: absolute; top: 20px; left: 24px; width: 310px;
+            position: absolute; top: 20px; left: 24px; width: 280px;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
-            border-radius: 24px; padding: 16px; box-shadow: 0 12px 32px var(--shadow-color);
-            z-index: 1050; display: flex; flex-direction: column; gap: 10px;
+            border-radius: 20px; padding: 12px; box-shadow: 0 12px 32px var(--shadow-color);
+            z-index: 1050; display: flex; flex-direction: column; gap: 8px;
             max-height: calc(100vh - 120px); overflow-y: auto;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
@@ -538,7 +538,7 @@
 
         .zoom-controls {
             position: absolute; bottom: 24px; left: 280px; z-index: 1050;
-            display: flex; gap: 4px; background-color: var(--nav-bg);
+            display: none; gap: 4px; background-color: var(--nav-bg);
             padding: 4px; border-radius: 14px; border: 1px solid var(--border-color);
             box-shadow: 0 8px 24px var(--shadow-color); align-items: center;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
