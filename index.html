@@ -658,8 +658,8 @@
         </main>
     </div>
 
-    <!-- TESTRESZABÁSI PANEL -->
-    <div class="style-panel-drawer" id="styleDrawer">
+    <!-- TESTRESZABÁSI PANEL (CSALÁDFÁK NÉZETRE) -->
+    <div class="style-panel-drawer" id="styleDrawer" style="display: none;">
         <div class="style-panel-header" onclick="toggleStyleDrawer()">
             <span>🎨 Testreszabás</span>
             <span id="drawerArrow">▲</span>
@@ -1188,6 +1188,14 @@
                 document.getElementById('publicView').classList.add('active');
                 document.getElementById('navPublic').classList.add('active');
                 document.getElementById('menuPublic').classList.add('active');
+            }
+
+            // Testreszabás panel csak Családfák nézetben jelenjen meg
+            const styleDrawer = document.getElementById('styleDrawer');
+            if (viewName === 'tree') {
+                styleDrawer.style.display = 'block';
+            } else {
+                styleDrawer.style.display = 'none';
             }
 
             applyPageBackground();
