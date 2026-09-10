@@ -346,6 +346,13 @@
             margin: 4px 0;
         }
 
+        #imageCropModal .modal-card {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+
         /* UI ELEMEK & STÍLUSOS FEJLÉC */
         .top-nav-container { padding: 16px 24px 0 24px; position: relative; z-index: 1100; }
         .top-nav {
@@ -922,25 +929,25 @@
 
     <!-- SIM CARD & SZERKESZTŐ MODAL -->
     <!-- KÉPVÁGÓ MODAL -->
-    <div class="modal-overlay" id="imageCropModal" style="z-index: 2000;">
+    <div class="modal-overlay" id="imageCropModal" style="z-index: 3000;">
         <div class="modal-card" style="max-width: 500px;">
             <button type="button" class="close-btn" onclick="closeImageCropModal()">&times;</button>
             <h3 class="modal-title">Profilkép beállítása</h3>
             
             <div class="image-crop-container">
                 <div class="crop-preview-area">
-                    <div class="crop-circle-mask">
+                    <div class="crop-circle-mask" id="cropCircleMask">
                         <img id="cropImage" src="" alt="Kép vágás" style="display:none;">
                     </div>
                 </div>
                 <div class="crop-instructions">
                     <p>🖱️ Húzd a képet az elmozgatáshoz</p>
                     <p>🔄 Görgővel közelíts vagy távolíts</p>
+                    <p>📁 Kattints a képre új tallózáshoz</p>
                 </div>
             </div>
             
             <div class="modal-actions">
-                <button type="button" class="btn-secondary" onclick="triggerFileInput()">📁 Új kép tallózása</button>
                 <button type="button" class="btn-secondary" onclick="closeImageCropModal()">Mégse</button>
                 <button type="button" class="btn-primary" onclick="saveCropedImage()">Mentés</button>
             </div>
@@ -1237,6 +1244,7 @@
         let cropDragStartY = 0;
         let cropImageStartOffsetX = 0;
         let cropImageStartOffsetY = 0;
+        let hasDraggedCrop = false;
 
         let zoomLevel = 1;
         let panX = 0;
@@ -1315,6 +1323,7 @@
         function startCropImageDrag(e) {
             e.preventDefault();
             
+            hasDraggedCrop = false;
             isDraggingCropImage = true;
             const cropMask = document.querySelector('.crop-circle-mask');
             cropMask.classList.add('dragging');
@@ -1343,6 +1352,11 @@
             const deltaX = clientX - cropDragStartX;
             const deltaY = clientY - cropDragStartY;
 
+            // Ha több mint 5px-t mozgunk, akkor az húzásnak számít
+            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                hasDraggedCrop = true;
+            }
+
             cropImageOffsetX = cropImageStartOffsetX + deltaX;
             cropImageOffsetY = cropImageStartOffsetY + deltaY;
 
@@ -1358,6 +1372,11 @@
             document.removeEventListener('mouseup', stopCropImageDrag);
             document.removeEventListener('touchmove', dragCropImage);
             document.removeEventListener('touchend', stopCropImageDrag);
+            
+            // Ha nem húztunk (kattintás volt), akkor nyissuk meg a fájlválasztót
+            if (!hasDraggedCrop) {
+                triggerFileInput();
+            }
         }
 
         function handleCropImageWheel(e) {
@@ -2085,7 +2104,7 @@
             await supabaseClient.auth.signOut();
         }
 
-        async function handleSession(session) {
+        async function handleSession(session, event = null) {
             currentUser = session?.user || null;
             if (currentUser) {
                 // Bejelentkezett felhasználó
@@ -2095,8 +2114,11 @@
                 await loadOrCreateUserProfile();
                 updateProfileButton();
                 await fetchFamilyTreesFromSupabase();
-                // Bejelentkezés után alapértelmezetten a Főoldalra megyünk
-                switchView('home');
+                
+                // Csak akkor megyünk a főoldalra, ha valóban bejelentkezés történt
+                if (event === 'SIGNED_IN' || !currentView) {
+                    switchView('home');
+                }
             } else {
                 // Nincs bejelentkezve - megjelenítjük a hitelesítési felületet
                 document.getElementById('authContainer').classList.add('active');
@@ -2829,10 +2851,10 @@
 
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
-                await handleSession(session);
+                await handleSession(session, 'INITIAL');
 
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    await handleSession(session);
+                    await handleSession(session, event);
                 });
             } catch (error) {
                 console.warn("Supabase hiba:", error);
