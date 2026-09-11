@@ -696,8 +696,6 @@
 
         .profile-header-info { text-align: center; margin-bottom: 12px; }
         .profile-header-info h2 { margin: 4px 0 2px 0; font-size: 18px; font-weight: 800; }
-        .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
-        .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
 
         .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--subtext-color); }
         .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
@@ -1037,21 +1035,10 @@
                 <input type="file" id="editImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
 
                 <div class="profile-header-info">
-                    <h2 id="modalName">Sim Neve</h2>
-                    <span id="modalStatus" class="status-alive">Életben van</span>
+                    <h2 id="modalName" contenteditable="true" style="cursor: text; outline: none; border-bottom: 2px solid transparent; transition: border-color 0.2s;">Sim Neve</h2>
                 </div>
 
                 <form id="simForm" onsubmit="saveSimDetails(event)">
-                    <div class="form-row">
-                        <div class="form-group" style="flex:1;">
-                            <label>Vezetéknév</label>
-                            <input type="text" id="editLastName" required>
-                        </div>
-                        <div class="form-group" style="flex:1;">
-                            <label>Keresztnév</label>
-                            <input type="text" id="editFirstName" required>
-                        </div>
-                    </div>
 
                     <div class="form-row">
                         <div class="form-group" style="flex:1;">
@@ -2500,16 +2487,28 @@
             tempUploadedImage = sim.image || '';
             currentRotation = sim.imageTransform?.rotate || 0;
 
-            document.getElementById('modalName').innerText = `${sim.firstName} ${sim.lastName}`;
-            const statusEl = document.getElementById('modalStatus');
-            statusEl.innerText = sim.isDead ? 'Elhunyt' : 'Életben van';
-            statusEl.className = sim.isDead ? 'status-dead' : 'status-alive';
+            const modalName = document.getElementById('modalName');
+            modalName.innerText = `${sim.firstName} ${sim.lastName}`;
+            modalName.dataset.originalName = modalName.innerText;
+            
+            modalName.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--accent-color)';
+            });
+            
+            modalName.addEventListener('blur', function() {
+                this.style.borderColor = 'transparent';
+            });
+            
+            modalName.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur();
+                }
+            });
 
             const modalAvatar = document.getElementById('modalAvatar');
             const placeholder = document.getElementById('modalAvatarPlaceholder');
 
-            document.getElementById('editFirstName').value = sim.firstName || '';
-            document.getElementById('editLastName').value = sim.lastName || '';
             document.getElementById('editAge').value = sim.age || 'Fiatal felnőtt';
             document.getElementById('editColor').value = sim.color || '#2ed573';
             document.getElementById('editTraits').value = sim.traits || '';
@@ -2868,8 +2867,13 @@
             const tree = getCurrentTree(); if (!tree) return;
             const sim = tree.sims.find(s => s.id === editingSimId); if (!sim) return;
 
-            sim.firstName = document.getElementById('editFirstName').value;
-            sim.lastName = document.getElementById('editLastName').value;
+            const modalName = document.getElementById('modalName');
+            const nameParts = modalName.innerText.trim().split(' ');
+            if (nameParts.length >= 1) {
+                sim.firstName = nameParts[0];
+                sim.lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+            }
+
             sim.age = document.getElementById('editAge').value;
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
