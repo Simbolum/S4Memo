@@ -1050,20 +1050,6 @@
         }
 
 
-
-        /* GENERÁCIÓK */
-.sim-generation-badge strong {
-            color: var(--text-color);
-            font-size: 10px;
-        }
-.tree-generation-indicator strong {
-            color: var(--text-color);
-            font-size: 11px;
-        }
-        @media (max-width: 600px) {
-.tree-generation-indicator strong { font-size: 10px; }
-        }
-
 </style>
 </head>
 <body class="bg-dots">
@@ -1425,14 +1411,6 @@
                                 <option value="Ló">Ló</option>
                                 <option value="Más állat">Más állat</option>
                             </select>
-                        <div class="form-group">
-                            <label>Nem</label>
-                            <select id="editGender">
-                                <option value="Férfi">Férfi</option>
-                                <option value="Nő">Nő</option>
-                                <option value="Egyéb">Egyéb</option>
-                            </select>
-                        </div>
                         </div>
                         <div class="form-group" style="flex:1;">
                             <label>Keretszín</label>
@@ -2580,7 +2558,6 @@
         function normalizeSimExtraFields(sim) {
             if (!sim.occult) sim.occult = 'Nincs';
             if (!sim.title) sim.title = 'Nincs';
-            if (!sim.gender) sim.gender = 'Egyéb';
             if (!sim.species) sim.species = sim.faj || 'Ember';
 
             // Régi családfa-adatokból is létrehozzuk a több szülőt támogató tömböt.
@@ -2858,9 +2835,8 @@
                 console.error("Váratlan hiba a családfa mentésekor:", error);
             }
         }
-indicator.innerHTML = `🌳 <span>Család generációi:</span> <strong>${count}.</strong>`;
-        }
-function loadCurrentTreeCanvas() {
+
+        function loadCurrentTreeCanvas() {
             const nodes = treeWorld.querySelectorAll('.sim-node');
             nodes.forEach(n => n.remove());
             const tree = getCurrentTree();
@@ -2895,7 +2871,7 @@ function loadCurrentTreeCanvas() {
                 id: 'sim_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 firstName: firstName, lastName: lastName, age: 'Fiatal felnőtt',
                 traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y,
-                species: 'Ember', gender: 'Egyéb', parentId: parentId, parentIds: parentId ? [parentId] : [], partnerId: partnerId,
+                species: 'Ember', parentId: parentId, parentIds: parentId ? [parentId] : [], partnerId: partnerId,
                 relationType: relationType, animalIds: [], locked: false, isDead: false, gallery: []
             };
 
@@ -3638,7 +3614,6 @@ function loadCurrentTreeCanvas() {
             document.getElementById('editOccult').value = sim.occult || 'Nincs';
             document.getElementById('editTitle').value = sim.title || 'Nincs';
             document.getElementById('editSpecies').value = sim.species || 'Ember';
-            document.getElementById('editGender').value = sim.gender || 'Egyéb';
             document.getElementById('editColor').value = sim.color || '#2ed573';
 
             tempParentIds = [...sim.parentIds];
@@ -4188,7 +4163,6 @@ function loadCurrentTreeCanvas() {
             sim.occult = document.getElementById('editOccult').value;
             sim.title = document.getElementById('editTitle').value;
             sim.species = document.getElementById('editSpecies').value;
-            sim.gender = document.getElementById('editGender').value;
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
 
