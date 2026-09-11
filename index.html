@@ -2373,35 +2373,6 @@
 
             console.error("Nem sikerült a családfa mentése a Supabase-ba (túl sok próbálkozás)");
         }
-                    
-                    // Ha schema cache hiba, próbáljuk meg újra
-                    if (error.message && error.message.includes('journal')) {
-                        console.log("Schema cache hiba - kényszerített újrapróbálkozás...");
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        
-                        const retryResult = await supabaseClient
-                            .from('family_trees')
-                            .upsert({
-                                id: tree.id,
-                                user_id: currentUser.id,
-                                name: tree.name,
-                                background_config: tree.bgConfig,
-                                sims: tree.sims,
-                                journal: tree.journal || [],
-                                updated_at: new Date()
-                            }, {
-                                onConflict: 'id'
-                            });
-                            
-                        if (retryResult.error) {
-                            alert("Hiba a családfa mentésekor: " + retryResult.error.message);
-                        } else {
-                            console.log("Családfa sikeresen mentve (újrapróbálkozás):", tree.name);
-                        }
-                    } else {
-                        alert("Hiba a családfa mentésekor: " + error.message);
-                    }
-                } else {
                     console.log("Családfa sikeresen mentve:", tree.name);
                 }
             } catch (error) {
