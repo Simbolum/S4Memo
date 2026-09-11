@@ -300,6 +300,8 @@
         }
 
         .image-controls-mini {
+            display: none !important;
+            flex: 0 0 auto;
             display: flex;
             gap: 8px;
             align-items: center;
@@ -701,8 +703,8 @@
         /* INTEGRÁLT KÉPSZERKESZTŐ MODUL */
         .avatar-editor-container {
             display: flex; flex-direction: column; align-items: center; gap: 12px;
-            background-color: transparent; padding: 16px; border-radius: 20px;
-            border: 1px solid var(--border-color); margin-bottom: 15px;
+            background-color: transparent; padding: 0; border-radius: 20px;
+            border: none; margin-bottom: 10px;
         }
         .avatar-crop-view {
             width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-color);
@@ -1442,6 +1444,22 @@
         </div>
     </div>
 
+
+    <!-- KAPCSOLAT TÖRLÉSE VÁLASZTÓ -->
+    <div class="modal-overlay" id="deleteConnectionPickerModal">
+        <div class="modal-card" style="max-width: 430px;">
+            <h2>Kapcsolat törlése</h2>
+            <p id="deleteConnectionPickerHint" style="font-size:12px; color:var(--subtext-color); margin-top:-4px;">
+                Válaszd ki, melyik kapcsolatot szeretnéd törölni.
+            </p>
+            <div id="deleteConnectionPickerList" style="display:flex; flex-direction:column; gap:7px; max-height:330px; overflow-y:auto; margin-top:12px;"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeDeleteConnectionPicker()">Mégse</button>
+                <button type="button" class="btn-danger" onclick="confirmDeleteSelectedConnection()">Kapcsolat törlése</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SZÜLŐ / ÁLLAT VÁLASZTÓ MODAL -->
     <div class="modal-overlay" id="familyMemberPickerModal">
         <div class="modal-card" style="max-width: 430px;">
@@ -1537,6 +1555,9 @@
         let tempAnimalIds = [];
         let familyPickerMode = null;
         let familyPickerSelectedIds = [];
+        let deleteConnectionSimId = null;
+        let deleteConnectionTargetId = null;
+
 
         let familyTrees = loadTreesFromStorage();
         let currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
@@ -3461,7 +3482,7 @@
                 modalAvatar.src = tempUploadedImage;
                 modalAvatar.style.display = 'block';
                 placeholder.style.display = 'none';
-                document.getElementById('imageEditorBox').style.display = 'flex';
+                document.getElementById('imageEditorBox').style.display = 'none';
                 updateImageTransform();
             } else {
                 modalAvatar.style.display = 'none';
@@ -3536,6 +3557,129 @@
             }
         });
 
+
+        function getSimConnections(simId) {
+            const tree = getCurrentTree();
+            if (!tree) return [];
+
+            const sim = tree.sims.find(s => s.id === simId);
+            if (!sim) return [];
+
+            const connections = [];
+            const seen = new Set();
+
+            const addConnection = (target, type) => {
+                if (!target || target.id === simId || seen.has(target.id)) return;
+                seen.add(target.id);
+                connections.push({ targetId: target.id, type });
+            };
+
+            // Partnerkapcsolat
+            if (sim.partnerId) {
+                addConnection(tree.sims.find(s => s.id === sim.partnerId), sim.relationType || 'Partner');
+            }
+
+            // Szülők
+            const parentIds = Array.isArray(sim.parentIds)
+                ? sim.parentIds
+                : (sim.parentId ? [sim.parentId] : []);
+
+            parentIds.forEach(parentId => {
+                addConnection(tree.sims.find(s => s.id === parentId), 'Szülő');
+            });
+
+            // Gyerekek: azokat keressük, akiknek ez a Sim a szülője.
+            tree.sims.forEach(child => {
+                const childParentIds = Array.isArray(child.parentIds)
+                    ? child.parentIds
+                    : (child.parentId ? [child.parentId] : []);
+
+                if (childParentIds.includes(simId)) {
+                    addConnection(child, 'Gyerek');
+                }
+            });
+
+            // Állat-kapcsolatok
+            tree.sims.forEach(other => {
+                const animalIds = Array.isArray(sim.animalIds) ? sim.animalIds : [];
+                const otherAnimalIds = Array.isArray(other.animalIds) ? other.animalIds : [];
+
+                if (animalIds.includes(other.id) || otherAnimalIds.includes(simId)) {
+                    addConnection(other, 'Állat');
+                }
+            });
+
+            return connections;
+        }
+
+        function openDeleteConnectionPicker(simId) {
+            const tree = getCurrentTree();
+            if (!tree) return;
+
+            const connections = getSimConnections(simId);
+            deleteConnectionSimId = simId;
+            deleteConnectionTargetId = null;
+
+            const list = document.getElementById('deleteConnectionPickerList');
+            list.innerHTML = '';
+
+            if (!connections.length) {
+                list.innerHTML = `
+                    <div style="padding:18px;text-align:center;color:var(--subtext-color);font-size:12px;">
+                        Ennek a Simnek nincs törölhető kapcsolata.
+                    </div>`;
+            } else {
+                connections.forEach(connection => {
+                    const target = tree.sims.find(s => s.id === connection.targetId);
+                    if (!target) return;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'family-picker-item';
+                    btn.style.cssText += 'width:100%; background:transparent; color:var(--text-color); text-align:left;';
+
+                    btn.innerHTML = `
+                        ${target.image ? `<img src="${target.image}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">` : ''}
+                        <div style="flex:1;">
+                            <strong>${target.firstName || ''} ${target.lastName || ''}</strong>
+                            <div style="font-size:10px;color:var(--subtext-color);">${connection.type}</div>
+                        </div>
+                        <span style="font-size:16px;">›</span>
+                    `;
+
+                    btn.onclick = () => {
+                        document.querySelectorAll('#deleteConnectionPickerList .family-picker-item').forEach(el => {
+                            el.style.borderColor = 'var(--border-color)';
+                            el.style.background = 'transparent';
+                        });
+                        btn.style.borderColor = 'var(--accent-color)';
+                        btn.style.background = 'rgba(255,255,255,.06)';
+                        deleteConnectionTargetId = connection.targetId;
+                    };
+
+                    list.appendChild(btn);
+                });
+            }
+
+            document.getElementById('deleteConnectionPickerModal').classList.add('active');
+        }
+
+        function closeDeleteConnectionPicker() {
+            document.getElementById('deleteConnectionPickerModal').classList.remove('active');
+            deleteConnectionSimId = null;
+            deleteConnectionTargetId = null;
+        }
+
+        function confirmDeleteSelectedConnection() {
+            if (!deleteConnectionSimId || !deleteConnectionTargetId) {
+                alert('Válaszd ki, melyik kapcsolatot szeretnéd törölni.');
+                return;
+            }
+
+            deleteSimConnection(deleteConnectionSimId, deleteConnectionTargetId);
+            closeDeleteConnectionPicker();
+        }
+
         function contextAction(action) {
             if (!contextSimId) return;
             const tree = getCurrentTree(); if (!tree) return;
@@ -3543,7 +3687,7 @@
 
             if (action === 'edit') openSimModal(sim.id);
             else if (action === 'connect') openConnectionPicker(sim.id);
-            else if (action === 'disconnect') deleteSimConnection(sim.id);
+            else if (action === 'disconnect') openDeleteConnectionPicker(sim.id);
             else if (action === 'lock') { 
                 sim.locked = !sim.locked; 
                 saveTreesToStorage();
@@ -3553,23 +3697,58 @@
             closeContextMenu();
         }
 
-        function deleteSimConnection(simId) {
-            const tree = getCurrentTree(); if (!tree) return;
-            
-            tree.sims.forEach(s => {
-                if (s.id === simId) {
-                    s.partnerId = null;
-                    s.parentId = null;
-                    s.relationType = null;
+        function deleteSimConnection(simId, targetId = null) {
+            const tree = getCurrentTree();
+            if (!tree) return;
+
+            // Régi hívásoknál továbbra is működhet a teljes kapcsolat-törlés,
+            // de a jobb klikkes menü most mindig célzott targetId-t ad át.
+            if (!targetId) {
+                const connections = getSimConnections(simId);
+                if (connections.length === 1) {
+                    targetId = connections[0].targetId;
+                } else {
+                    openDeleteConnectionPicker(simId);
+                    return;
                 }
-                if (s.partnerId === simId) {
-                    s.partnerId = null;
-                    s.relationType = null;
-                }
-                if (s.parentId === simId) {
-                    s.parentId = null;
-                }
-            });
+            }
+
+            const sim = tree.sims.find(s => s.id === simId);
+            const target = tree.sims.find(s => s.id === targetId);
+            if (!sim || !target) return;
+
+            // Partnerkapcsolat törlése.
+            if (sim.partnerId === targetId) {
+                sim.partnerId = null;
+                sim.relationType = null;
+            }
+            if (target.partnerId === simId) {
+                target.partnerId = null;
+                target.relationType = null;
+            }
+
+            // Szülő/gyerek kapcsolat törlése.
+            if (Array.isArray(sim.parentIds)) {
+                sim.parentIds = sim.parentIds.filter(id => id !== targetId);
+                sim.parentId = sim.parentIds[0] || null;
+            } else if (sim.parentId === targetId) {
+                sim.parentId = null;
+            }
+
+            if (Array.isArray(target.parentIds)) {
+                target.parentIds = target.parentIds.filter(id => id !== simId);
+                target.parentId = target.parentIds[0] || null;
+            } else if (target.parentId === simId) {
+                target.parentId = null;
+            }
+
+            // Állat-kapcsolat törlése.
+            if (Array.isArray(sim.animalIds)) {
+                sim.animalIds = sim.animalIds.filter(id => id !== targetId);
+            }
+            if (Array.isArray(target.animalIds)) {
+                target.animalIds = target.animalIds.filter(id => id !== simId);
+            }
 
             saveTreesToStorage();
             loadCurrentTreeCanvas();
@@ -3757,7 +3936,7 @@
 
                     document.getElementById('imgFilterSelect').value = 'none';
 
-                    document.getElementById('imageEditorBox').style.display = 'flex';
+                    document.getElementById('imageEditorBox').style.display = 'none';
                     updateImageTransform();
                     
                     // Ha a képvágó modal nyitva van, frissítjük azt is
