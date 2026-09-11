@@ -711,6 +711,8 @@
         .profile-header-info h2 { margin: 4px 0 2px 0; font-size: 18px; font-weight: 800; }
         .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
         .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
+        
+        .avatar-dead { filter: grayscale(80%) brightness(70%); opacity: 0.7; }
 
         .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--subtext-color); }
         .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
@@ -1078,7 +1080,13 @@
 
                 <div class="profile-header-info">
                     <h2 id="modalName">Sim Neve</h2>
-                    <span id="modalStatus" class="status-alive">Életben van</span>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label>Életstátusz</label>
+                        <select id="editStatus" onchange="updateModalStatus()">
+                            <option value="alive">Élő</option>
+                            <option value="dead">Halál</option>
+                        </select>
+                    </div>
                 </div>
 
                 <form id="simForm" onsubmit="saveSimDetails(event)">
@@ -2519,6 +2527,11 @@
                     imgEl.style.transform = `translate(${offsetX * sizeRatio}px, ${offsetY * sizeRatio}px) rotate(${rotate}deg) scale(${scale})`;
                     imgEl.style.filter = filter || 'none';
                 }
+                
+                // Ha a Sim halott, akkor szürkítjük a képet
+                if (sim.isDead) {
+                    imgEl.classList.add('avatar-dead');
+                }
 
                 avatar.appendChild(imgEl);
             } else {
@@ -2597,9 +2610,7 @@
             currentRotation = sim.imageTransform?.rotate || 0;
 
             document.getElementById('modalName').innerText = `${sim.firstName} ${sim.lastName}`;
-            const statusEl = document.getElementById('modalStatus');
-            statusEl.innerText = sim.isDead ? 'Elhunyt' : 'Életben van';
-            statusEl.className = sim.isDead ? 'status-dead' : 'status-alive';
+            document.getElementById('editStatus').value = sim.isDead ? 'dead' : 'alive';
 
             const modalAvatar = document.getElementById('modalAvatar');
             const placeholder = document.getElementById('modalAvatarPlaceholder');
@@ -2631,6 +2642,9 @@
                 galleryGrid.innerHTML = '<span style="font-size:12px; color:var(--subtext-color);">Nincsenek feltöltött avatárok.</span>';
             }
             document.getElementById('avatarBadgeCount').innerText = avatarCount;
+            
+            // Frissítjük a avatar megjelenését a státusz alapján
+            updateModalStatus();
 
             const transform = sim.imageTransform || { scale: 1, rotate: 0, offsetX: 0, offsetY: 0, filter: 'none' };
             // A mentett értékek a crop modal (200px) méretéhez viszonyulnak
@@ -2966,6 +2980,20 @@
                 imgEl.style.filter = filter;
             }
         }
+        
+        function updateModalStatus() {
+            const status = document.getElementById('editStatus').value;
+            const modalAvatar = document.getElementById('modalAvatar');
+            const placeholder = document.getElementById('modalAvatarPlaceholder');
+            
+            if (status === 'dead') {
+                modalAvatar.classList.add('avatar-dead');
+                placeholder.classList.add('avatar-dead');
+            } else {
+                modalAvatar.classList.remove('avatar-dead');
+                placeholder.classList.remove('avatar-dead');
+            }
+        }
 
         function closeSimModal() { simModal.classList.remove('active'); editingSimId = null; }
 
@@ -2980,6 +3008,7 @@
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
             sim.image = tempUploadedImage;
+            sim.isDead = document.getElementById('editStatus').value === 'dead';
 
             if (tempUploadedImage) {
                 // A szerkesztő modal (100px) értékeit visszaalakítjuk a crop modal (200px) referencia értékeire
