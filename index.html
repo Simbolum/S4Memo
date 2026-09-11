@@ -1398,21 +1398,17 @@
             cropImage.src = tempUploadedImage;
             cropImage.style.display = 'block';
             
-            // A szerkesztő modal (100px) értékeit átalakítjuk a crop modal (200px) értékeire
+            // Pontos méretarány-számítás a 200px-es vágó maszk és a 100px-es profil nézet között (2x arány)
             const cropModalSize = 200;
             const editModalSize = 100;
-            const sizeRatio = cropModalSize / editModalSize;
+            const scaleRatio = cropModalSize / editModalSize;
             
-            // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
-            // Az eltolást viszont arányosítjuk
+            // Ha már létezett korábbi eltolás, azt átszámítjuk a vágó maszk koordinátáira
             cropImageScale = imageScale || 1;
-            cropImageOffsetX = (imageOffsetX || 0) * sizeRatio;
-            cropImageOffsetY = (imageOffsetY || 0) * sizeRatio;
+            cropImageOffsetX = (imageOffsetX || 0) * scaleRatio;
+            cropImageOffsetY = (imageOffsetY || 0) * scaleRatio;
             
-            // Megjelenítjük a szerkesztő vezérlőket
             editorBox.style.display = 'flex';
-            document.getElementById('cropImgFilterSelect').value = 'none';
-            
             cropModal.classList.add('active');
             updateCropImageTransform();
             initCropImageDrag();
@@ -1426,32 +1422,40 @@
         }
 
         function saveCropedImage() {
-            // A crop beállításokat átvisszük a fő változókba
-            // A crop modal (200px) lesz a referencia méret, és minden más kontéterhez arányosítunk
-            // így a mentett értékek mindig a crop modal méretéhez viszonyulnak
-            
-            // Először a szerkesztő modalhoz (100px) arányosítunk a megjelenítéshez
             const cropModalSize = 200;
             const editModalSize = 100;
-            const editModalRatio = editModalSize / cropModalSize;
+            const scaleRatio = editModalSize / cropModalSize;
             
-            // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
-            // Az eltolást viszont arányosítjuk
+            // Visszaszámítjuk a koordinátákat a kisebb profilkép méretre, így pont ott marad, ahogy beállítottad
             imageScale = cropImageScale;
-            imageOffsetX = cropImageOffsetX * editModalRatio;
-            imageOffsetY = cropImageOffsetY * editModalRatio;
+            imageOffsetX = cropImageOffsetX * scaleRatio;
+            imageOffsetY = cropImageOffsetY * scaleRatio;
             
-            // A filter-t is átmentjük
             const filter = document.getElementById('cropImgFilterSelect').value;
+            currentFilter = filter;
 
-            // Frissítjük a modális avatar-t (szerkesztő modal)
+            // Frissítjük a szerkesztő nézetet
             updateImageTransform();
 
-            // Visszaállítjuk a crop modal (200px) referencia értékeket a mentéshez
-            // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
-            imageScale = cropImageScale;
-            imageOffsetX = cropImageOffsetX;
-            imageOffsetY = cropImageOffsetY;
+            // Ha van aktív szerkesztett sim, azonnal frissítjük a struktúrában is
+            if (editingSimId) {
+                const tree = getCurrentTree();
+                if (tree) {
+                    const sim = tree.sims.find(s => s.id === editingSimId);
+                    if (sim) {
+                        sim.image = tempUploadedImage;
+                        sim.imageTransform = {
+                            scale: imageScale,
+                            offsetX: imageOffsetX,
+                            offsetY: imageOffsetY,
+                            rotation: currentRotation,
+                            filter: currentFilter
+                        };
+                        saveTreesToStorage();
+                        loadCurrentTreeCanvas();
+                    }
+                }
+            }
 
             closeImageCropModal();
         }
@@ -1459,7 +1463,6 @@
         function updateCropImageTransform() {
             const cropImage = document.getElementById('cropImage');
             const filter = document.getElementById('cropImgFilterSelect').value;
-            // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
             cropImage.style.transform = `translate(${cropImageOffsetX}px, ${cropImageOffsetY}px) rotate(${currentRotation}deg) scale(${cropImageScale})`;
             cropImage.style.filter = filter;
         }
@@ -1473,14 +1476,17 @@
             const cropMask = document.querySelector('.crop-circle-mask');
             if (!cropMask) return;
 
-            cropMask.addEventListener('mousedown', startCropImageDrag);
-            cropMask.addEventListener('touchstart', startCropImageDrag, { passive: false });
-            cropMask.addEventListener('wheel', handleCropImageWheel, { passive: false });
+            // Eltávolítjuk a régi eseményeket a duplikáció elkerülésére
+            const newMask = cropMask.cloneNode(true);
+            cropMask.parentNode.replaceChild(newMask, cropMask);
+
+            newMask.addEventListener('mousedown', startCropImageDrag);
+            newMask.addEventListener('touchstart', startCropImageDrag, { passive: false });
+            newMask.addEventListener('wheel', handleCropImageWheel, { passive: false });
         }
 
         function startCropImageDrag(e) {
             e.preventDefault();
-            
             hasDraggedCrop = false;
             isDraggingCropImage = true;
             const cropMask = document.querySelector('.crop-circle-mask');
@@ -1510,8 +1516,7 @@
             const deltaX = clientX - cropDragStartX;
             const deltaY = clientY - cropDragStartY;
 
-            // Ha több mint 5px-t mozgunk, akkor az húzásnak számít
-            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+            if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
                 hasDraggedCrop = true;
             }
 
@@ -1531,7 +1536,6 @@
             document.removeEventListener('touchmove', dragCropImage);
             document.removeEventListener('touchend', stopCropImageDrag);
             
-            // Ha nem húztunk (kattintás volt), akkor nyissuk meg a fájlválasztót
             if (!hasDraggedCrop) {
                 triggerCropFileInput();
             }
@@ -1539,9 +1543,8 @@
 
         function handleCropImageWheel(e) {
             e.preventDefault();
-
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            cropImageScale = Math.max(0.5, Math.min(3, cropImageScale + delta));
+            const delta = e.deltaY > 0 ? -0.05 : 0.05;
+            cropImageScale = Math.max(0.3, Math.min(4, cropImageScale + delta));
             updateCropImageTransform();
         }
 
@@ -2972,13 +2975,10 @@
         }
 
         function updateImageTransform() {
-            const imgEl = document.getElementById('modalAvatar');
-            if (imgEl && tempUploadedImage) {
-                const filter = document.getElementById('cropImgFilterSelect') ? document.getElementById('cropImgFilterSelect').value : 'none';
-                // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
-                imgEl.style.transform = `translate(${imageOffsetX}px, ${imageOffsetY}px) rotate(${currentRotation}deg) scale(${imageScale})`;
-                imgEl.style.filter = filter;
-            }
+            const modalAvatar = document.getElementById('modalAvatar');
+            if (!modalAvatar) return;
+            modalAvatar.style.transform = `translate(${imageOffsetX}px, ${imageOffsetY}px) rotate(${currentRotation}deg) scale(${imageScale})`;
+            modalAvatar.style.filter = currentFilter;
         }
         
         function updateModalStatus() {
