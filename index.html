@@ -3055,7 +3055,10 @@
             if (!sim) return;
 
             const gallery = normalizeSimGallery(sim);
-            const item = gallery[galleryIndex];
+            if (!gallery.length) return;
+
+            let currentIndex = Math.max(0, Math.min(galleryIndex ?? 0, gallery.length - 1));
+            let item = gallery[currentIndex];
             if (!item) return;
 
             const overlay = document.createElement('div');
@@ -3097,6 +3100,47 @@
                 display:block;
             `;
 
+            // Lapozó nyilak több kép esetén.
+            const createArrow = (direction, symbol, title) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.innerHTML = symbol;
+                btn.title = title;
+                btn.style.cssText = `
+                    position:absolute; top:50%; ${direction === 'prev' ? 'left:18px;' : 'right:18px;'}
+                    transform:translateY(-50%);
+                    width:48px; height:48px;
+                    border:1px solid rgba(255,255,255,.3); border-radius:50%;
+                    background:rgba(0,0,0,.5); color:#fff;
+                    font-size:32px; line-height:42px; cursor:pointer;
+                    z-index:4; display:${gallery.length > 1 ? 'flex' : 'none'};
+                    align-items:center; justify-content:center;
+                    transition:background .15s, transform .15s;
+                `;
+                btn.onmouseenter = () => {
+                    btn.style.background = 'rgba(0,0,0,.75)';
+                };
+                btn.onmouseleave = () => {
+                    btn.style.background = 'rgba(0,0,0,.5)';
+                };
+                btn.onclick = e => {
+                    e.stopPropagation();
+                    currentIndex = direction === 'prev'
+                        ? (currentIndex - 1 + gallery.length) % gallery.length
+                        : (currentIndex + 1) % gallery.length;
+
+                    item = gallery[currentIndex];
+                    img.src = item.src;
+                    captionInput.value = item.caption || '';
+                    captionInput.focus();
+                    captionInput.select();
+                };
+                return btn;
+            };
+
+            const prevBtn = createArrow('prev', '‹', 'Előző kép');
+            const nextBtn = createArrow('next', '›', 'Következő kép');
+
             // A felirat közvetlenül a nagy kép fölött jelenik meg,
             // és szerkesztési módban kattintással módosítható.
             const captionInput = document.createElement('input');
@@ -3134,9 +3178,27 @@
 
             stage.appendChild(img);
             stage.appendChild(captionInput);
+            overlay.appendChild(prevBtn);
+            overlay.appendChild(nextBtn);
             overlay.appendChild(closeBtn);
             overlay.appendChild(stage);
             document.body.appendChild(overlay);
+
+            // Bal/jobb nyíllal vagy a billentyűzet nyilaival is lehet lapozni.
+            overlay.addEventListener('keydown', e => {
+                if (gallery.length < 2) return;
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevBtn.click();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextBtn.click();
+                } else if (e.key === 'Escape') {
+                    overlay.remove();
+                }
+            });
+            overlay.tabIndex = -1;
+            overlay.focus();
 
             setTimeout(() => {
                 captionInput.focus();
