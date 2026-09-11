@@ -759,19 +759,9 @@
         
         .avatar-dead { filter: grayscale(100%); opacity: 0.5; }
 
-        .gallery-section { margin: 8px 0 16px; padding: 12px 0 4px; }
-        .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin: 0 0 9px; color: var(--subtext-color); letter-spacing: .6px; }
-        .gallery-grid { display: flex; gap: 10px; overflow-x: auto; padding: 2px 0 8px; scrollbar-width: thin; }
-        .gallery-item, .gallery-add { flex: 0 0 108px; width: 108px; height: 82px; border-radius: 12px; position: relative; overflow: hidden; }
-        .gallery-item { border: 1px solid var(--border-color); background: var(--card-solid); }
-        .gallery-item img { width: 100%; height: 100%; display: block; object-fit: cover; cursor: pointer; }
-        .gallery-remove { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(0,0,0,.62); color: #fff; cursor: pointer; font-size: 13px; line-height: 22px; padding: 0; opacity: .9; }
-        .gallery-remove:hover { opacity: 1; transform: scale(1.05); }
-        .gallery-add { border: 1px dashed var(--accent-color); background: rgba(255,255,255,.025); color: var(--accent-color); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .2s ease; }
-        .gallery-add:hover { background: rgba(255,255,255,.06); transform: translateY(-1px); }
-        .gallery-add-plus { font-size: 25px; line-height: 22px; margin-bottom: 4px; }
-        .gallery-add-text { font-size: 10px; font-weight: 800; }
-        .gallery-empty { font-size: 11px; color: var(--subtext-color); padding: 8px 0; }
+        .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--subtext-color); }
+        .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+        .gallery-grid img { width: 120px; height: 80px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border-color); }
 
         .form-group { margin-bottom: 12px; position: relative; }
         .form-group label { display: block; font-size: 10px; font-weight: 800; color: var(--subtext-color); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -829,7 +819,6 @@
         .toggle-btn.open { right: 270px; }
         .arrow-icon { display: inline-block; transition: transform 0.4s ease; }
         .toggle-btn.open .arrow-icon { transform: rotate(180deg); }
-
     </style>
 </head>
 <body class="bg-dots">
@@ -1100,6 +1089,7 @@
                 <div class="tab-menu">
                     <button type="button" class="tab-btn active" onclick="switchSimTab('info')">Információk</button>
                     <button type="button" class="tab-btn" onclick="switchSimTab('diary')">Napló</button>
+                    <button type="button" class="tab-btn" onclick="switchSimTab('avatars')">Avatárok <span class="badge" id="avatarBadgeCount">1</span></button>
                 </div>
             </div>
 
@@ -1142,13 +1132,6 @@
 </select>
     </div>
 </div>
-
-                <!-- GALLÉRIA: a név és az életkor közötti gyors képgaléria -->
-                <div class="gallery-section">
-                    <h4>Galéria – Pillanatok a Sim életéből</h4>
-                    <div class="gallery-grid" id="modalGallery"></div>
-                    <input type="file" id="galleryImageInput" accept="image/*" multiple style="display:none;" onchange="handleGalleryUpload(event)">
-                </div>
 
                 <form id="simForm" onsubmit="saveSimDetails(event)">
                     <div class="form-row name-fields-hidden" aria-hidden="true">
@@ -1235,7 +1218,20 @@
                 </div>
             </div>
 
-            <!-- NAPLÓ BEJEGYZÉS MODAL -->
+            <!-- FÜL 3: Galéria -->
+            <div class="tab-content" id="tabContentAvatars">
+                <div class="gallery-section" style="padding: 10px 0;">
+                    <h4>Galéria / Képek</h4>
+                    <div class="gallery-grid" id="modalGallery">
+                        <span style="font-size:12px; color:var(--subtext-color);">Nincsenek feltöltött avatárok.</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NAPLÓ BEJEGYZÉS MODAL -->
     <div class="modal-overlay" id="journalModal">
         <div class="modal-card">
             <h2 id="journalModalTitle">Új Naplóbejegyzés</h2>
@@ -1390,7 +1386,6 @@
         let selectedConnectionTargetId = null;
 
         let tempUploadedImage = '';
-        let tempGalleryImages = [];
         let currentRotation = 0;
         let imageScale = 1;
         let imageOffsetX = 0;
@@ -2688,6 +2683,9 @@
             } else if (tabName === 'diary') {
                 document.querySelectorAll('#simModal .tab-btn')[1].classList.add('active');
                 document.getElementById('tabContentDiary').classList.add('active');
+            } else if (tabName === 'avatars') {
+                document.querySelectorAll('#simModal .tab-btn')[2].classList.add('active');
+                document.getElementById('tabContentAvatars').classList.add('active');
             }
         }
 
@@ -2787,7 +2785,6 @@
 
             editingSimId = simId;
             tempUploadedImage = sim.image || '';
-            tempGalleryImages = Array.isArray(sim.gallery) ? [...sim.gallery] : [];
             currentRotation = sim.imageTransform?.rotate || 0;
 
             document.getElementById('modalName').innerText = `${sim.firstName} ${sim.lastName}`;
@@ -2805,7 +2802,26 @@
             document.getElementById('editTraits').value = sim.traits || '';
 
             document.getElementById('modalDiaryText').innerText = sim.traits ? sim.traits : 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
-            renderSimGallery();
+            
+            const galleryGrid = document.getElementById('modalGallery');
+            galleryGrid.innerHTML = '';
+            let avatarCount = sim.image ? 1 : 0;
+
+            if (sim.gallery && sim.gallery.length > 0) {
+                avatarCount += sim.gallery.length;
+                sim.gallery.forEach(imgUrl => {
+                    const img = document.createElement('img');
+                    img.src = imgUrl;
+                    galleryGrid.appendChild(img);
+                });
+            } else if (sim.image) {
+                const img = document.createElement('img');
+                img.src = sim.image;
+                galleryGrid.appendChild(img);
+            } else {
+                galleryGrid.innerHTML = '<span style="font-size:12px; color:var(--subtext-color);">Nincsenek feltöltött avatárok.</span>';
+            }
+            document.getElementById('avatarBadgeCount').innerText = avatarCount;
             
             // Frissítjük a avatar megjelenését a státusz alapján
             updateModalStatus();
@@ -2838,9 +2854,6 @@
             }
 
             switchSimTab('info');
-            // A jobb oldali oldalmenü az oldal része; a Sim modal a saját rétegén jelenik meg.
-            sidebar.classList.remove('open');
-            toggleBtn.classList.remove('open');
             simModal.classList.add('active');
         }
 
@@ -3093,95 +3106,6 @@
             document.getElementById('searchResultsList').classList.remove('active');
         }
 
-        function renderSimGallery() {
-            const galleryGrid = document.getElementById('modalGallery');
-            if (!galleryGrid) return;
-
-            galleryGrid.innerHTML = '';
-
-            const addButton = document.createElement('button');
-            addButton.type = 'button';
-            addButton.className = 'gallery-add';
-            addButton.innerHTML = '<span class="gallery-add-plus">+</span><span class="gallery-add-text">Hozzáadás</span>';
-            addButton.title = 'Képek feltöltése';
-            addButton.onclick = () => document.getElementById('galleryImageInput')?.click();
-            galleryGrid.appendChild(addButton);
-
-            if (!tempGalleryImages.length) {
-                const empty = document.createElement('span');
-                empty.className = 'gallery-empty';
-                empty.innerText = 'Adj hozzá pillanatokat a Sim életéből.';
-                galleryGrid.appendChild(empty);
-                return;
-            }
-
-            tempGalleryImages.forEach((imgUrl, index) => {
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-
-                const img = document.createElement('img');
-                img.src = imgUrl;
-                img.alt = 'Sim életének pillanata ' + (index + 1);
-                img.onclick = () => openGalleryImage(imgUrl);
-
-                const remove = document.createElement('button');
-                remove.type = 'button';
-                remove.className = 'gallery-remove';
-                remove.innerText = '×';
-                remove.title = 'Kép törlése';
-                remove.onclick = (e) => {
-                    e.stopPropagation();
-                    tempGalleryImages.splice(index, 1);
-                    renderSimGallery();
-                };
-
-                item.appendChild(img);
-                item.appendChild(remove);
-                galleryGrid.appendChild(item);
-            });
-        }
-
-        function handleGalleryUpload(event) {
-            const files = Array.from(event.target.files || []);
-            if (!files.length) return;
-
-            let remaining = files.length;
-            files.forEach(file => {
-                if (!file.type.startsWith('image/')) {
-                    remaining--;
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = e => {
-                    tempGalleryImages.push(e.target.result);
-                    remaining--;
-                    if (remaining === 0) renderSimGallery();
-                };
-                reader.onerror = () => {
-                    remaining--;
-                    if (remaining === 0) renderSimGallery();
-                };
-                reader.readAsDataURL(file);
-            });
-
-            event.target.value = '';
-        }
-
-        function openGalleryImage(imgUrl) {
-            const viewer = document.createElement('div');
-            viewer.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:6000;display:flex;align-items:center;justify-content:center;padding:30px;cursor:zoom-out;';
-            viewer.onclick = () => viewer.remove();
-
-            const img = document.createElement('img');
-            img.src = imgUrl;
-            img.style.cssText = 'max-width:92vw;max-height:88vh;object-fit:contain;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.45);';
-            img.onclick = e => e.stopPropagation();
-
-            viewer.appendChild(img);
-            document.body.appendChild(viewer);
-        }
-
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
@@ -3248,10 +3172,7 @@
             }
         }
 
-        function closeSimModal() {
-            simModal.classList.remove('active');
-            editingSimId = null;
-        }
+        function closeSimModal() { simModal.classList.remove('active'); editingSimId = null; }
 
         function saveSimDetails(event) {
             event.preventDefault();
@@ -3266,7 +3187,6 @@
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
             sim.image = tempUploadedImage;
-            sim.gallery = [...tempGalleryImages];
             sim.isDead = document.getElementById('editStatus').value === 'dead';
 
             if (tempUploadedImage) {
