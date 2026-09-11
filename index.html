@@ -766,7 +766,7 @@
     <div id="authContainer" class="modal-overlay active">
         <div class="modal-card">
             <h2 id="authTitle" style="text-align: center; margin-bottom: 20px;">S4Memo Bejelentkezés</h2>
-            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+            <div id="authForm">
                 <div class="form-group">
                     <label>Email cím</label>
                     <input type="email" id="authEmail" required placeholder="pelda@simsmail.com">
@@ -777,9 +777,9 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="handleLogout()" id="logoutBtn" style="display: none;">Kilépés</button>
-                    <button type="submit" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
+                    <button type="button" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
                 </div>
-            </form>
+            </div>
             <div style="text-align: center; margin-top: 15px;">
                 <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" style="background: none; border: none; color: var(--subtext-color); cursor: pointer; font-size: 12px;">
                     Nincs még fiókod? Regisztrálj most!
@@ -2118,9 +2118,8 @@
             }
         }
 
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            console.log("Bejelentkezés indítása...");
+        async function handleAuthSubmit() {
+            console.log("Bejelentkezés gomb megnyomva...");
             
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
@@ -3034,6 +3033,15 @@
         // SUPABASE INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
+            
+            // Auth submit gomb eseménykezelő
+            const authSubmitBtn = document.getElementById('authSubmitBtn');
+            if (authSubmitBtn) {
+                authSubmitBtn.addEventListener('click', handleAuthSubmit);
+                console.log("Auth submit gomb eseménykezelő hozzáadva");
+            } else {
+                console.error("Auth submit gomb nem található!");
+            }
 
             if (!supabaseClient) {
                 console.warn("Supabase kliens nem elérhető");
