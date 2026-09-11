@@ -591,7 +591,17 @@
             font-weight: 700; font-size: 11px; color: var(--text-color);
             background-color: var(--card-solid); padding: 3px 10px; border-radius: 12px;
             border: 1px solid var(--border-color); box-shadow: 0 4px 12px var(--shadow-color);
-            pointer-events: none; z-index: 15; letter-spacing: -0.2px;
+            pointer-events: auto; z-index: 15; letter-spacing: -0.2px; cursor: pointer;
+        }
+        .sim-node-label:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .sim-node-label[contenteditable="true"] {
+            background-color: var(--input-bg);
+            border-color: var(--accent-color);
+            outline: none;
+            cursor: text;
         }
 
         .sim-edit-pencil {
@@ -2400,6 +2410,29 @@
             const label = document.createElement('div');
             label.className = 'sim-node-label';
             label.innerText = `${sim.firstName} ${sim.lastName}`;
+            label.contentEditable = true;
+            label.dataset.simId = sim.id;
+            
+            label.addEventListener('focus', function() {
+                this.dataset.originalName = this.innerText;
+            });
+            
+            label.addEventListener('blur', function() {
+                if (this.innerText !== this.dataset.originalName) {
+                    updateSimName(sim.id, this.innerText);
+                }
+            });
+            
+            label.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur();
+                }
+            });
+            
+            label.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
 
             node.appendChild(avatar);
             node.appendChild(label);
@@ -2856,6 +2889,23 @@
 
             saveTreesToStorage();
             closeSimModal();
+            loadCurrentTreeCanvas();
+        }
+
+        function updateSimName(simId, newName) {
+            const tree = getCurrentTree();
+            if (!tree) return;
+            
+            const sim = tree.sims.find(s => s.id === simId);
+            if (!sim) return;
+            
+            const nameParts = newName.trim().split(' ');
+            if (nameParts.length >= 1) {
+                sim.firstName = nameParts[0];
+                sim.lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+            }
+            
+            saveTreesToStorage();
             loadCurrentTreeCanvas();
         }
 
