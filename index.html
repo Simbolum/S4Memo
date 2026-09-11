@@ -2319,20 +2319,6 @@
 
             console.error("Nem sikerült a családfák betöltése a Supabase-ból (túl sok próbálkozás)");
         }
-                    }
-                    console.log("Családfák sikeresen betöltve:", familyTrees.length);
-                } else {
-                    familyTrees = [];
-                    currentTreeId = null;
-                    console.log("Nincsenek családfák");
-                }
-
-                renderTreeTabs();
-                loadCurrentTreeCanvas();
-            } catch (error) {
-                console.error("Váratlan hiba a családfák betöltésekor:", error);
-            }
-        }
 
         async function saveFamilyTreeToSupabase(tree) {
             if (!currentUser || !supabaseClient) return;
