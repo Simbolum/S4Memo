@@ -537,7 +537,7 @@
         .timeline-icon {
             position: absolute; left: -50px; top: 16px; width: 34px; height: 34px; border-radius: 50%;
             background-color: var(--accent-color); color: #ffffff; display: flex; align-items: center; justify-content: center;
-            font-size: 15px; box-shadow: 0 4px 12px var(--active-glow); z-index: 2; border: 2px solid var(--card-solid);
+            font-size: 17px; box-shadow: 0 4px 12px var(--active-glow); z-index: 2; border: 2px solid var(--card-solid);
         }
         .timeline-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .timeline-tree-badge { background-color: transparent; color: var(--accent-color); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 10px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 4px; }
@@ -590,7 +590,8 @@
         }
 
         .sim-node {
-            position: absolute; width: 88px; height: 88px; cursor: pointer; 
+            position: absolute; width: 88px; height: 88px; cursor: pointer;
+            overflow: visible; 
             z-index: 2; user-select: none; display: flex; align-items: center; 
             justify-content: center; background: transparent;
         }
@@ -598,6 +599,35 @@
         .sim-node.selected { animation: simFloat 3s ease-in-out infinite; z-index: 10 !important; }
         .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px var(--accent-color), 0 8px 25px var(--active-glow) !important; }
         .sim-node.drop-target .sim-node-avatar { box-shadow: 0 0 0 4px #00ff87 !important; transform: scale(1.1); }
+
+
+        .sim-special-icons {
+            position: absolute;
+            top: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            z-index: 100;
+            pointer-events: none;
+            transform: translateX(-50%) translateZ(0);
+            white-space: nowrap;
+        }
+        .sim-special-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            line-height: 1;
+            border-radius: 50%;
+            background: var(--card-solid);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 3px 8px var(--shadow-color);
+        }
 
         .sim-node-avatar {
             width: 100%; height: 100%; border-radius: var(--sim-node-radius);
@@ -2574,6 +2604,7 @@
         }
 
         function renderSimNode(sim) {
+            normalizeSimExtraFields(sim);
             const node = document.createElement('div');
             node.className = `sim-node ${selectedSimId === sim.id ? 'selected' : ''}`;
             node.id = sim.id;
@@ -2630,6 +2661,52 @@
             const label = document.createElement('div');
             label.className = 'sim-node-label';
             label.innerText = `${sim.firstName} ${sim.lastName}`;
+
+            // Okkult és cím ikonok a Sim feje fölött
+            const occultIcons = {
+                'Idegen': '👽',
+                'Vámpír': '🧛',
+                'Sellő': '🧜',
+                'Varázsló': '🧙',
+                'Farkasember': '🐺',
+                'Szellem': '👻',
+                'NövénySim': '🌱'
+            };
+            const titleIcons = {
+                'Herceg': '👑',
+                'Hercegnő': '👑',
+                'Király': '👑',
+                'Királynő': '👑',
+                'Gróf': '🎩',
+                'Grófnő': '🎩',
+                'Báró': '🎖️',
+                'Bárónő': '🎖️',
+                'Úr': '🏅',
+                'Úrnő': '🏅'
+            };
+
+            const specialIcons = document.createElement('div');
+            specialIcons.className = 'sim-special-icons';
+
+            if (sim.occult && sim.occult !== 'Nincs' && occultIcons[sim.occult]) {
+                const icon = document.createElement('div');
+                icon.className = 'sim-special-icon';
+                icon.innerText = occultIcons[sim.occult];
+                icon.title = sim.occult;
+                specialIcons.appendChild(icon);
+            }
+
+            if (sim.title && sim.title !== 'Nincs' && titleIcons[sim.title]) {
+                const icon = document.createElement('div');
+                icon.className = 'sim-special-icon';
+                icon.innerText = titleIcons[sim.title];
+                icon.title = sim.title;
+                specialIcons.appendChild(icon);
+            }
+
+            if (specialIcons.children.length > 0) {
+                node.appendChild(specialIcons);
+            }
 
             node.appendChild(avatar);
             node.appendChild(label);
