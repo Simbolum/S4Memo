@@ -200,6 +200,41 @@
             font-size: 10px; font-weight: 800; text-align: center; cursor: pointer;
         }
 
+        .relation-picker-btn {
+            width: 100%;
+            min-height: 40px;
+            padding: 9px 11px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .relation-picker-btn:hover {
+            border-color: var(--accent-color);
+            background: rgba(255,255,255,.04);
+        }
+        .family-picker-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .family-picker-item:hover {
+            border-color: var(--accent-color);
+        }
+        .family-picker-item input {
+            accent-color: var(--accent-color);
+            width: 16px;
+            height: 16px;
+        }
+
         /* INTERAKTÍV KÉPSZERKESZTŐ */
         .avatar-crop-view {
             position: relative;
@@ -1254,6 +1289,16 @@
                             </select>
                         </div>
                         <div class="form-group" style="flex:1;">
+                            <label>Faj</label>
+                            <select id="editSpecies">
+                                <option value="Ember">Ember</option>
+                                <option value="Kutya">Kutya</option>
+                                <option value="Macska">Macska</option>
+                                <option value="Ló">Ló</option>
+                                <option value="Más állat">Más állat</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
                             <label>Keretszín</label>
                             <input type="color" id="editColor" value="#2ed573">
                         </div>
@@ -1288,6 +1333,21 @@
                                 <option value="Úr">Úr</option>
                                 <option value="Úrnő">Úrnő</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="margin-top: 10px; gap: 10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Szülők</label>
+                            <button type="button" class="relation-picker-btn" id="editParentsBtn" onclick="openFamilyMemberPicker('parents')">
+                                👨‍👩‍👧 Szülők kiválasztása
+                            </button>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Állatok</label>
+                            <button type="button" class="relation-picker-btn" id="editAnimalsBtn" onclick="openFamilyMemberPicker('animals')">
+                                🐾 Állatok kiválasztása
+                            </button>
                         </div>
                     </div>
 
@@ -1382,6 +1442,19 @@
         </div>
     </div>
 
+    <!-- SZÜLŐ / ÁLLAT VÁLASZTÓ MODAL -->
+    <div class="modal-overlay" id="familyMemberPickerModal">
+        <div class="modal-card" style="max-width: 430px;">
+            <h2 id="familyMemberPickerTitle">Szülők kiválasztása</h2>
+            <p id="familyMemberPickerHint" style="font-size:12px; color:var(--subtext-color); margin-top:-4px;"></p>
+            <div id="familyMemberPickerList" style="display:flex; flex-direction:column; gap:7px; max-height:330px; overflow-y:auto; margin-top:12px;"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeFamilyMemberPicker()">Mégse</button>
+                <button type="button" class="btn-primary" onclick="confirmFamilyMemberPicker()">Mentés</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ELŐUGRÓ JOBB MENÜ -->
     <div class="right-sidebar" id="sidebar">
         <ul>
@@ -1459,6 +1532,11 @@
                 ]
             }
         ];
+
+        let tempParentIds = [];
+        let tempAnimalIds = [];
+        let familyPickerMode = null;
+        let familyPickerSelectedIds = [];
 
         let familyTrees = loadTreesFromStorage();
         let currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
@@ -2342,6 +2420,14 @@
         function normalizeSimExtraFields(sim) {
             if (!sim.occult) sim.occult = 'Nincs';
             if (!sim.title) sim.title = 'Nincs';
+            if (!sim.species) sim.species = sim.faj || 'Ember';
+
+            // Régi családfa-adatokból is létrehozzuk a több szülőt támogató tömböt.
+            if (!Array.isArray(sim.parentIds)) {
+                sim.parentIds = sim.parentId ? [sim.parentId] : [];
+            }
+            if (!Array.isArray(sim.animalIds)) sim.animalIds = [];
+
             return sim;
         }
 
@@ -2646,7 +2732,9 @@
             const newSim = {
                 id: 'sim_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 firstName: firstName, lastName: lastName, age: 'Fiatal felnőtt',
-                traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y, parentId: parentId, partnerId: partnerId, relationType: relationType, locked: false, isDead: false, gallery: []
+                traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y,
+                species: 'Ember', parentId: parentId, parentIds: parentId ? [parentId] : [], partnerId: partnerId,
+                relationType: relationType, animalIds: [], locked: false, isDead: false, gallery: []
             };
 
             tree.sims.push(newSim);
@@ -3107,13 +3195,13 @@
                 btn.innerHTML = symbol;
                 btn.title = title;
                 btn.style.cssText = `
-                    position:absolute; top:50%; ${direction === 'prev' ? 'left:18px;' : 'right:18px;'}
+                    position:fixed; top:50%; ${direction === 'prev' ? 'left:24px;' : 'right:24px;'}
                     transform:translateY(-50%);
-                    width:48px; height:48px;
+                    width:52px; height:52px;
                     border:1px solid rgba(255,255,255,.3); border-radius:50%;
                     background:rgba(0,0,0,.5); color:#fff;
-                    font-size:32px; line-height:42px; cursor:pointer;
-                    z-index:4; display:${gallery.length > 1 ? 'flex' : 'none'};
+                    font-size:36px; line-height:46px; cursor:pointer;
+                    z-index:9999; display:${gallery.length > 1 ? 'flex' : 'none'};
                     align-items:center; justify-content:center;
                     transition:background .15s, transform .15s;
                 `;
@@ -3206,6 +3294,118 @@
             }, 0);
         }
 
+        function isAnimalSim(sim) {
+            const species = String(sim.species || sim.faj || '').trim().toLowerCase();
+            return ['kutya', 'macska', 'ló', 'más állat', 'állat'].includes(species);
+        }
+
+        function updateFamilyPickerButtons() {
+            const parentsBtn = document.getElementById('editParentsBtn');
+            const animalsBtn = document.getElementById('editAnimalsBtn');
+
+            if (parentsBtn) {
+                parentsBtn.textContent = tempParentIds.length
+                    ? `👨‍👩‍👧 ${tempParentIds.length} szülő kiválasztva`
+                    : '👨‍👩‍👧 Szülők kiválasztása';
+            }
+            if (animalsBtn) {
+                animalsBtn.textContent = tempAnimalIds.length
+                    ? `🐾 ${tempAnimalIds.length} állat kiválasztva`
+                    : '🐾 Állatok kiválasztása';
+            }
+        }
+
+        function openFamilyMemberPicker(mode) {
+            const tree = getCurrentTree();
+            if (!tree || !editingSimId) return;
+
+            familyPickerMode = mode;
+            familyPickerSelectedIds = mode === 'parents'
+                ? [...tempParentIds]
+                : [...tempAnimalIds];
+
+            document.getElementById('familyMemberPickerTitle').textContent =
+                mode === 'parents' ? 'Szülők kiválasztása' : 'Állatok kiválasztása';
+
+            document.getElementById('familyMemberPickerHint').textContent =
+                mode === 'parents'
+                    ? 'Legfeljebb 2 szülőt választhatsz.'
+                    : 'Csak az állatként megjelölt Simek közül választhatsz.';
+
+            const list = document.getElementById('familyMemberPickerList');
+            list.innerHTML = '';
+
+            let candidates = tree.sims.filter(s => s.id !== editingSimId);
+            if (mode === 'animals') candidates = candidates.filter(isAnimalSim);
+
+            if (!candidates.length) {
+                list.innerHTML = `<div style="padding:18px; text-align:center; color:var(--subtext-color); font-size:12px;">
+                    ${mode === 'animals' ? 'Nincs állatként megjelölt Sim a családfában.' : 'Nincs más kiválasztható Sim.'}
+                </div>`;
+            } else {
+                candidates.forEach(s => {
+                    normalizeSimExtraFields(s);
+
+                    const label = document.createElement('label');
+                    label.className = 'family-picker-item';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = s.id;
+                    checkbox.checked = familyPickerSelectedIds.includes(s.id);
+
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            if (mode === 'parents' && familyPickerSelectedIds.length >= 2) {
+                                checkbox.checked = false;
+                                alert('Egy Simhez legfeljebb 2 szülőt választhatsz.');
+                                return;
+                            }
+                            if (!familyPickerSelectedIds.includes(s.id)) {
+                                familyPickerSelectedIds.push(s.id);
+                            }
+                        } else {
+                            familyPickerSelectedIds = familyPickerSelectedIds.filter(id => id !== s.id);
+                        }
+                    });
+
+                    if (s.image) {
+                        const img = document.createElement('img');
+                        img.src = s.image;
+                        img.style.cssText = 'width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);';
+                        label.appendChild(img);
+                    }
+
+                    const name = document.createElement('div');
+                    name.style.flex = '1';
+                    name.innerHTML = `<strong>${s.firstName || ''} ${s.lastName || ''}</strong>
+                        <div style="font-size:10px;color:var(--subtext-color);">${s.species || 'Ember'}${s.age ? ' • ' + s.age : ''}</div>`;
+
+                    label.prepend(checkbox);
+                    label.appendChild(name);
+                    list.appendChild(label);
+                });
+            }
+
+            document.getElementById('familyMemberPickerModal').classList.add('active');
+        }
+
+        function closeFamilyMemberPicker() {
+            document.getElementById('familyMemberPickerModal').classList.remove('active');
+            familyPickerMode = null;
+        }
+
+        function confirmFamilyMemberPicker() {
+            if (familyPickerMode === 'parents') {
+                tempParentIds = [...familyPickerSelectedIds];
+            } else if (familyPickerMode === 'animals') {
+                tempAnimalIds = [...familyPickerSelectedIds];
+            }
+
+            updateFamilyPickerButtons();
+            closeFamilyMemberPicker();
+        }
+
         function openSimModal(simId) {
             const tree = getCurrentTree(); if (!tree) return;
             const sim = tree.sims.find(s => s.id === simId); if (!sim) return;
@@ -3222,10 +3422,16 @@
 
             document.getElementById('editFirstName').value = sim.firstName || '';
             document.getElementById('editLastName').value = sim.lastName || '';
+            normalizeSimExtraFields(sim);
             document.getElementById('editAge').value = sim.age || 'Fiatal felnőtt';
             document.getElementById('editOccult').value = sim.occult || 'Nincs';
             document.getElementById('editTitle').value = sim.title || 'Nincs';
+            document.getElementById('editSpecies').value = sim.species || 'Ember';
             document.getElementById('editColor').value = sim.color || '#2ed573';
+
+            tempParentIds = [...sim.parentIds];
+            tempAnimalIds = [...sim.animalIds];
+            updateFamilyPickerButtons();
             document.getElementById('editTraits').value = sim.traits || '';
 
             document.getElementById('modalDiaryText').innerText = sim.traits ? sim.traits : 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
@@ -3272,8 +3478,12 @@
             const tree = getCurrentTree(); if (!tree) return;
 
             tree.sims.forEach(sim => {
-                if (sim.parentId) {
-                    const parent = tree.sims.find(s => s.id === sim.parentId);
+                const parentIds = Array.isArray(sim.parentIds)
+                    ? sim.parentIds
+                    : (sim.parentId ? [sim.parentId] : []);
+
+                parentIds.forEach(parentId => {
+                    const parent = tree.sims.find(s => s.id === parentId);
                     if (parent) {
                         const startX = parent.x + 44;
                         const startY = parent.y + 88;
@@ -3286,7 +3496,7 @@
                         path.setAttribute('class', 'line-child');
                         svgLayer.appendChild(path);
                     }
-                }
+                });
 
                 if (sim.partnerId) {
                     const partner = tree.sims.find(s => s.id === sim.partnerId);
@@ -3475,8 +3685,20 @@
             const targetSim = tree.sims.find(s => s.id === selectedConnectionTargetId);
 
             if (sourceSim && targetSim) {
-                if (relationType === 'Gyerek') targetSim.parentId = sourceSim.id;
-                else if (relationType === 'Szülő') sourceSim.parentId = targetSim.id;
+                if (relationType === 'Gyerek') {
+                    targetSim.parentId = sourceSim.id;
+                    normalizeSimExtraFields(targetSim);
+                    if (!targetSim.parentIds.includes(sourceSim.id)) {
+                        if (targetSim.parentIds.length < 2) targetSim.parentIds.push(sourceSim.id);
+                    }
+                }
+                else if (relationType === 'Szülő') {
+                    sourceSim.parentId = targetSim.id;
+                    normalizeSimExtraFields(sourceSim);
+                    if (!sourceSim.parentIds.includes(targetSim.id)) {
+                        if (sourceSim.parentIds.length < 2) sourceSim.parentIds.push(targetSim.id);
+                    }
+                }
                 else {
                     sourceSim.partnerId = targetSim.id;
                     sourceSim.relationType = relationType;
@@ -3594,8 +3816,13 @@
             sim.age = document.getElementById('editAge').value;
             sim.occult = document.getElementById('editOccult').value;
             sim.title = document.getElementById('editTitle').value;
+            sim.species = document.getElementById('editSpecies').value;
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
+
+            sim.parentIds = [...tempParentIds];
+            sim.parentId = sim.parentIds[0] || null;
+            sim.animalIds = [...tempAnimalIds];
             sim.image = tempUploadedImage;
             sim.isDead = document.getElementById('editStatus').value === 'dead';
 
