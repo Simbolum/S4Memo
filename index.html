@@ -1306,6 +1306,7 @@
         let imageScale = 1;
         let imageOffsetX = 0;
         let imageOffsetY = 0;
+        let currentFilter = 'none';
         let isDraggingImage = false;
         let dragStartX = 0;
         let dragStartY = 0;
@@ -1421,6 +1422,9 @@
             imageScale = cropImageScale * sizeRatio;
             imageOffsetX = cropImageOffsetX * sizeRatio;
             imageOffsetY = cropImageOffsetY * sizeRatio;
+            
+            // A filter-t is átmentjük
+            const filter = document.getElementById('cropImgFilterSelect').value;
 
             // Frissítjük a modális avatar-t
             updateImageTransform();
@@ -1431,7 +1435,8 @@
         function updateCropImageTransform() {
             const cropImage = document.getElementById('cropImage');
             const filter = document.getElementById('cropImgFilterSelect').value;
-            cropImage.style.transform = `scale(${cropImageScale}) rotate(${currentRotation}deg) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
+            // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
+            cropImage.style.transform = `translate(${cropImageOffsetX}px, ${cropImageOffsetY}px) rotate(${currentRotation}deg) scale(${cropImageScale})`;
             cropImage.style.filter = filter;
         }
         
@@ -2487,7 +2492,9 @@
 
                 if (sim.imageTransform) {
                     const { scale, rotate, offsetX, offsetY, filter } = sim.imageTransform;
-                    imgEl.style.transform = `scale(${scale}) rotate(${rotate}deg) translate(${offsetX}px, ${offsetY}px)`;
+                    // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
+                    // Így az eltolás nem lesz skálázva
+                    imgEl.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotate}deg) scale(${scale})`;
                     imgEl.style.filter = filter || 'none';
                 }
 
@@ -2920,11 +2927,13 @@
         }
 
         function updateImageTransform() {
-            const filter = document.getElementById('imgFilterSelect').value;
-
             const imgEl = document.getElementById('modalAvatar');
-            imgEl.style.transform = `scale(${imageScale}) rotate(${currentRotation}deg) translate(${imageOffsetX}px, ${imageOffsetY}px)`;
-            imgEl.style.filter = filter;
+            if (imgEl && tempUploadedImage) {
+                const filter = document.getElementById('cropImgFilterSelect') ? document.getElementById('cropImgFilterSelect').value : 'none';
+                // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
+                imgEl.style.transform = `translate(${imageOffsetX}px, ${imageOffsetY}px) rotate(${currentRotation}deg) scale(${imageScale})`;
+                imgEl.style.filter = filter;
+            }
         }
 
         function closeSimModal() { simModal.classList.remove('active'); editingSimId = null; }
