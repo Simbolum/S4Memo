@@ -997,6 +997,9 @@
             <button type="button" class="close-btn" onclick="closeImageCropModal()">&times;</button>
             <h3 class="modal-title">Profilkép beállítása</h3>
             
+            <!-- Rejtett fájlválasztó input a képvágó modalhoz -->
+            <input type="file" id="cropImageInput" accept="image/*" style="display: none;" onchange="handleCropImageUpload(event)">
+            
             <div class="image-crop-container">
                 <div class="crop-preview-area">
                     <div class="crop-circle-mask" id="cropCircleMask">
@@ -1007,6 +1010,18 @@
                     <p>🖱️ Húzd a képet az elmozgatáshoz</p>
                     <p>🔄 Görgővel közelíts vagy távolíts</p>
                     <p>📁 Kattints a képre új tallózáshoz</p>
+                </div>
+                
+                <!-- Szerkesztő vezérlők -->
+                <div class="image-controls-mini" id="cropImageEditorBox" style="display: none;">
+                    <button type="button" class="mini-btn" onclick="rotateCropImage()">🔄</button>
+                    <select id="cropImgFilterSelect" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-solid); color: var(--text-color); font-size: 10px;" onchange="updateCropImageTransform()">
+                        <option value="none" selected>Normál</option>
+                        <option value="grayscale(100%)">Fekete-Fehér</option>
+                        <option value="sepia(80%)">Szépia</option>
+                        <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
+                        <option value="saturate(200%)">Élénk</option>
+                    </select>
                 </div>
             </div>
             
@@ -1333,19 +1348,58 @@
                 openImageCropModal();
             }
         }
+        
+        function triggerCropFileInput() {
+            document.getElementById('cropImageInput').click();
+        }
+        
+        function handleCropImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempUploadedImage = e.target.result;
+                    currentRotation = 0;
+                    imageScale = 1;
+                    imageOffsetX = 0;
+                    imageOffsetY = 0;
+                    
+                    const cropImage = document.getElementById('cropImage');
+                    cropImage.src = tempUploadedImage;
+                    cropImage.style.display = 'block';
+                    
+                    // Reset crop variables
+                    cropImageScale = 1;
+                    cropImageOffsetX = 0;
+                    cropImageOffsetY = 0;
+                    document.getElementById('cropImgFilterSelect').value = 'none';
+                    
+                    updateCropImageTransform();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
         // KÉPVÁGÓ MODAL FUNKCIÓK
         function openImageCropModal() {
             const cropModal = document.getElementById('imageCropModal');
             const cropImage = document.getElementById('cropImage');
+            const editorBox = document.getElementById('cropImageEditorBox');
             
             cropImage.src = tempUploadedImage;
             cropImage.style.display = 'block';
             
-            // Reset crop variables
-            cropImageScale = 1;
-            cropImageOffsetX = 0;
-            cropImageOffsetY = 0;
+            // A Sim Card-ban lévő értékeket átvisszük a képvágóba
+            // Mivel a crop modalban lévő kör (200px) és a Sim Card-ban lévő kör (100px) méretei különböznek,
+            // arányosítani kell a beállításokat
+            const sizeRatio = 200 / 100; // Crop modal kör / Sim Card kör
+            cropImageScale = (imageScale || 1) * sizeRatio;
+            cropImageOffsetX = (imageOffsetX || 0) * sizeRatio;
+            cropImageOffsetY = (imageOffsetY || 0) * sizeRatio;
+            
+            // Megjelenítjük a szerkesztő vezérlőket
+            editorBox.style.display = 'flex';
+            document.getElementById('cropImgFilterSelect').value = 'none';
             
             cropModal.classList.add('active');
             updateCropImageTransform();
@@ -1354,14 +1408,19 @@
 
         function closeImageCropModal() {
             const cropModal = document.getElementById('imageCropModal');
+            const editorBox = document.getElementById('cropImageEditorBox');
             cropModal.classList.remove('active');
+            editorBox.style.display = 'none';
         }
 
         function saveCropedImage() {
             // A crop beállításokat átvisszük a fő változókba
-            imageScale = cropImageScale;
-            imageOffsetX = cropImageOffsetX;
-            imageOffsetY = cropImageOffsetY;
+            // Mivel a crop modalban lévő kör (200px) és a Sim Card-ban lévő kör (100px) méretei különböznek,
+            // arányosítani kell a beállításokat
+            const sizeRatio = 100 / 200; // Sim Card kör / Crop modal kör
+            imageScale = cropImageScale * sizeRatio;
+            imageOffsetX = cropImageOffsetX * sizeRatio;
+            imageOffsetY = cropImageOffsetY * sizeRatio;
 
             // Frissítjük a modális avatar-t
             updateImageTransform();
@@ -1371,7 +1430,14 @@
 
         function updateCropImageTransform() {
             const cropImage = document.getElementById('cropImage');
-            cropImage.style.transform = `scale(${cropImageScale}) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
+            const filter = document.getElementById('cropImgFilterSelect').value;
+            cropImage.style.transform = `scale(${cropImageScale}) rotate(${currentRotation}deg) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
+            cropImage.style.filter = filter;
+        }
+        
+        function rotateCropImage() {
+            currentRotation = (currentRotation + 90) % 360;
+            updateCropImageTransform();
         }
 
         function initCropImageDrag() {
@@ -1438,7 +1504,7 @@
             
             // Ha nem húztunk (kattintás volt), akkor nyissuk meg a fájlválasztót
             if (!hasDraggedCrop) {
-                triggerFileInput();
+                triggerCropFileInput();
             }
         }
 
