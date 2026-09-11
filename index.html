@@ -766,7 +766,7 @@
     <div id="authContainer" class="modal-overlay active">
         <div class="modal-card">
             <h2 id="authTitle" style="text-align: center; margin-bottom: 20px;">S4Memo Bejelentkezés</h2>
-            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+            <form id="authForm">
                 <div class="form-group">
                     <label>Email cím</label>
                     <input type="email" id="authEmail" required placeholder="pelda@simsmail.com">
@@ -777,7 +777,7 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="handleLogout()" id="logoutBtn" style="display: none;">Kilépés</button>
-                    <button type="submit" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
+                    <button type="button" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
                 </div>
             </form>
             <div style="text-align: center; margin-top: 15px;">
@@ -2118,10 +2118,14 @@
             }
         }
 
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
+        async function handleAuthSubmit() {
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
+            
+            if (!email || !password) {
+                alert('Kérlek töltsd ki az email és jelszó mezőket!');
+                return;
+            }
 
             if (isSignUpMode) {
                 const { data, error } = await supabaseClient.auth.signUp({ email, password });
@@ -3013,6 +3017,9 @@
         // SUPABASE INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
+            
+            // Auth submit gomb eseménykezelő
+            document.getElementById('authSubmitBtn').addEventListener('click', handleAuthSubmit);
 
             if (!supabaseClient) {
                 console.warn("Supabase kliens nem elérhető");
