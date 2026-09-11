@@ -312,8 +312,8 @@
         }
 
         .crop-circle-mask {
-            width: 200px;
-            height: 200px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             overflow: hidden;
             position: relative;
@@ -1358,6 +1358,7 @@
 
         function saveCropedImage() {
             // A crop beállításokat átvisszük a fő változókba
+            // Most már ugyanolyan méretű a kör, így nincs átszámítás
             imageScale = cropImageScale;
             imageOffsetX = cropImageOffsetX;
             imageOffsetY = cropImageOffsetY;
@@ -1370,7 +1371,9 @@
 
         function updateCropImageTransform() {
             const cropImage = document.getElementById('cropImage');
-            cropImage.style.transform = `scale(${cropImageScale}) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
+            const filter = document.getElementById('cropImgFilterSelect').value;
+            cropImage.style.transform = `scale(${cropImageScale}) rotate(${currentRotation}deg) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
+            cropImage.style.filter = filter;
         }
 
         function initCropImageDrag() {
