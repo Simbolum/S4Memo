@@ -1215,6 +1215,9 @@
     <button class="toggle-btn" id="toggleBtn"><span class="arrow-icon">◀</span></button>
 
     <script>
+        console.log("Script betöltődött!");
+        console.log("DOM kész:", document.readyState);
+        
         // Supabase konfiguráció
         const SUPABASE_URL = 'https://mzmwchyepqhqcyydngeo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Zea0--loQ_Q44nd13y5yPA_wl8L-pB_';
@@ -3032,10 +3035,13 @@
 
         // SUPABASE INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
+            console.log("DOMContentLoaded esemény lefutott!");
             initTheme();
             
             // Auth submit gomb eseménykezelő
             const authSubmitBtn = document.getElementById('authSubmitBtn');
+            console.log("Auth submit gomb keresése:", authSubmitBtn);
+            
             if (authSubmitBtn) {
                 authSubmitBtn.addEventListener('click', handleAuthSubmit);
                 console.log("Auth submit gomb eseménykezelő hozzáadva");
