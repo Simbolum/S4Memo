@@ -829,6 +829,7 @@
         .toggle-btn.open { right: 270px; }
         .arrow-icon { display: inline-block; transition: transform 0.4s ease; }
         .toggle-btn.open .arrow-icon { transform: rotate(180deg); }
+
     </style>
 </head>
 <body class="bg-dots">
@@ -2837,6 +2838,9 @@
             }
 
             switchSimTab('info');
+            // A jobb oldali oldalmenü az oldal része; a Sim modal a saját rétegén jelenik meg.
+            sidebar.classList.remove('open');
+            toggleBtn.classList.remove('open');
             simModal.classList.add('active');
         }
 
@@ -3244,7 +3248,10 @@
             }
         }
 
-        function closeSimModal() { simModal.classList.remove('active'); editingSimId = null; }
+        function closeSimModal() {
+            simModal.classList.remove('active');
+            editingSimId = null;
+        }
 
         function saveSimDetails(event) {
             event.preventDefault();
