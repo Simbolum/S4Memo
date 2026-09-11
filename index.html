@@ -983,6 +983,9 @@
             <button type="button" class="close-btn" onclick="closeImageCropModal()">&times;</button>
             <h3 class="modal-title">Profilkép beállítása</h3>
             
+            <!-- Rejtett fájlválasztó input a képvágó modalhoz -->
+            <input type="file" id="cropImageInput" accept="image/*" style="display: none;" onchange="handleCropImageUpload(event)">
+            
             <div class="image-crop-container">
                 <div class="crop-preview-area">
                     <div class="crop-circle-mask" id="cropCircleMask">
@@ -993,6 +996,18 @@
                     <p>🖱️ Húzd a képet az elmozgatáshoz</p>
                     <p>🔄 Görgővel közelíts vagy távolíts</p>
                     <p>📁 Kattints a képre új tallózáshoz</p>
+                </div>
+                
+                <!-- Szerkesztő vezérlők -->
+                <div class="image-controls-mini" id="cropImageEditorBox" style="display: none;">
+                    <button type="button" class="mini-btn" onclick="rotateCropImage()">🔄</button>
+                    <select id="cropImgFilterSelect" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-solid); color: var(--text-color); font-size: 10px;" onchange="updateCropImageTransform()">
+                        <option value="none" selected>Normál</option>
+                        <option value="grayscale(100%)">Fekete-Fehér</option>
+                        <option value="sepia(80%)">Szépia</option>
+                        <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
+                        <option value="saturate(200%)">Élénk</option>
+                    </select>
                 </div>
             </div>
             
@@ -1030,22 +1045,19 @@
                             <span>Módosítás</span>
                         </div>
                     </div>
-
-                    <!-- Egyszerűsített filter választó -->
-                    <div class="image-controls-mini" id="imageEditorBox" style="display: none;">
-                        <button type="button" class="mini-btn" onclick="rotateImage()">🔄</button>
-                        <select id="imgFilterSelect" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-solid); color: var(--text-color); font-size: 10px;" onchange="updateImageTransform()">
-                            <option value="none" selected>Normál</option>
-                            <option value="grayscale(100%)">Fekete-Fehér</option>
-                            <option value="sepia(80%)">Szépia</option>
-                            <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
-                            <option value="saturate(200%)">Élénk</option>
-                        </select>
-                    </div>
                 </div>
 
                 <!-- Rejtett fájlválasztó input -->
                 <input type="file" id="editImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                
+                <!-- Rejtett filter select (nem használjuk, de megtartjuk kompatibilitás miatt) -->
+                <select id="imgFilterSelect" style="display: none;">
+                    <option value="none" selected>Normál</option>
+                    <option value="grayscale(100%)">Fekete-Fehér</option>
+                    <option value="sepia(80%)">Szépia</option>
+                    <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
+                    <option value="saturate(200%)">Élénk</option>
+                </select>
 
                 <div class="profile-header-info">
                     <h2 id="modalName" contenteditable="true" style="cursor: text; outline: none; border-bottom: 2px solid transparent; transition: border-color 0.2s;">Sim Neve</h2>
@@ -1338,11 +1350,43 @@
                 openImageCropModal();
             }
         }
+        
+        function triggerCropFileInput() {
+            document.getElementById('cropImageInput').click();
+        }
+        
+        function handleCropImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempUploadedImage = e.target.result;
+                    currentRotation = 0;
+                    imageScale = 1;
+                    imageOffsetX = 0;
+                    imageOffsetY = 0;
+                    
+                    const cropImage = document.getElementById('cropImage');
+                    cropImage.src = tempUploadedImage;
+                    cropImage.style.display = 'block';
+                    
+                    // Reset crop variables
+                    cropImageScale = 1;
+                    cropImageOffsetX = 0;
+                    cropImageOffsetY = 0;
+                    document.getElementById('cropImgFilterSelect').value = 'none';
+                    
+                    updateCropImageTransform();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
         // KÉPVÁGÓ MODAL FUNKCIÓK
         function openImageCropModal() {
             const cropModal = document.getElementById('imageCropModal');
             const cropImage = document.getElementById('cropImage');
+            const editorBox = document.getElementById('cropImageEditorBox');
             
             cropImage.src = tempUploadedImage;
             cropImage.style.display = 'block';
@@ -1353,6 +1397,10 @@
             cropImageOffsetX = imageOffsetX || 0;
             cropImageOffsetY = imageOffsetY || 0;
             
+            // Megjelenítjük a szerkesztő vezérlőket
+            editorBox.style.display = 'flex';
+            document.getElementById('cropImgFilterSelect').value = currentRotation ? (currentRotation === 90 ? 'none' : 'none') : 'none';
+            
             cropModal.classList.add('active');
             updateCropImageTransform();
             initCropImageDrag();
@@ -1360,7 +1408,9 @@
 
         function closeImageCropModal() {
             const cropModal = document.getElementById('imageCropModal');
+            const editorBox = document.getElementById('cropImageEditorBox');
             cropModal.classList.remove('active');
+            editorBox.style.display = 'none';
         }
 
         function saveCropedImage() {
@@ -1370,6 +1420,9 @@
             imageOffsetX = cropImageOffsetX;
             imageOffsetY = cropImageOffsetY;
             
+            // A filter-t is átmentjük
+            const filter = document.getElementById('cropImgFilterSelect').value;
+            
             // Frissítjük a modális avatar-t
             updateImageTransform();
             
@@ -1378,7 +1431,14 @@
 
         function updateCropImageTransform() {
             const cropImage = document.getElementById('cropImage');
-            cropImage.style.transform = `scale(${cropImageScale}) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
+            const filter = document.getElementById('cropImgFilterSelect').value;
+            cropImage.style.transform = `scale(${cropImageScale}) rotate(${currentRotation}deg) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
+            cropImage.style.filter = filter;
+        }
+        
+        function rotateCropImage() {
+            currentRotation = (currentRotation + 90) % 360;
+            updateCropImageTransform();
         }
 
         function initCropImageDrag() {
@@ -1388,6 +1448,11 @@
             cropMask.addEventListener('mousedown', startCropImageDrag);
             cropMask.addEventListener('touchstart', startCropImageDrag, { passive: false });
             cropMask.addEventListener('wheel', handleCropImageWheel, { passive: false });
+            cropMask.addEventListener('click', function(e) {
+                if (!hasDraggedCrop) {
+                    triggerCropFileInput();
+                }
+            });
         }
 
         function startCropImageDrag(e) {
@@ -1445,7 +1510,7 @@
             
             // Ha nem húztunk (kattintás volt), akkor nyissuk meg a fájlválasztót
             if (!hasDraggedCrop) {
-                triggerFileInput();
+                triggerCropFileInput();
             }
         }
 
@@ -1458,10 +1523,6 @@
         }
 
         // Régi képszerkesztő funkciók eltávolítva - most a képvágó modalt használjuk
-        function rotateImage() {
-            currentRotation = (currentRotation + 90) % 360;
-            updateImageTransform();
-        }
 
         function toggleAccordion(groupId) {
             const group = document.getElementById(groupId);
@@ -2657,18 +2718,15 @@
             imageOffsetX = transform.offsetX || 0;
             imageOffsetY = transform.offsetY || 0;
             currentRotation = transform.rotate || 0;
-            document.getElementById('imgFilterSelect').value = transform.filter || 'none';
 
             if (tempUploadedImage) {
                 modalAvatar.src = tempUploadedImage;
                 modalAvatar.style.display = 'block';
                 placeholder.style.display = 'none';
-                document.getElementById('imageEditorBox').style.display = 'flex';
                 updateImageTransform();
             } else {
                 modalAvatar.style.display = 'none';
                 placeholder.style.display = 'flex';
-                document.getElementById('imageEditorBox').style.display = 'none';
             }
 
             switchSimTab('info');
@@ -2941,24 +2999,10 @@
                     modalAvatar.style.display = 'block';
                     placeholder.style.display = 'none';
 
-                    document.getElementById('imgFilterSelect').value = 'none';
-
-                    document.getElementById('imageEditorBox').style.display = 'flex';
                     updateImageTransform();
                     
-                    // Ha a képvágó modal nyitva van, frissítjük azt is
-                    const cropModal = document.getElementById('imageCropModal');
-                    if (cropModal.classList.contains('active')) {
-                        const cropImage = document.getElementById('cropImage');
-                        cropImage.src = tempUploadedImage;
-                        cropImage.style.display = 'block';
-                        
-                        // Reset crop variables
-                        cropImageScale = 1;
-                        cropImageOffsetX = 0;
-                        cropImageOffsetY = 0;
-                        updateCropImageTransform();
-                    }
+                    // Automatikusan megnyitjuk a képvágó modalt
+                    openImageCropModal();
                 };
                 reader.readAsDataURL(file);
             }
@@ -2966,15 +3010,22 @@
 
         function rotateImage() {
             currentRotation = (currentRotation + 90) % 360;
-            updateImageTransform();
+            // A forgatás most a képvágó modalban történik
         }
-
+        
         function updateImageTransform() {
-            const filter = document.getElementById('imgFilterSelect').value;
-
             const imgEl = document.getElementById('modalAvatar');
-            imgEl.style.transform = `scale(${imageScale}) rotate(${currentRotation}deg) translate(${imageOffsetX}px, ${imageOffsetY}px)`;
-            imgEl.style.filter = filter;
+            if (imgEl && tempUploadedImage) {
+                const transform = {
+                    scale: imageScale,
+                    rotate: currentRotation,
+                    offsetX: imageOffsetX,
+                    offsetY: imageOffsetY,
+                    filter: 'none'
+                };
+                imgEl.style.transform = `scale(${transform.scale}) rotate(${transform.rotate}deg) translate(${transform.offsetX}px, ${transform.offsetY}px)`;
+                imgEl.style.filter = transform.filter;
+            }
         }
 
         function closeSimModal() { simModal.classList.remove('active'); editingSimId = null; }
@@ -2999,7 +3050,7 @@
                     rotate: currentRotation,
                     offsetX: imageOffsetX,
                     offsetY: imageOffsetY,
-                    filter: document.getElementById('imgFilterSelect').value
+                    filter: 'none' // A filter most a képvágó modalban van
                 };
             } else {
                 sim.imageTransform = null;
