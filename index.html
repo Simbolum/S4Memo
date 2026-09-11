@@ -1390,10 +1390,10 @@
             cropImage.src = tempUploadedImage;
             cropImage.style.display = 'block';
             
-            // A Sim Card-ban lévő értékeket átvisszük a képvágóba
-            // Mivel a crop modalban lévő kör (200px) és a Sim Card-ban lévő kör (100px) méretei különböznek,
-            // arányosítani kell a beállításokat
-            const sizeRatio = 200 / 100; // Crop modal kör / Sim Card kör
+            // A szerkesztő modal (100px) értékeit átalakítjuk a crop modal (200px) értékeire
+            const cropModalSize = 200;
+            const editModalSize = 100;
+            const sizeRatio = cropModalSize / editModalSize;
             cropImageScale = (imageScale || 1) * sizeRatio;
             cropImageOffsetX = (imageOffsetX || 0) * sizeRatio;
             cropImageOffsetY = (imageOffsetY || 0) * sizeRatio;
@@ -1416,18 +1416,29 @@
 
         function saveCropedImage() {
             // A crop beállításokat átvisszük a fő változókba
-            // Mivel a crop modalban lévő kör (200px) és a Sim Card-ban lévő kör (100px) méretei különböznek,
-            // arányosítani kell a beállításokat
-            const sizeRatio = 100 / 200; // Sim Card kör / Crop modal kör
-            imageScale = cropImageScale * sizeRatio;
-            imageOffsetX = cropImageOffsetX * sizeRatio;
-            imageOffsetY = cropImageOffsetY * sizeRatio;
+            // A crop modal (200px) lesz a referencia méret, és minden más kontéterhez arányosítunk
+            // így a mentett értékek mindig a crop modal méretéhez viszonyulnak
+            
+            // Először a szerkesztő modalhoz (100px) arányosítunk a megjelenítéshez
+            const cropModalSize = 200;
+            const editModalSize = 100;
+            const editModalRatio = editModalSize / cropModalSize;
+            
+            imageScale = cropImageScale * editModalRatio;
+            imageOffsetX = cropImageOffsetX * editModalRatio;
+            imageOffsetY = cropImageOffsetY * editModalRatio;
             
             // A filter-t is átmentjük
             const filter = document.getElementById('cropImgFilterSelect').value;
 
-            // Frissítjük a modális avatar-t
+            // Frissítjük a modális avatar-t (szerkesztő modal)
             updateImageTransform();
+
+            // Visszaállítjuk a crop modal (200px) referencia értékeket a mentéshez
+            // így a mentett adatok mindig a crop modal méretéhez viszonyulnak
+            imageScale = cropImageScale;
+            imageOffsetX = cropImageOffsetX;
+            imageOffsetY = cropImageOffsetY;
 
             closeImageCropModal();
         }
@@ -2492,9 +2503,15 @@
 
                 if (sim.imageTransform) {
                     const { scale, rotate, offsetX, offsetY, filter } = sim.imageTransform;
+                    // A mentett értékek a crop modal (200px) méretéhez viszonyulnak
+                    // A jelenlegi node mérete 88px, így arányosítani kell
+                    const cropModalSize = 200;
+                    const currentNodeSize = 88;
+                    const sizeRatio = currentNodeSize / cropModalSize;
+                    
                     // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
                     // Így az eltolás nem lesz skálázva
-                    imgEl.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${rotate}deg) scale(${scale})`;
+                    imgEl.style.transform = `translate(${offsetX * sizeRatio}px, ${offsetY * sizeRatio}px) rotate(${rotate}deg) scale(${scale * sizeRatio})`;
                     imgEl.style.filter = filter || 'none';
                 }
 
@@ -2610,9 +2627,15 @@
             document.getElementById('avatarBadgeCount').innerText = avatarCount;
 
             const transform = sim.imageTransform || { scale: 1, rotate: 0, offsetX: 0, offsetY: 0, filter: 'none' };
-            imageScale = transform.scale || 1;
-            imageOffsetX = transform.offsetX || 0;
-            imageOffsetY = transform.offsetY || 0;
+            // A mentett értékek a crop modal (200px) méretéhez viszonyulnak
+            // A szerkesztő modal mérete 100px, így arányosítani kell
+            const cropModalSize = 200;
+            const editModalSize = 100;
+            const sizeRatio = editModalSize / cropModalSize;
+            
+            imageScale = (transform.scale || 1) * sizeRatio;
+            imageOffsetX = (transform.offsetX || 0) * sizeRatio;
+            imageOffsetY = (transform.offsetY || 0) * sizeRatio;
             currentRotation = transform.rotate || 0;
             document.getElementById('imgFilterSelect').value = transform.filter || 'none';
 
@@ -2951,11 +2974,16 @@
             sim.image = tempUploadedImage;
 
             if (tempUploadedImage) {
+                // A szerkesztő modal (100px) értékeit visszaalakítjuk a crop modal (200px) referencia értékeire
+                const cropModalSize = 200;
+                const editModalSize = 100;
+                const sizeRatio = cropModalSize / editModalSize;
+                
                 sim.imageTransform = {
-                    scale: imageScale,
+                    scale: imageScale * sizeRatio,
                     rotate: currentRotation,
-                    offsetX: imageOffsetX,
-                    offsetY: imageOffsetY,
+                    offsetX: imageOffsetX * sizeRatio,
+                    offsetY: imageOffsetY * sizeRatio,
                     filter: document.getElementById('imgFilterSelect').value
                 };
             } else {
