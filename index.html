@@ -836,6 +836,50 @@
         }
         .sim-gallery-remove:hover { background: rgba(255,70,90,.9); }
 
+        /* Galéria nagy kép nézet + képaláírás szerkesztés */
+        .sim-gallery-preview {
+            position: fixed; inset: 0; background: rgba(0,0,0,.84); z-index: 9999;
+            display: flex; align-items: center; justify-content: center; padding: 24px;
+        }
+        .sim-gallery-preview-card {
+            position: relative; max-width: 92vw; max-height: 92vh; display: flex;
+            flex-direction: column; align-items: center; gap: 10px;
+            padding-top: 44px; box-sizing: border-box;
+        }
+        .sim-gallery-preview-toolbar {
+            position: absolute; top: 0; left: 0; right: 0; height: 36px;
+            display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+            z-index: 30; pointer-events: none;
+        }
+        .sim-gallery-pencil {
+            pointer-events: auto;
+        }
+        .sim-gallery-preview img {
+            max-width: 88vw; max-height: 78vh; object-fit: contain; border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.5);
+        }
+        .sim-gallery-pencil {
+            position: relative; top: auto; right: auto; width: 36px; height: 36px;
+            border: 1px solid rgba(255,255,255,.35); border-radius: 50%;
+            background: rgba(25,25,25,.96); color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 17px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.5);
+        }
+        .sim-gallery-pencil:hover { transform: scale(1.06); }
+        .sim-gallery-caption {
+            width: min(620px, 80vw); min-height: 36px; box-sizing: border-box;
+            padding: 9px 42px 9px 12px; border-radius: 10px;
+            border: 1px solid rgba(255,255,255,.2); background: rgba(20,20,20,.92);
+            color: #fff; font-size: 12px; outline: none; display: none;
+        }
+        .sim-gallery-caption.editing { display: block; }
+        .sim-gallery-caption-text {
+            max-width: 620px; color: #fff; font-size: 12px; text-align: center;
+            line-height: 1.45; text-shadow: 0 1px 4px rgba(0,0,0,.7);
+        }
+        .sim-gallery-hint { font-size: 10px; color: rgba(255,255,255,.65); display: none; }
+        .sim-gallery-caption.editing + .sim-gallery-hint { display: block; }
+
         .form-group { margin-bottom: 12px; position: relative; }
         .form-group label { display: block; font-size: 10px; font-weight: 800; color: var(--subtext-color); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .form-group input, .form-group select, .form-group textarea {
@@ -2936,6 +2980,12 @@
             event.target.value = '';
         }
 
+        function getSimGalleryEntry(entry) {
+            // Régi galériaelemek továbbra is működnek: azok egyszerű kép URL-ek.
+            if (typeof entry === 'string') return { src: entry, caption: '' };
+            return { src: entry?.src || '', caption: entry?.caption || '' };
+        }
+
         function renderSimLifeGallery(sim) {
             const grid = document.getElementById('simLifeGalleryGrid');
             if (!grid) return;
@@ -2945,15 +2995,18 @@
                 return;
             }
 
-            sim.gallery.forEach((imgUrl, index) => {
+            sim.gallery.forEach((entry, index) => {
+                const data = getSimGalleryEntry(entry);
+                if (!data.src) return;
+
                 const item = document.createElement('div');
                 item.className = 'sim-gallery-item';
 
                 const img = document.createElement('img');
-                img.src = imgUrl;
-                img.alt = 'Pillanat ' + (index + 1);
+                img.src = data.src;
+                img.alt = data.caption || ('Pillanat ' + (index + 1));
                 img.title = 'Kattints a kép megtekintéséhez';
-                img.onclick = () => openSimGalleryPreview(imgUrl);
+                img.onclick = () => openSimGalleryPreview(index);
 
                 const remove = document.createElement('button');
                 remove.type = 'button';
@@ -2973,18 +3026,92 @@
             });
         }
 
-        function openSimGalleryPreview(src) {
+        function openSimGalleryPreview(index) {
             const old = document.getElementById('simGalleryPreview');
             if (old) old.remove();
+
+            const tree = getCurrentTree();
+            const sim = tree && tree.sims.find(s => s.id === editingSimId);
+            if (!sim || !Array.isArray(sim.gallery) || !sim.gallery[index]) return;
+
+            const data = getSimGalleryEntry(sim.gallery[index]);
             const overlay = document.createElement('div');
             overlay.id = 'simGalleryPreview';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out;';
+            overlay.className = 'sim-gallery-preview';
+            overlay.title = 'Kattints a háttérre a bezáráshoz';
             overlay.onclick = () => overlay.remove();
+
+            const card = document.createElement('div');
+            card.className = 'sim-gallery-preview-card';
+            card.onclick = e => e.stopPropagation();
+
             const img = document.createElement('img');
-            img.src = src;
-            img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);';
-            img.onclick = e => e.stopPropagation();
-            overlay.appendChild(img);
+            img.src = data.src;
+            img.alt = data.caption || 'Galéria kép';
+            img.className = 'sim-gallery-preview';
+
+            // Ceruza: megnyitja a képaláírás szerkesztését.
+            const toolbar = document.createElement('div');
+            toolbar.className = 'sim-gallery-preview-toolbar';
+
+            const pencil = document.createElement('button');
+            pencil.type = 'button';
+            pencil.className = 'sim-gallery-pencil';
+            pencil.innerHTML = '✏️';
+            pencil.title = 'Képaláírás szerkesztése';
+            pencil.setAttribute('aria-label', 'Képaláírás szerkesztése');
+
+            const caption = document.createElement('input');
+            caption.type = 'text';
+            caption.className = 'sim-gallery-caption';
+            caption.value = data.caption;
+            caption.placeholder = 'Írj valamit erről a pillanatról…';
+            caption.setAttribute('aria-label', 'Képaláírás');
+
+            const captionText = document.createElement('div');
+            captionText.className = 'sim-gallery-caption-text';
+            captionText.textContent = data.caption;
+
+            const hint = document.createElement('div');
+            hint.className = 'sim-gallery-hint';
+            hint.textContent = 'Enter = mentés';
+
+            function startCaptionEdit() {
+                caption.classList.add('editing');
+                captionText.style.display = 'none';
+                caption.focus();
+                caption.select();
+            }
+
+            function saveCaption() {
+                const value = caption.value.trim();
+                // Régi string formátumot csak akkor alakítunk objektummá, amikor a felhasználó ment.
+                sim.gallery[index] = { src: data.src, caption: value };
+                saveTreesToStorage();
+                caption.classList.remove('editing');
+                captionText.textContent = value;
+                captionText.style.display = value ? 'block' : 'none';
+            }
+
+            pencil.onclick = startCaptionEdit;
+            caption.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveCaption();
+                } else if (e.key === 'Escape') {
+                    caption.value = data.caption;
+                    caption.classList.remove('editing');
+                    captionText.style.display = data.caption ? 'block' : 'none';
+                }
+            });
+
+            toolbar.appendChild(pencil);
+            card.appendChild(toolbar);
+            card.appendChild(img);
+            card.appendChild(caption);
+            if (data.caption) card.appendChild(captionText);
+            card.appendChild(hint);
+            overlay.appendChild(card);
             document.body.appendChild(overlay);
         }
 
