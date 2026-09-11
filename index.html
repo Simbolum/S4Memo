@@ -712,7 +712,7 @@
         .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
         .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
         
-        .avatar-dead { filter: grayscale(100%); opacity: 30; }
+        .avatar-dead { filter: grayscale(100%); opacity: 0.85; }
 
         .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--subtext-color); }
         .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
@@ -2542,11 +2542,16 @@
             }
 
             const label = document.createElement('div');
-            label.className = 'sim-node-label';
-            label.innerText = `${sim.firstName} ${sim.lastName}`;
+            const label = document.createElement('div');
+    label.className = 'sim-node-label';
+    label.innerText = `${sim.firstName} ${sim.lastName}`;
 
-            node.appendChild(avatar);
-            node.appendChild(label);
+    if (sim.isDead) {
+        avatar.classList.add('avatar-dead');
+    }
+
+    node.appendChild(avatar);
+    node.appendChild(label);
 
             const partnerBtn = document.createElement('div');
             partnerBtn.className = 'add-btn-node add-partner-btn';
