@@ -311,6 +311,22 @@
             border: 1px solid var(--border-color);
         }
 
+
+        /* Sötét lenyíló opciók – a natív fehér lista helyett */
+        select option {
+            background: #241c19 !important;
+            color: #f3e5df !important;
+        }
+
+        select option:checked {
+            background: #6f6c6b !important;
+            color: #ffffff !important;
+        }
+
+        select:focus {
+            outline: none;
+        }
+
         .mini-btn {
             background: transparent;
             border: 1px solid var(--border-color);
