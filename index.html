@@ -581,6 +581,8 @@
         .sim-node.selected { animation: simFloat 3s ease-in-out infinite; z-index: 10 !important; }
         .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px #6bcf7f, 0 8px 25px rgba(107, 207, 127, 0.5) !important; }
         .sim-node.drop-target .sim-node-avatar { box-shadow: 0 0 0 4px #6bcf7f !important; transform: scale(1.1); }
+        .sim-node.dead .sim-node-avatar { filter: grayscale(100%) brightness(0.7); }
+        .sim-node.dead .sim-node-label { opacity: 0.6; }
 
         .sim-node-avatar {
             width: 100%; height: 100%; border-radius: var(--sim-node-radius);
@@ -1075,6 +1077,16 @@
                                 <option value="Idős">Idős</option>
                             </select>
                         </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Státusz</label>
+                            <select id="editStatus">
+                                <option value="alive">Élő</option>
+                                <option value="dead">Halott</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group" style="flex:1;">
                             <label>Keretszín</label>
                             <input type="color" id="editColor" value="#2ed573">
@@ -2380,7 +2392,7 @@
 
         function renderSimNode(sim) {
             const node = document.createElement('div');
-            node.className = `sim-node ${selectedSimId === sim.id ? 'selected' : ''}`;
+            node.className = `sim-node ${selectedSimId === sim.id ? 'selected' : ''} ${sim.isDead ? 'dead' : ''}`;
             node.id = sim.id;
             node.style.left = sim.x + 'px';
             node.style.top = sim.y + 'px';
@@ -2545,6 +2557,7 @@
             document.getElementById('editFirstName').value = sim.firstName || '';
             document.getElementById('editLastName').value = sim.lastName || '';
             document.getElementById('editAge').value = sim.age || 'Fiatal felnőtt';
+            document.getElementById('editStatus').value = sim.isDead ? 'dead' : 'alive';
             document.getElementById('editColor').value = sim.color || '#2ed573';
             document.getElementById('editTraits').value = sim.traits || '';
 
@@ -2917,6 +2930,7 @@
             sim.firstName = document.getElementById('editFirstName').value;
             sim.lastName = document.getElementById('editLastName').value;
             sim.age = document.getElementById('editAge').value;
+            sim.isDead = document.getElementById('editStatus').value === 'dead';
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
             sim.image = tempUploadedImage;
