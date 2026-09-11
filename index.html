@@ -9,26 +9,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #e8d4c0;
-            --bg-pattern: radial-gradient(#d4c4a8 1.5px, transparent 1.5px);
-            --card-bg: rgba(245, 235, 220, 0.85);
-            --card-solid: #f0e8dc;
-            --text-color: #2d1f16;
-            --subtext-color: #6a5a4a;
-            --border-color: rgba(160, 140, 120, 0.5);
-            --accent-color: #c99564;
-            --accent-hover: #d9a574;
-            --active-glow: rgba(201, 149, 100, 0.3);
-            --shadow-color: rgba(45, 31, 22, 0.15);
-            --nav-bg: rgba(245, 235, 220, 0.9);
-            --input-bg: #f0e8dc;
+            --bg-color: #f4ede6;
+            --bg-pattern: radial-gradient(#d5c4b3 1.5px, transparent 1.5px);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-solid: #ffffff;
+            --text-color: #2c221e;
+            --subtext-color: #7a6a60;
+            --border-color: rgba(213, 196, 179, 0.5);
+            --accent-color: #2ed573;
+            --accent-hover: #26af5f;
+            --active-glow: rgba(46, 213, 115, 0.35);
+            --shadow-color: rgba(44, 34, 30, 0.08);
+            --nav-bg: rgba(255, 255, 255, 0.75);
+            --input-bg: #fcf9f6;
 
-            --btn-pink: #d89080;
-            --btn-pink-hover: #e8a090;
-            --btn-green: #5abf6f;
-            --btn-green-hover: #6acf7f;
-            --line-pink: #d89080;
-            --line-green: #5abf6f;
+            --btn-pink: #ff5e7e;
+            --btn-pink-hover: #e04867;
+            --btn-green: #2ed573;
+            --btn-green-hover: #24b05d;
+            --line-pink: #ff5e7e;
+            --line-green: #2ed573;
 
             --sim-node-clip-path: none;
             --sim-node-radius: 50%;
@@ -40,26 +40,26 @@
         }
 
         [data-theme="dark"] {
-            --bg-color: #2a2420;
-            --bg-pattern: radial-gradient(#3a3430 1.5px, transparent 1.5px);
-            --card-bg: rgba(40, 36, 32, 0.9);
-            --card-solid: #35302a;
-            --text-color: #f0e8dc;
-            --subtext-color: #b8a898;
-            --border-color: rgba(140, 130, 120, 0.5);
-            --accent-color: #d4a574;
-            --accent-hover: #e8b584;
-            --active-glow: rgba(212, 165, 116, 0.35);
-            --shadow-color: rgba(0, 0, 0, 0.5);
-            --nav-bg: rgba(35, 32, 28, 0.9);
-            --input-bg: #35302a;
+            --bg-color: #121110;
+            --bg-pattern: radial-gradient(#2a2623 1.5px, transparent 1.5px);
+            --card-bg: rgba(30, 26, 24, 0.85);
+            --card-solid: #1e1a18;
+            --text-color: #f5ebe6;
+            --subtext-color: #a39288;
+            --border-color: rgba(60, 50, 45, 0.6);
+            --accent-color: #2ed573;
+            --accent-hover: #3be380;
+            --active-glow: rgba(46, 213, 115, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --nav-bg: rgba(24, 20, 18, 0.75);
+            --input-bg: #26211e;
 
-            --btn-pink: #e8a090;
-            --btn-pink-hover: #f8b0a0;
-            --btn-green: #6bcf7f;
-            --btn-green-hover: #7cdf91;
-            --line-pink: #e8a090;
-            --line-green: #6bcf7f;
+            --btn-pink: #ff5e7e;
+            --btn-pink-hover: #ff3b61;
+            --btn-green: #2ed573;
+            --btn-green-hover: #219d52;
+            --line-pink: #ff5e7e;
+            --line-green: #2ed573;
         }
 
         #bgBlurOverlay {
@@ -80,11 +80,6 @@
         body.bg-grid { 
             background-image: linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
             background-size: 30px 30px; 
-        }
-        body.editing-active .nav-item, 
-        body.editing-active .right-sidebar a,
-        body.editing-active .toggle-btn {
-            pointer-events: none;
         }
         body.bg-custom {
             background-size: var(--custom-bg-size);
@@ -163,8 +158,8 @@
         .style-panel-drawer {
             position: fixed; bottom: 24px; left: 24px; z-index: 1060;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
-            border-radius: 16px; box-shadow: 0 12px 32px var(--shadow-color);
-            width: 200px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 20px; box-shadow: 0 12px 32px var(--shadow-color);
+            width: 240px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
 
@@ -312,12 +307,13 @@
         }
 
         .crop-circle-mask {
-            width: 120px;
-            height: 120px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             overflow: hidden;
             position: relative;
-            box-shadow: 0 0 20px rgba(201, 160, 120, 0.3);
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(46, 213, 115, 0.3);
             cursor: grab;
         }
 
@@ -397,25 +393,10 @@
             50% { transform: translateY(-3px) rotate(180deg); }
             100% { transform: translateY(0) rotate(360deg); }
         }
-
-        @keyframes cozyPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
         .plumbob {
-            width: 14px; height: 22px; background: linear-gradient(135deg, #6bcf7f 0%, #8cdf91 100%);
+            width: 14px; height: 22px; background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
             clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); display: inline-block;
-            filter: drop-shadow(0 0 8px rgba(107, 207, 127, 0.8));
+            filter: drop-shadow(0 0 8px rgba(0, 255, 135, 0.8));
             animation: plumbobFloat 5s ease-in-out infinite;
         }
 
@@ -426,7 +407,6 @@
             background-color: var(--card-bg); padding: 40px; border-radius: 32px;
             box-shadow: 0 16px 40px var(--shadow-color); border: 1px solid var(--border-color);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            animation: fadeInUp 0.6s ease-out;
         }
         .main-card h1 { font-family: 'Playfair Display', serif; font-size: 32px; margin-top: 0; }
 
@@ -438,11 +418,11 @@
 
         /* ÚJ MODERN CSALÁDFÁK FLOATING BAR */
         .tree-left-sidebar {
-            position: absolute; top: 20px; left: 24px; width: 260px;
+            position: absolute; top: 20px; left: 24px; width: 310px;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
-            border-radius: 20px; padding: 8px; box-shadow: 0 12px 32px var(--shadow-color);
-            z-index: 1050; display: flex; flex-direction: column; gap: 6px;
-            max-height: calc(50vh - 60px); overflow-y: auto;
+            border-radius: 24px; padding: 16px; box-shadow: 0 12px 32px var(--shadow-color);
+            z-index: 1050; display: flex; flex-direction: column; gap: 10px;
+            max-height: calc(100vh - 120px); overflow-y: auto;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
 
@@ -478,7 +458,7 @@
         .tree-delete-btn:hover { opacity: 1; background-color: rgba(217, 83, 79, 0.15); }
 
         .add-tree-btn {
-            background-color: rgba(201, 160, 120, 0.1); color: var(--accent-color); border: 1px dashed var(--accent-color);
+            background-color: rgba(46, 213, 115, 0.1); color: var(--accent-color); border: 1px dashed var(--accent-color);
             padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer; text-align: center;
             width: 100%; margin-top: 4px;
         }
@@ -488,10 +468,7 @@
             background-color: var(--card-solid); border: 1px solid var(--border-color);
             border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 4px;
             box-shadow: 0 2px 6px var(--shadow-color);
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.4s ease-out;
         }
-        .journal-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow-color); border-color: var(--accent-color); }
         .journal-item-header { display: flex; justify-content: space-between; align-items: center; }
         .journal-title { font-size: 12px; font-weight: 800; color: var(--text-color); }
         .journal-date { font-size: 9px; color: var(--subtext-color); font-weight: 600; }
@@ -516,14 +493,13 @@
         }
         .timeline-card {
             position: relative; background-color: var(--card-solid); border: 1px solid var(--border-color);
-            border-radius: 20px; padding: 20px; margin-left: 50px; box-shadow: 0 4px 16px var(--shadow-color); transition: all 0.3s ease;
-            animation: fadeInUp 0.5s ease-out;
+            border-radius: 20px; padding: 20px; margin-left: 50px; box-shadow: 0 4px 16px var(--shadow-color); transition: all 0.25s ease;
         }
-        .timeline-card:hover { transform: translateY(-3px) scale(1.01); border-color: var(--accent-color); box-shadow: 0 12px 32px var(--shadow-color); }
+        .timeline-card:hover { transform: translateY(-2px); border-color: var(--accent-color); box-shadow: 0 8px 24px var(--shadow-color); }
         .timeline-icon {
             position: absolute; left: -50px; top: 16px; width: 34px; height: 34px; border-radius: 50%;
             background-color: var(--accent-color); color: #ffffff; display: flex; align-items: center; justify-content: center;
-            font-size: 15px; box-shadow: 0 4px 12px var(--active-glow); z-index: 2;
+            font-size: 15px; box-shadow: 0 4px 12px var(--active-glow); z-index: 2; border: 2px solid var(--card-solid);
         }
         .timeline-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .timeline-tree-badge { background-color: var(--nav-bg); color: var(--accent-color); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 10px; border: 1px solid var(--border-color); display: inline-block; margin-bottom: 4px; }
@@ -534,16 +510,16 @@
 
         .add-sim-floating-btn {
             position: absolute; bottom: 24px; right: 24px; z-index: 1050;
-            background: linear-gradient(135deg, #c9a078 0%, #e8c8a8 100%);
-            color: #3a2f20; border: none; padding: 14px 24px;
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            color: #1a2a20; border: none; padding: 14px 24px;
             border-radius: 20px; font-weight: 800; font-size: 14px; cursor: pointer;
-            box-shadow: 0 8px 25px rgba(201, 160, 120, 0.4); text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+            box-shadow: 0 8px 25px rgba(0, 255, 135, 0.4); text-shadow: 0 1px 0 rgba(255,255,255,0.4);
         }
-        .add-sim-floating-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(201, 160, 120, 0.6); }
+        .add-sim-floating-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 12px 30px rgba(0, 255, 135, 0.6); }
 
         .zoom-controls {
             position: absolute; bottom: 24px; left: 280px; z-index: 1050;
-            display: none; gap: 4px; background-color: var(--nav-bg);
+            display: flex; gap: 4px; background-color: var(--nav-bg);
             padding: 4px; border-radius: 14px; border: 1px solid var(--border-color);
             box-shadow: 0 8px 24px var(--shadow-color); align-items: center;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -575,22 +551,19 @@
             position: absolute; width: 88px; height: 88px; cursor: pointer; 
             z-index: 2; user-select: none; display: flex; align-items: center; 
             justify-content: center; background: transparent;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .sim-node:hover { transform: scale(1.08); z-index: 5; }
+        .sim-node:hover { transform: scale(1.06); z-index: 5; }
         .sim-node.selected { animation: simFloat 3s ease-in-out infinite; z-index: 10 !important; }
-        .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px #6bcf7f, 0 8px 25px rgba(107, 207, 127, 0.5) !important; }
-        .sim-node.drop-target .sim-node-avatar { box-shadow: 0 0 0 4px #6bcf7f !important; transform: scale(1.1); }
-        .sim-node.dead .sim-node-avatar { filter: grayscale(100%) brightness(0.7); }
-        .sim-node.dead .sim-node-label { opacity: 0.6; }
+        .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px var(--accent-color), 0 8px 25px var(--active-glow) !important; }
+        .sim-node.drop-target .sim-node-avatar { box-shadow: 0 0 0 4px #00ff87 !important; transform: scale(1.1); }
 
         .sim-node-avatar {
             width: 100%; height: 100%; border-radius: var(--sim-node-radius);
             clip-path: var(--sim-node-clip-path); overflow: hidden; display: flex; 
             align-items: center; justify-content: center; font-size: 32px;
             background-color: var(--card-solid); background-size: cover; background-position: center; 
-            pointer-events: none; box-shadow: 0 8px 20px var(--shadow-color);
-            transition: all 0.2s ease; border: 3px solid transparent;
+            pointer-events: none; border: 3px solid #ffffff; box-shadow: 0 8px 20px var(--shadow-color);
+            transition: all 0.2s ease;
         }
 
         .sim-node-label {
@@ -598,17 +571,7 @@
             font-weight: 700; font-size: 11px; color: var(--text-color);
             background-color: var(--card-solid); padding: 3px 10px; border-radius: 12px;
             border: 1px solid var(--border-color); box-shadow: 0 4px 12px var(--shadow-color);
-            pointer-events: auto; z-index: 15; letter-spacing: -0.2px; cursor: pointer;
-        }
-        .sim-node-label:hover {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-        }
-        .sim-node-label[contenteditable="true"] {
-            background-color: var(--input-bg);
-            border-color: var(--accent-color);
-            outline: none;
-            cursor: text;
+            pointer-events: none; z-index: 15; letter-spacing: -0.2px;
         }
 
         .sim-edit-pencil {
@@ -623,7 +586,7 @@
             position: absolute; width: 24px; height: 24px; color: white;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 8px var(--shadow-color);
-            z-index: 20;
+            border: 2px solid #ffffff; z-index: 20;
         }
         .add-partner-btn { right: -6px; top: 50%; transform: translateY(-50%); background-color: var(--btn-pink); }
         .add-child-btn { bottom: -6px; left: 50%; transform: translateX(-50%); background-color: var(--btn-green); }
@@ -631,11 +594,11 @@
         /* INTEGRÁLT KÉPSZERKESZTŐ MODUL */
         .avatar-editor-container {
             display: flex; flex-direction: column; align-items: center; gap: 12px;
-            padding: 16px; border-radius: 20px;
-            margin-bottom: 15px;
+            background-color: var(--input-bg); padding: 16px; border-radius: 20px;
+            border: 1px solid var(--border-color); margin-bottom: 15px;
         }
         .avatar-crop-view {
-            width: 100px; height: 100px; border-radius: 50%;
+            width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-color);
             overflow: hidden; position: relative; background-color: var(--card-solid);
             box-shadow: 0 4px 14px var(--shadow-color); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
@@ -670,12 +633,6 @@
             display: none; align-items: center; justify-content: center;
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
         }
-        .modal-overlay.editing-active {
-            pointer-events: none;
-        }
-        .modal-overlay.editing-active .modal-card {
-            pointer-events: auto;
-        }
         .modal-overlay.active { display: flex; }
         
         .modal-card {
@@ -708,7 +665,9 @@
         .tab-content.active { display: block; }
 
         .profile-header-info { text-align: center; margin-bottom: 12px; }
-        .profile-header-info h2 { margin: 4px 0 2px 0; font-size: 18px; font-weight: 800; background: transparent; }
+        .profile-header-info h2 { margin: 4px 0 2px 0; font-size: 18px; font-weight: 800; }
+        .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
+        .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
 
         .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--subtext-color); }
         .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
@@ -734,14 +693,11 @@
 
         .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 12px; }
-        .btn-primary { background-color: var(--accent-color); border: none; color: white; padding: 8px 16px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 12px; box-shadow: 0 4px 12px var(--active-glow); transition: all 0.3s ease; position: relative; overflow: hidden; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px var(--active-glow); }
-        .btn-primary::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s ease; }
-        .btn-primary:hover::after { left: 100%; }
+        .btn-primary { background-color: var(--accent-color); border: none; color: white; padding: 8px 16px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 12px; box-shadow: 0 4px 12px var(--active-glow); }
         .btn-danger { background-color: #ff5e7e; border: none; color: white; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 12px; margin-right: auto; }
 
         .selected-sim-preview { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 12px; background-color: var(--input-bg); border-radius: 14px; border: 1px solid var(--border-color); }
-        .sim-avatar-preview { width: 44px; height: 44px; border-radius: 50%; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 20px; background-color: var(--card-solid); }
+        .sim-avatar-preview { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent-color); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 20px; background-color: var(--card-solid); }
 
         .right-sidebar {
             position: fixed; top: 20px; right: -290px; width: 270px; height: calc(100vh - 40px);
@@ -766,7 +722,7 @@
     <div id="authContainer" class="modal-overlay active">
         <div class="modal-card">
             <h2 id="authTitle" style="text-align: center; margin-bottom: 20px;">S4Memo Bejelentkezés</h2>
-            <div id="authForm">
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
                 <div class="form-group">
                     <label>Email cím</label>
                     <input type="email" id="authEmail" required placeholder="pelda@simsmail.com">
@@ -777,9 +733,9 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="handleLogout()" id="logoutBtn" style="display: none;">Kilépés</button>
-                    <button type="button" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
+                    <button type="submit" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
                 </div>
-            </div>
+            </form>
             <div style="text-align: center; margin-top: 15px;">
                 <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" style="background: none; border: none; color: var(--subtext-color); cursor: pointer; font-size: 12px;">
                     Nincs még fiókod? Regisztrálj most!
@@ -983,9 +939,6 @@
             <button type="button" class="close-btn" onclick="closeImageCropModal()">&times;</button>
             <h3 class="modal-title">Profilkép beállítása</h3>
             
-            <!-- Rejtett fájlválasztó input a képvágó modalhoz -->
-            <input type="file" id="cropImageInput" accept="image/*" style="display: none;" onchange="handleCropImageUpload(event)">
-            
             <div class="image-crop-container">
                 <div class="crop-preview-area">
                     <div class="crop-circle-mask" id="cropCircleMask">
@@ -996,18 +949,6 @@
                     <p>🖱️ Húzd a képet az elmozgatáshoz</p>
                     <p>🔄 Görgővel közelíts vagy távolíts</p>
                     <p>📁 Kattints a képre új tallózáshoz</p>
-                </div>
-                
-                <!-- Szerkesztő vezérlők -->
-                <div class="image-controls-mini" id="cropImageEditorBox" style="display: none;">
-                    <button type="button" class="mini-btn" onclick="rotateCropImage()">🔄</button>
-                    <select id="cropImgFilterSelect" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-solid); color: var(--text-color); font-size: 10px;" onchange="updateCropImageTransform()">
-                        <option value="none" selected>Normál</option>
-                        <option value="grayscale(100%)">Fekete-Fehér</option>
-                        <option value="sepia(80%)">Szépia</option>
-                        <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
-                        <option value="saturate(200%)">Élénk</option>
-                    </select>
                 </div>
             </div>
             
@@ -1045,22 +986,26 @@
                             <span>Módosítás</span>
                         </div>
                     </div>
+
+                    <!-- Egyszerűsített filter választó -->
+                    <div class="image-controls-mini" id="imageEditorBox" style="display: none;">
+                        <button type="button" class="mini-btn" onclick="rotateImage()">🔄</button>
+                        <select id="imgFilterSelect" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-solid); color: var(--text-color); font-size: 10px;" onchange="updateImageTransform()">
+                            <option value="none" selected>Normál</option>
+                            <option value="grayscale(100%)">Fekete-Fehér</option>
+                            <option value="sepia(80%)">Szépia</option>
+                            <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
+                            <option value="saturate(200%)">Élénk</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Rejtett fájlválasztó input -->
                 <input type="file" id="editImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
-                
-                <!-- Rejtett filter select (nem használjuk, de megtartjuk kompatibilitás miatt) -->
-                <select id="imgFilterSelect" style="display: none;">
-                    <option value="none" selected>Normál</option>
-                    <option value="grayscale(100%)">Fekete-Fehér</option>
-                    <option value="sepia(80%)">Szépia</option>
-                    <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
-                    <option value="saturate(200%)">Élénk</option>
-                </select>
 
                 <div class="profile-header-info">
-                    <h2 id="modalName" contenteditable="true" style="cursor: text; outline: none; border-bottom: 2px solid transparent; transition: border-color 0.2s;">Sim Neve</h2>
+                    <h2 id="modalName">Sim Neve</h2>
+                    <span id="modalStatus" class="status-alive">Életben van</span>
                 </div>
 
                 <form id="simForm" onsubmit="saveSimDetails(event)">
@@ -1090,25 +1035,8 @@
                             </select>
                         </div>
                         <div class="form-group" style="flex:1;">
-                            <label>Státusz</label>
-                            <select id="editStatus">
-                                <option value="alive">Élő</option>
-                                <option value="dead">Halott</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group" style="flex:1;">
                             <label>Keretszín</label>
                             <input type="color" id="editColor" value="#2ed573">
-                        </div>
-                        <div class="form-group" style="flex:1;">
-                            <label>Keret megjelenítése</label>
-                            <select id="editShowBorder">
-                                <option value="true">Igen</option>
-                                <option value="false">Nem</option>
-                            </select>
                         </div>
                     </div>
 
@@ -1227,9 +1155,6 @@
     <button class="toggle-btn" id="toggleBtn"><span class="arrow-icon">◀</span></button>
 
     <script>
-        console.log("Script betöltődött!");
-        console.log("DOM kész:", document.readyState);
-        
         // Supabase konfiguráció
         const SUPABASE_URL = 'https://mzmwchyepqhqcyydngeo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_Zea0--loQ_Q44nd13y5yPA_wl8L-pB_';
@@ -1284,9 +1209,9 @@
                 name: 'Goth család',
                 bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
                 sims: [
-                    { id: 'sim_1', firstName: 'Bella', lastName: 'Goth', age: 'Fiatal felnőtt', traits: 'Romantikus', color: '#ff5e7e', image: '', imageTransform: null, x: 450, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, showBorder: true, gallery: [] },
-                    { id: 'sim_2', firstName: 'Mortimer', lastName: 'Goth', age: 'Felnőtt', traits: 'Könyvmoly', color: '#2ed573', image: '', imageTransform: null, x: 650, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, showBorder: true, gallery: [] },
-                    { id: 'sim_3', firstName: 'Cassandra', lastName: 'Goth', age: 'Tini', traits: 'Borongós', color: '#2ed573', image: '', imageTransform: null, x: 550, y: 380, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, showBorder: true, gallery: [] }
+                    { id: 'sim_1', firstName: 'Bella', lastName: 'Goth', age: 'Fiatal felnőtt', traits: 'Romantikus', color: '#ff5e7e', image: '', imageTransform: null, x: 450, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
+                    { id: 'sim_2', firstName: 'Mortimer', lastName: 'Goth', age: 'Felnőtt', traits: 'Könyvmoly', color: '#2ed573', image: '', imageTransform: null, x: 650, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
+                    { id: 'sim_3', firstName: 'Cassandra', lastName: 'Goth', age: 'Tini', traits: 'Borongós', color: '#2ed573', image: '', imageTransform: null, x: 550, y: 380, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] }
                 ],
                 journal: [
                     { id: 'j_1', title: 'Megérkezés Goth birtokra', date: '2026-01-15', content: 'A család beköltözött az új kúriába. Bella azonnal nekilátott a ház szépítésének.' }
@@ -1350,56 +1275,19 @@
                 openImageCropModal();
             }
         }
-        
-        function triggerCropFileInput() {
-            document.getElementById('cropImageInput').click();
-        }
-        
-        function handleCropImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    tempUploadedImage = e.target.result;
-                    currentRotation = 0;
-                    imageScale = 1;
-                    imageOffsetX = 0;
-                    imageOffsetY = 0;
-                    
-                    const cropImage = document.getElementById('cropImage');
-                    cropImage.src = tempUploadedImage;
-                    cropImage.style.display = 'block';
-                    
-                    // Reset crop variables
-                    cropImageScale = 1;
-                    cropImageOffsetX = 0;
-                    cropImageOffsetY = 0;
-                    document.getElementById('cropImgFilterSelect').value = 'none';
-                    
-                    updateCropImageTransform();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
 
         // KÉPVÁGÓ MODAL FUNKCIÓK
         function openImageCropModal() {
             const cropModal = document.getElementById('imageCropModal');
             const cropImage = document.getElementById('cropImage');
-            const editorBox = document.getElementById('cropImageEditorBox');
             
             cropImage.src = tempUploadedImage;
             cropImage.style.display = 'block';
             
-            // A Sim Card-ban lévő értékeket átvisszük a képvágóba
-            // Most már ugyanolyan méretű a kör, így nincs átszámítás
-            cropImageScale = imageScale || 1;
-            cropImageOffsetX = imageOffsetX || 0;
-            cropImageOffsetY = imageOffsetY || 0;
-            
-            // Megjelenítjük a szerkesztő vezérlőket
-            editorBox.style.display = 'flex';
-            document.getElementById('cropImgFilterSelect').value = currentRotation ? (currentRotation === 90 ? 'none' : 'none') : 'none';
+            // Reset crop variables
+            cropImageScale = 1;
+            cropImageOffsetX = 0;
+            cropImageOffsetY = 0;
             
             cropModal.classList.add('active');
             updateCropImageTransform();
@@ -1408,20 +1296,14 @@
 
         function closeImageCropModal() {
             const cropModal = document.getElementById('imageCropModal');
-            const editorBox = document.getElementById('cropImageEditorBox');
             cropModal.classList.remove('active');
-            editorBox.style.display = 'none';
         }
 
         function saveCropedImage() {
             // A crop beállításokat átvisszük a fő változókba
-            // Most már ugyanolyan méretű a kör, így nincs átszámítás
             imageScale = cropImageScale;
             imageOffsetX = cropImageOffsetX;
             imageOffsetY = cropImageOffsetY;
-            
-            // A filter-t is átmentjük
-            const filter = document.getElementById('cropImgFilterSelect').value;
             
             // Frissítjük a modális avatar-t
             updateImageTransform();
@@ -1431,14 +1313,7 @@
 
         function updateCropImageTransform() {
             const cropImage = document.getElementById('cropImage');
-            const filter = document.getElementById('cropImgFilterSelect').value;
-            cropImage.style.transform = `scale(${cropImageScale}) rotate(${currentRotation}deg) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
-            cropImage.style.filter = filter;
-        }
-        
-        function rotateCropImage() {
-            currentRotation = (currentRotation + 90) % 360;
-            updateCropImageTransform();
+            cropImage.style.transform = `scale(${cropImageScale}) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
         }
 
         function initCropImageDrag() {
@@ -1448,11 +1323,6 @@
             cropMask.addEventListener('mousedown', startCropImageDrag);
             cropMask.addEventListener('touchstart', startCropImageDrag, { passive: false });
             cropMask.addEventListener('wheel', handleCropImageWheel, { passive: false });
-            cropMask.addEventListener('click', function(e) {
-                if (!hasDraggedCrop) {
-                    triggerCropFileInput();
-                }
-            });
         }
 
         function startCropImageDrag(e) {
@@ -1510,7 +1380,7 @@
             
             // Ha nem húztunk (kattintás volt), akkor nyissuk meg a fájlválasztót
             if (!hasDraggedCrop) {
-                triggerCropFileInput();
+                triggerFileInput();
             }
         }
 
@@ -1523,6 +1393,10 @@
         }
 
         // Régi képszerkesztő funkciók eltávolítva - most a képvágó modalt használjuk
+        function rotateImage() {
+            currentRotation = (currentRotation + 90) % 360;
+            updateImageTransform();
+        }
 
         function toggleAccordion(groupId) {
             const group = document.getElementById(groupId);
@@ -1633,7 +1507,7 @@
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'none');
             } else if (shape === 'plumbob') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
-                document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 85% 50%, 50% 100%, 15% 50%)');
+                document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)');
             } else if (shape === 'hexagon') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)');
@@ -1641,23 +1515,19 @@
         }
 
         function saveTreesToStorage() {
-            // Mentés a localStorage-ba (biztonsági mentés és elsődleges tárolás)
+            // Mentés a Supabase-ba
+            if (currentUser && supabaseClient) {
+                const tree = getCurrentTree();
+                if (tree) {
+                    saveFamilyTreeToSupabase(tree);
+                }
+            }
+
+            // Mentés a localStorage-ba (biztonsági mentés)
             try {
                 localStorage.setItem('s4memo_family_trees', JSON.stringify(familyTrees));
             } catch (e) {
                 console.error("Nem sikerült az elmentés:", e);
-            }
-
-            // Mentés a Supabase-ba (háttérben, nem blokkoló)
-            if (currentUser && supabaseClient) {
-                const tree = getCurrentTree();
-                if (tree) {
-                    // Debounce: csak 1 másodperc várakozás után küldjük
-                    clearTimeout(window.saveTimeout);
-                    window.saveTimeout = setTimeout(() => {
-                        saveFamilyTreeToSupabase(tree);
-                    }, 1000);
-                }
             }
         }
 
@@ -2182,33 +2052,18 @@
             }
         }
 
-        async function handleAuthSubmit() {
-            console.log("Bejelentkezés gomb megnyomva...");
-            
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
-            
-            console.log("Email:", email);
-            console.log("Supabase client:", supabaseClient);
-            
-            if (!email || !password) {
-                alert('Kérlek töltsd ki az email és jelszó mezőket!');
-                return;
-            }
 
             if (isSignUpMode) {
-                console.log("Regisztráció indítása...");
                 const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                console.log("Regisztráció eredmény:", { data, error });
-                
                 if (error) {
                     alert('Regisztrációs hiba: ' + error.message);
                 } else {
                     // Regisztráció után automatikus bejelentkezés
-                    console.log("Bejelentkezés regisztráció után...");
                     const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
-                    console.log("Bejelentkezés eredmény:", { signInData, signInError });
-                    
                     if (signInError) {
                         alert('Sikeres regisztráció, de a bejelentkezés sikertelen: ' + signInError.message);
                         isSignUpMode = false;
@@ -2219,14 +2074,9 @@
                     }
                 }
             } else {
-                console.log("Bejelentkezés indítása...");
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                console.log("Bejelentkezés eredmény:", { data, error });
-                
                 if (error) {
                     alert('Bejelentkezési hiba: ' + error.message);
-                } else {
-                    console.log("Sikeres bejelentkezés - session várt");
                 }
                 // Sikeres bejelentkezés - a handleSession automatikusan lefut
             }
@@ -2342,120 +2192,102 @@
         async function fetchFamilyTreesFromSupabase() {
             if (!currentUser || !supabaseClient) return;
 
-            let retries = 3;
-            let delay = 1000;
+            try {
+                // Cache busting: hozzáadunk egy véletlenszerű timestamp-et
+                const timestamp = Date.now();
+                const { data, error } = await supabaseClient
+                    .from('family_trees')
+                    .select('id, name, background_config, sims, journal, created_at, updated_at')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(100);
 
-            while (retries > 0) {
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('family_trees')
-                        .select('id, name, background_config, sims, journal, created_at, updated_at')
-                        .eq('user_id', currentUser.id)
-                        .order('created_at', { ascending: false })
-                        .limit(100);
-
-                    if (error) {
-                        console.error('Hiba a családfák betöltésekor:', error);
-                        if (error.code === '57014' || error.message?.includes('timeout')) {
-                            console.log(`Timeout hiba, újrapróbálkozás (${retries} maradt)...`);
-                            retries--;
-                            if (retries > 0) {
-                                await new Promise(resolve => setTimeout(resolve, delay));
-                                delay *= 2;
-                                continue;
-                            }
-                        }
-                        alert("Hiba a családfák betöltésekor: " + error.message);
-                        return;
-                    }
-
-                    if (data && data.length > 0) {
-                        familyTrees = data.map(tree => ({
-                            id: tree.id,
-                            name: tree.name,
-                            bgConfig: tree.background_config || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
-                            sims: tree.sims || [],
-                            journal: tree.journal || []
-                        }));
-
-                        if (familyTrees.length > 0) {
-                            currentTreeId = familyTrees[0].id;
-                        }
-
-                        console.log("Családfák sikeresen betöltve:", familyTrees.length);
-                        return;
-                    }
-
-                    console.log("Nincsenek családfák a Supabase-ban");
+                if (error) {
+                    console.error('Hiba a családfák betöltésekor:', error);
+                    alert("Hiba a családfák betöltésekor: " + error.message);
                     return;
-                } catch (error) {
-                    console.error("Váratlan hiba a családfák betöltésekor:", error);
-                    if (retries > 0) {
-                        console.log(`Újrapróbálkozás (${retries} maradt)...`);
-                        retries--;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2;
-                    } else {
-                        break;
-                    }
                 }
-            }
 
-            console.error("Nem sikerült a családfák betöltése a Supabase-ból (túl sok próbálkozás)");
+                if (data && data.length > 0) {
+                    familyTrees = data.map(tree => ({
+                        id: tree.id,
+                        name: tree.name,
+                        bgConfig: tree.background_config || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
+                        sims: tree.sims || [],
+                        journal: tree.journal || []
+                    }));
+
+                    if (familyTrees.length > 0) {
+                        currentTreeId = familyTrees[0].id;
+                    }
+                    console.log("Családfák sikeresen betöltve:", familyTrees.length);
+                } else {
+                    familyTrees = [];
+                    currentTreeId = null;
+                    console.log("Nincsenek családfák");
+                }
+
+                renderTreeTabs();
+                loadCurrentTreeCanvas();
+            } catch (error) {
+                console.error("Váratlan hiba a családfák betöltésekor:", error);
+            }
         }
 
         async function saveFamilyTreeToSupabase(tree) {
             if (!currentUser || !supabaseClient) return;
 
-            let retries = 3;
-            let delay = 1000;
+            try {
+                const { error } = await supabaseClient
+                    .from('family_trees')
+                    .upsert({
+                        id: tree.id,
+                        user_id: currentUser.id,
+                        name: tree.name,
+                        background_config: tree.bgConfig,
+                        sims: tree.sims,
+                        journal: tree.journal || [],
+                        updated_at: new Date()
+                    }, {
+                        onConflict: 'id'
+                    });
 
-            while (retries > 0) {
-                try {
-                    const { error } = await supabaseClient
-                        .from('family_trees')
-                        .upsert({
-                            id: tree.id,
-                            user_id: currentUser.id,
-                            name: tree.name,
-                            background_config: tree.bgConfig,
-                            sims: tree.sims,
-                            journal: tree.journal || [],
-                            updated_at: new Date()
-                        }, {
-                            onConflict: 'id'
-                        });
-
-                    if (error) {
-                        console.error("Hiba a családfa mentésekor:", error);
-                        if (error.code === '57014' || error.message?.includes('timeout')) {
-                            console.log(`Timeout hiba, újrapróbálkozás (${retries} maradt)...`);
-                            retries--;
-                            if (retries > 0) {
-                                await new Promise(resolve => setTimeout(resolve, delay));
-                                delay *= 2;
-                                continue;
-                            }
-                        }
-                        throw error;
-                    }
-
-                    console.log("Családfa sikeresen mentve:", tree.name);
-                    return;
-                } catch (error) {
+                if (error) {
                     console.error("Hiba a családfa mentésekor:", error);
-                    if (retries > 0) {
-                        console.log(`Újrapróbálkozás (${retries} maradt)...`);
-                        retries--;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2;
+                    
+                    // Ha schema cache hiba, próbáljuk meg újra
+                    if (error.message && error.message.includes('journal')) {
+                        console.log("Schema cache hiba - kényszerített újrapróbálkozás...");
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        const retryResult = await supabaseClient
+                            .from('family_trees')
+                            .upsert({
+                                id: tree.id,
+                                user_id: currentUser.id,
+                                name: tree.name,
+                                background_config: tree.bgConfig,
+                                sims: tree.sims,
+                                journal: tree.journal || [],
+                                updated_at: new Date()
+                            }, {
+                                onConflict: 'id'
+                            });
+                            
+                        if (retryResult.error) {
+                            alert("Hiba a családfa mentésekor: " + retryResult.error.message);
+                        } else {
+                            console.log("Családfa sikeresen mentve (újrapróbálkozás):", tree.name);
+                        }
                     } else {
-                        break;
+                        alert("Hiba a családfa mentésekor: " + error.message);
                     }
+                } else {
+                    console.log("Családfa sikeresen mentve:", tree.name);
                 }
+            } catch (error) {
+                console.error("Váratlan hiba a családfa mentésekor:", error);
             }
-
-            console.error("Nem sikerült a családfa mentése a Supabase-ba (túl sok próbálkozás)");
         }
 
         function loadCurrentTreeCanvas() {
@@ -2492,7 +2324,7 @@
             const newSim = {
                 id: 'sim_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 firstName: firstName, lastName: lastName, age: 'Fiatal felnőtt',
-                traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y, parentId: parentId, partnerId: partnerId, relationType: relationType, locked: false, isDead: false, showBorder: true, gallery: []
+                traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y, parentId: parentId, partnerId: partnerId, relationType: relationType, locked: false, isDead: false, gallery: []
             };
 
             tree.sims.push(newSim);
@@ -2505,7 +2337,7 @@
 
         function renderSimNode(sim) {
             const node = document.createElement('div');
-            node.className = `sim-node ${selectedSimId === sim.id ? 'selected' : ''} ${sim.isDead ? 'dead' : ''}`;
+            node.className = `sim-node ${selectedSimId === sim.id ? 'selected' : ''}`;
             node.id = sim.id;
             node.style.left = sim.x + 'px';
             node.style.top = sim.y + 'px';
@@ -2518,12 +2350,8 @@
 
             const avatar = document.createElement('div');
             avatar.className = 'sim-node-avatar';
-            if (sim.color && sim.showBorder !== false) {
+            if (sim.color) {
                 avatar.style.borderColor = sim.color;
-                avatar.style.borderWidth = '3px';
-                avatar.style.borderStyle = 'solid';
-            } else {
-                avatar.style.borderColor = 'transparent';
             }
 
             if (sim.image) {
@@ -2547,33 +2375,6 @@
             const label = document.createElement('div');
             label.className = 'sim-node-label';
             label.innerText = `${sim.firstName} ${sim.lastName}`;
-            label.contentEditable = true;
-            label.dataset.simId = sim.id;
-            
-            label.addEventListener('focus', function() {
-                this.dataset.originalName = this.innerText;
-                document.body.classList.add('editing-active');
-            });
-            
-            label.addEventListener('blur', function(e) {
-                e.stopPropagation();
-                document.body.classList.remove('editing-active');
-                if (this.innerText !== this.dataset.originalName) {
-                    updateSimName(sim.id, this.innerText);
-                }
-            });
-            
-            label.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.blur();
-                }
-            });
-            
-            label.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
 
             node.appendChild(avatar);
             node.appendChild(label);
@@ -2641,32 +2442,10 @@
             tempUploadedImage = sim.image || '';
             currentRotation = sim.imageTransform?.rotate || 0;
 
-            const modalName = document.getElementById('modalName');
-            modalName.innerText = `${sim.firstName} ${sim.lastName}`;
-            
-            modalName.addEventListener('focus', function() {
-                this.style.borderColor = 'var(--accent-color)';
-                simModal.classList.add('editing-active');
-            });
-            
-            modalName.addEventListener('blur', function(e) {
-                e.stopPropagation();
-                this.style.borderColor = 'transparent';
-                simModal.classList.remove('editing-active');
-                const nameParts = this.innerText.trim().split(' ');
-                if (nameParts.length >= 1) {
-                    document.getElementById('editFirstName').value = nameParts[0];
-                    document.getElementById('editLastName').value = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-                }
-            });
-            
-            modalName.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.blur();
-                }
-            });
+            document.getElementById('modalName').innerText = `${sim.firstName} ${sim.lastName}`;
+            const statusEl = document.getElementById('modalStatus');
+            statusEl.innerText = sim.isDead ? 'Elhunyt' : 'Életben van';
+            statusEl.className = sim.isDead ? 'status-dead' : 'status-alive';
 
             const modalAvatar = document.getElementById('modalAvatar');
             const placeholder = document.getElementById('modalAvatarPlaceholder');
@@ -2674,22 +2453,8 @@
             document.getElementById('editFirstName').value = sim.firstName || '';
             document.getElementById('editLastName').value = sim.lastName || '';
             document.getElementById('editAge').value = sim.age || 'Fiatal felnőtt';
-            document.getElementById('editStatus').value = sim.isDead ? 'dead' : 'alive';
             document.getElementById('editColor').value = sim.color || '#2ed573';
-            document.getElementById('editShowBorder').value = sim.showBorder !== false ? 'true' : 'false';
             document.getElementById('editTraits').value = sim.traits || '';
-
-            // Sync name inputs with modal name
-            const firstNameInput = document.getElementById('editFirstName');
-            const lastNameInput = document.getElementById('editLastName');
-            
-            firstNameInput.addEventListener('input', function() {
-                modalName.innerText = `${this.value} ${lastNameInput.value}`;
-            });
-            
-            lastNameInput.addEventListener('input', function() {
-                modalName.innerText = `${firstNameInput.value} ${this.value}`;
-            });
 
             document.getElementById('modalDiaryText').innerText = sim.traits ? sim.traits : 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
             
@@ -2718,15 +2483,18 @@
             imageOffsetX = transform.offsetX || 0;
             imageOffsetY = transform.offsetY || 0;
             currentRotation = transform.rotate || 0;
+            document.getElementById('imgFilterSelect').value = transform.filter || 'none';
 
             if (tempUploadedImage) {
                 modalAvatar.src = tempUploadedImage;
                 modalAvatar.style.display = 'block';
                 placeholder.style.display = 'none';
+                document.getElementById('imageEditorBox').style.display = 'flex';
                 updateImageTransform();
             } else {
                 modalAvatar.style.display = 'none';
                 placeholder.style.display = 'flex';
+                document.getElementById('imageEditorBox').style.display = 'none';
             }
 
             switchSimTab('info');
@@ -2999,10 +2767,24 @@
                     modalAvatar.style.display = 'block';
                     placeholder.style.display = 'none';
 
+                    document.getElementById('imgFilterSelect').value = 'none';
+
+                    document.getElementById('imageEditorBox').style.display = 'flex';
                     updateImageTransform();
                     
-                    // Automatikusan megnyitjuk a képvágó modalt
-                    openImageCropModal();
+                    // Ha a képvágó modal nyitva van, frissítjük azt is
+                    const cropModal = document.getElementById('imageCropModal');
+                    if (cropModal.classList.contains('active')) {
+                        const cropImage = document.getElementById('cropImage');
+                        cropImage.src = tempUploadedImage;
+                        cropImage.style.display = 'block';
+                        
+                        // Reset crop variables
+                        cropImageScale = 1;
+                        cropImageOffsetX = 0;
+                        cropImageOffsetY = 0;
+                        updateCropImageTransform();
+                    }
                 };
                 reader.readAsDataURL(file);
             }
@@ -3010,22 +2792,15 @@
 
         function rotateImage() {
             currentRotation = (currentRotation + 90) % 360;
-            // A forgatás most a képvágó modalban történik
+            updateImageTransform();
         }
-        
+
         function updateImageTransform() {
+            const filter = document.getElementById('imgFilterSelect').value;
+
             const imgEl = document.getElementById('modalAvatar');
-            if (imgEl && tempUploadedImage) {
-                const transform = {
-                    scale: imageScale,
-                    rotate: currentRotation,
-                    offsetX: imageOffsetX,
-                    offsetY: imageOffsetY,
-                    filter: 'none'
-                };
-                imgEl.style.transform = `scale(${transform.scale}) rotate(${transform.rotate}deg) translate(${transform.offsetX}px, ${transform.offsetY}px)`;
-                imgEl.style.filter = transform.filter;
-            }
+            imgEl.style.transform = `scale(${imageScale}) rotate(${currentRotation}deg) translate(${imageOffsetX}px, ${imageOffsetY}px)`;
+            imgEl.style.filter = filter;
         }
 
         function closeSimModal() { simModal.classList.remove('active'); editingSimId = null; }
@@ -3038,9 +2813,7 @@
             sim.firstName = document.getElementById('editFirstName').value;
             sim.lastName = document.getElementById('editLastName').value;
             sim.age = document.getElementById('editAge').value;
-            sim.isDead = document.getElementById('editStatus').value === 'dead';
             sim.color = document.getElementById('editColor').value;
-            sim.showBorder = document.getElementById('editShowBorder').value === 'true';
             sim.traits = document.getElementById('editTraits').value;
             sim.image = tempUploadedImage;
 
@@ -3050,7 +2823,7 @@
                     rotate: currentRotation,
                     offsetX: imageOffsetX,
                     offsetY: imageOffsetY,
-                    filter: 'none' // A filter most a képvágó modalban van
+                    filter: document.getElementById('imgFilterSelect').value
                 };
             } else {
                 sim.imageTransform = null;
@@ -3058,23 +2831,6 @@
 
             saveTreesToStorage();
             closeSimModal();
-            loadCurrentTreeCanvas();
-        }
-
-        function updateSimName(simId, newName) {
-            const tree = getCurrentTree();
-            if (!tree) return;
-            
-            const sim = tree.sims.find(s => s.id === simId);
-            if (!sim) return;
-            
-            const nameParts = newName.trim().split(' ');
-            if (nameParts.length >= 1) {
-                sim.firstName = nameParts[0];
-                sim.lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-            }
-            
-            saveTreesToStorage();
             loadCurrentTreeCanvas();
         }
 
@@ -3086,19 +2842,7 @@
 
         // SUPABASE INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
-            console.log("DOMContentLoaded esemény lefutott!");
             initTheme();
-            
-            // Auth submit gomb eseménykezelő
-            const authSubmitBtn = document.getElementById('authSubmitBtn');
-            console.log("Auth submit gomb keresése:", authSubmitBtn);
-            
-            if (authSubmitBtn) {
-                authSubmitBtn.addEventListener('click', handleAuthSubmit);
-                console.log("Auth submit gomb eseménykezelő hozzáadva");
-            } else {
-                console.error("Auth submit gomb nem található!");
-            }
 
             if (!supabaseClient) {
                 console.warn("Supabase kliens nem elérhető");
@@ -3126,5 +2870,6 @@
                 }
             }
         });
+    </script>
 </body>
 </html>
