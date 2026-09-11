@@ -712,7 +712,7 @@
         .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
         .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
         
-        .avatar-dead { filter: grayscale(100%); opacity: 0.85; }
+        .avatar-dead { filter: grayscale(80%) brightness(70%); opacity: 0.7; }
 
         .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--subtext-color); }
         .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
@@ -1078,15 +1078,16 @@
                 <!-- Rejtett fájlválasztó input -->
                 <input type="file" id="editImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
 
-                <div class="profile-header-info" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 12px;">
-    <h2 id="modalName" style="margin: 0 0 4px 0;">Sim Neve</h2>
-    <div style="display: inline-block;">
-        <select id="editStatus" onchange="updateModalStatus()" style="padding: 4px 12px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--border-color); color: var(--text-color); font-size: 11px; font-weight: 700; cursor: pointer; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
-    <option value="alive" style="background: var(--bg-color); color: var(--text-color);">Élő</option>
-    <option value="dead" style="background: var(--bg-color); color: var(--text-color);">Halott</option>
-</select>
-    </div>
-</div>
+                <div class="profile-header-info">
+                    <h2 id="modalName">Sim Neve</h2>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label>Életstátusz</label>
+                        <select id="editStatus" onchange="updateModalStatus()">
+                            <option value="alive">Élő</option>
+                            <option value="dead">Halál</option>
+                        </select>
+                    </div>
+                </div>
 
                 <form id="simForm" onsubmit="saveSimDetails(event)">
                     <div class="form-row">
@@ -2542,16 +2543,11 @@
             }
 
             const label = document.createElement('div');
-            const label = document.createElement('div');
-    label.className = 'sim-node-label';
-    label.innerText = `${sim.firstName} ${sim.lastName}`;
+            label.className = 'sim-node-label';
+            label.innerText = `${sim.firstName} ${sim.lastName}`;
 
-    if (sim.isDead) {
-        avatar.classList.add('avatar-dead');
-    }
-
-    node.appendChild(avatar);
-    node.appendChild(label);
+            node.appendChild(avatar);
+            node.appendChild(label);
 
             const partnerBtn = document.createElement('div');
             partnerBtn.className = 'add-btn-node add-partner-btn';
