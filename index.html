@@ -709,6 +709,51 @@
 
         .profile-header-info { text-align: center; margin-bottom: 12px; }
         .profile-header-info h2 { margin: 4px 0 2px 0; font-size: 18px; font-weight: 800; }
+        .inline-edit-name {
+            display: inline-block;
+            min-width: 40px;
+            cursor: text;
+            border-radius: 8px;
+            padding: 2px 6px;
+            outline: none;
+            user-select: text;
+        }
+        .inline-edit-name:hover { background: rgba(255,255,255,0.06); }
+        .inline-edit-name.editing {
+            cursor: text;
+            background: transparent;
+            box-shadow: none;
+        }
+        .inline-name-editor {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            vertical-align: middle;
+        }
+        .inline-name-input {
+            width: 110px;
+            padding: 5px 8px;
+            margin: 0;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 9px;
+            outline: none !important;
+            background: var(--card-solid) !important;
+            color: var(--text-color) !important;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: none !important;
+        }
+        .inline-name-input:focus {
+            border-color: var(--accent-color) !important;
+        }
+        .inline-name-input::placeholder {
+            color: var(--subtext-color);
+            opacity: 0.8;
+        }
+        .name-fields-hidden { display: none !important; }
         .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
         .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
         
@@ -1079,7 +1124,7 @@
                 <input type="file" id="editImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
 
                 <div class="profile-header-info" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 12px;">
-    <h2 id="modalName" style="margin: 0 0 4px 0;">Sim Neve</h2>
+    <h2 id="modalName" class="inline-edit-name" onclick="startInlineNameEdit()" title="Kattints a névre a szerkesztéshez">Sim Neve</h2>
     <div style="display: inline-block;">
         <select id="editStatus" onchange="updateModalStatus()" style="padding: 4px 12px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--border-color); color: var(--text-color); font-size: 11px; font-weight: 700; cursor: pointer; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
     <option value="alive" style="background: var(--bg-color); color: var(--text-color);">Élő</option>
@@ -1089,14 +1134,14 @@
 </div>
 
                 <form id="simForm" onsubmit="saveSimDetails(event)">
-                    <div class="form-row">
+                    <div class="form-row name-fields-hidden" aria-hidden="true">
                         <div class="form-group" style="flex:1;">
                             <label>Vezetéknév</label>
-                            <input type="text" id="editLastName" required>
+                            <input type="text" id="editLastName">
                         </div>
                         <div class="form-group" style="flex:1;">
                             <label>Keresztnév</label>
-                            <input type="text" id="editFirstName" required>
+                            <input type="text" id="editFirstName">
                         </div>
                     </div>
 
@@ -2605,6 +2650,96 @@
                 document.getElementById('tabContentAvatars').classList.add('active');
             }
         }
+
+        function startInlineNameEdit() {
+            if (!editingSimId) return;
+            const nameEl = document.getElementById('modalName');
+            if (!nameEl || nameEl.dataset.editing === 'true') return;
+
+            const tree = getCurrentTree();
+            const sim = tree && tree.sims.find(s => s.id === editingSimId);
+            if (!sim) return;
+
+            const editor = document.createElement('span');
+            editor.className = 'inline-name-editor';
+
+            const lastInput = document.createElement('input');
+            lastInput.type = 'text';
+            lastInput.className = 'inline-name-input inline-last-name-input';
+            lastInput.value = sim.lastName || '';
+            lastInput.placeholder = 'Vezetéknév';
+            lastInput.setAttribute('aria-label', 'Vezetéknév');
+
+            const firstInput = document.createElement('input');
+            firstInput.type = 'text';
+            firstInput.className = 'inline-name-input inline-first-name-input';
+            firstInput.value = sim.firstName || '';
+            firstInput.placeholder = 'Keresztnév';
+            firstInput.setAttribute('aria-label', 'Keresztnév');
+
+            editor.appendChild(lastInput);
+            editor.appendChild(firstInput);
+
+            nameEl.dataset.editing = 'true';
+            nameEl.classList.add('editing');
+            nameEl.innerHTML = '';
+            nameEl.appendChild(editor);
+
+            [lastInput, firstInput].forEach(input => {
+                input.addEventListener('click', e => e.stopPropagation());
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        finishInlineNameEdit(false);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        finishInlineNameEdit(true);
+                    }
+                });
+            });
+
+            requestAnimationFrame(() => {
+                lastInput.focus();
+                lastInput.select();
+            });
+        }
+
+        function finishInlineNameEdit(cancel = false) {
+            const nameEl = document.getElementById('modalName');
+            if (!nameEl || nameEl.dataset.editing !== 'true') return;
+
+            const editor = nameEl.querySelector('.inline-name-editor');
+            const lastInput = editor?.querySelector('.inline-last-name-input');
+            const firstInput = editor?.querySelector('.inline-first-name-input');
+            const tree = getCurrentTree();
+            const sim = tree && tree.sims.find(s => s.id === editingSimId);
+            if (!editor || !lastInput || !firstInput || !sim) return;
+
+            if (!cancel) {
+                const firstName = firstInput.value.trim();
+                const lastName = lastInput.value.trim();
+                if (firstName || lastName) {
+                    sim.firstName = firstName || sim.firstName || '';
+                    sim.lastName = lastName;
+                    document.getElementById('editFirstName').value = sim.firstName;
+                    document.getElementById('editLastName').value = sim.lastName;
+                    saveTreesToStorage();
+                    loadCurrentTreeCanvas();
+                }
+            }
+
+            nameEl.innerText = `${sim.firstName || ''} ${sim.lastName || ''}`.trim();
+            nameEl.dataset.editing = 'false';
+            nameEl.classList.remove('editing');
+        }
+
+        document.addEventListener('mousedown', (e) => {
+            const nameEl = document.getElementById('modalName');
+            if (nameEl?.dataset.editing === 'true' && !nameEl.contains(e.target)) {
+                finishInlineNameEdit(false);
+            }
+        });
+
 
         function openSimModal(simId) {
             const tree = getCurrentTree(); if (!tree) return;
