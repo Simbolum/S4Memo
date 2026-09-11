@@ -635,14 +635,14 @@
 
         /* INTEGRÁLT KÉPSZERKESZTŐ MODUL */
         .avatar-editor-container {
-            display: flex; flex-direction: column; align-items: center; gap: 12px;
-            background-color: transparent; padding: 16px; border-radius: 20px;
-            border: 1px solid var(--border-color); margin-bottom: 15px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            background-color: transparent; padding: 0; border-radius: 20px;
+            border: none; margin-bottom: 8px;
         }
         .avatar-crop-view {
-            width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-color);
+            width: 100px; height: 100px; border-radius: 50%; border: none;
             overflow: hidden; position: relative; background-color: transparent;
-            box-shadow: 0 4px 14px var(--shadow-color); cursor: pointer;
+            box-shadow: none; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
         .avatar-crop-img { width: 100%; height: 100%; object-fit: cover; transform-origin: center center; }
@@ -654,6 +654,49 @@
         }
         .avatar-crop-view:hover .avatar-crop-overlay { opacity: 1; }
         .inline-controls-grid { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+        
+        .avatar-edit-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0 0 50% 50%;
+        }
+        
+        .avatar-edit-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            color: white;
+        }
+        
+        .avatar-edit-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .avatar-edit-select {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-size: 8px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .avatar-edit-select option {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+        }
 
         /* MODALOK ÉS MENÜK */
         .context-menu {
@@ -707,8 +750,8 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .profile-header-info { text-align: center; margin-bottom: 12px; }
-        .profile-header-info h2 { margin: 4px 0 2px 0; font-size: 18px; font-weight: 800; }
+        .profile-header-info { text-align: center; margin-bottom: 4px; }
+        .profile-header-info h2 { margin: 2px 0 1px 0; font-size: 18px; font-weight: 800; }
         .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
         .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
         
@@ -1060,18 +1103,11 @@
                             <span style="font-size:16px;">📷</span>
                             <span>Módosítás</span>
                         </div>
-                    </div>
-
-                    <!-- Egyszerűsített filter választó -->
-                    <div class="image-controls-mini" id="imageEditorBox" style="display: none;">
-                        <button type="button" class="mini-btn" onclick="rotateImage()">🔄</button>
-                        <select id="imgFilterSelect" style="padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); font-size: 10px;" onchange="updateImageTransform()">
-                            <option value="none" selected>Normál</option>
-                            <option value="grayscale(100%)">Fekete-Fehér</option>
-                            <option value="sepia(80%)">Szépia</option>
-                            <option value="contrast(140%) brightness(110%)">Kontrasztos</option>
-                            <option value="saturate(200%)">Élénk</option>
-                        </select>
+                        
+                        <!-- Integrált szerkesztő vezérlők -->
+                        <div class="avatar-edit-controls" id="imageEditorBox" style="display: none;">
+                            <button type="button" class="avatar-edit-btn" onclick="openImageCropModal()">✂️</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1353,8 +1389,13 @@
             if (!tempUploadedImage) {
                 triggerFileInput();
             } else {
-                // Ha van kép, akkor megnyitjuk a képvágó modalt
-                openImageCropModal();
+                // Ha van kép, akkor megjelenítjük/elrejtjük a szerkesztő vezérlőket
+                const controls = document.getElementById('imageEditorBox');
+                if (controls.style.display === 'none' || controls.style.display === '') {
+                    controls.style.display = 'flex';
+                } else {
+                    controls.style.display = 'none';
+                }
             }
         }
         
