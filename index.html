@@ -590,7 +590,7 @@
             align-items: center; justify-content: center; font-size: 32px;
             background-color: var(--card-solid); background-size: cover; background-position: center; 
             pointer-events: none; box-shadow: 0 8px 20px var(--shadow-color);
-            transition: all 0.2s ease;
+            transition: all 0.2s ease; border: 3px solid transparent;
         }
 
         .sim-node-label {
@@ -1091,6 +1091,13 @@
                             <label>Keretszín</label>
                             <input type="color" id="editColor" value="#2ed573">
                         </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Keret megjelenítése</label>
+                            <select id="editShowBorder">
+                                <option value="true">Igen</option>
+                                <option value="false">Nem</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group" style="margin-top: 10px;">
@@ -1262,9 +1269,9 @@
                 name: 'Goth család',
                 bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
                 sims: [
-                    { id: 'sim_1', firstName: 'Bella', lastName: 'Goth', age: 'Fiatal felnőtt', traits: 'Romantikus', color: '#ff5e7e', image: '', imageTransform: null, x: 450, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
-                    { id: 'sim_2', firstName: 'Mortimer', lastName: 'Goth', age: 'Felnőtt', traits: 'Könyvmoly', color: '#2ed573', image: '', imageTransform: null, x: 650, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
-                    { id: 'sim_3', firstName: 'Cassandra', lastName: 'Goth', age: 'Tini', traits: 'Borongós', color: '#2ed573', image: '', imageTransform: null, x: 550, y: 380, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] }
+                    { id: 'sim_1', firstName: 'Bella', lastName: 'Goth', age: 'Fiatal felnőtt', traits: 'Romantikus', color: '#ff5e7e', image: '', imageTransform: null, x: 450, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, showBorder: true, gallery: [] },
+                    { id: 'sim_2', firstName: 'Mortimer', lastName: 'Goth', age: 'Felnőtt', traits: 'Könyvmoly', color: '#2ed573', image: '', imageTransform: null, x: 650, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, showBorder: true, gallery: [] },
+                    { id: 'sim_3', firstName: 'Cassandra', lastName: 'Goth', age: 'Tini', traits: 'Borongós', color: '#2ed573', image: '', imageTransform: null, x: 550, y: 380, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, showBorder: true, gallery: [] }
                 ],
                 journal: [
                     { id: 'j_1', title: 'Megérkezés Goth birtokra', date: '2026-01-15', content: 'A család beköltözött az új kúriába. Bella azonnal nekilátott a ház szépítésének.' }
@@ -2379,7 +2386,7 @@
             const newSim = {
                 id: 'sim_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 firstName: firstName, lastName: lastName, age: 'Fiatal felnőtt',
-                traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y, parentId: parentId, partnerId: partnerId, relationType: relationType, locked: false, isDead: false, gallery: []
+                traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y, parentId: parentId, partnerId: partnerId, relationType: relationType, locked: false, isDead: false, showBorder: true, gallery: []
             };
 
             tree.sims.push(newSim);
@@ -2405,8 +2412,12 @@
 
             const avatar = document.createElement('div');
             avatar.className = 'sim-node-avatar';
-            if (sim.color) {
+            if (sim.color && sim.showBorder !== false) {
                 avatar.style.borderColor = sim.color;
+                avatar.style.borderWidth = '3px';
+                avatar.style.borderStyle = 'solid';
+            } else {
+                avatar.style.borderColor = 'transparent';
             }
 
             if (sim.image) {
@@ -2559,6 +2570,7 @@
             document.getElementById('editAge').value = sim.age || 'Fiatal felnőtt';
             document.getElementById('editStatus').value = sim.isDead ? 'dead' : 'alive';
             document.getElementById('editColor').value = sim.color || '#2ed573';
+            document.getElementById('editShowBorder').value = sim.showBorder !== false ? 'true' : 'false';
             document.getElementById('editTraits').value = sim.traits || '';
 
             // Sync name inputs with modal name
@@ -2932,6 +2944,7 @@
             sim.age = document.getElementById('editAge').value;
             sim.isDead = document.getElementById('editStatus').value === 'dead';
             sim.color = document.getElementById('editColor').value;
+            sim.showBorder = document.getElementById('editShowBorder').value === 'true';
             sim.traits = document.getElementById('editTraits').value;
             sim.image = tempUploadedImage;
 
