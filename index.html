@@ -1165,6 +1165,38 @@
                         </div>
                     </div>
 
+                    <div class="form-row" style="margin-top: 10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Okkult</label>
+                            <select id="editOccult">
+                                <option value="Nincs">Nincs</option>
+                                <option value="Idegen">Idegen</option>
+                                <option value="Vámpír">Vámpír</option>
+                                <option value="Sellő">Sellő</option>
+                                <option value="Varázsló">Varázsló</option>
+                                <option value="Farkasember">Farkasember</option>
+                                <option value="Szellem">Szellem</option>
+                                <option value="NövénySim">NövénySim</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Cím</label>
+                            <select id="editTitle">
+                                <option value="Nincs">Nincs</option>
+                                <option value="Herceg">Herceg</option>
+                                <option value="Hercegnő">Hercegnő</option>
+                                <option value="Király">Király</option>
+                                <option value="Királynő">Királynő</option>
+                                <option value="Gróf">Gróf</option>
+                                <option value="Grófnő">Grófnő</option>
+                                <option value="Báró">Báró</option>
+                                <option value="Bárónő">Bárónő</option>
+                                <option value="Úr">Úr</option>
+                                <option value="Úrnő">Úrnő</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-group" style="margin-top: 10px;">
                         <label>Személyiségjegyek / Leírás</label>
                         <textarea id="editTraits" rows="3" placeholder="Pl.: Vidám, Kreatív..."></textarea>
@@ -1334,9 +1366,9 @@
                 name: 'Goth család',
                 bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
                 sims: [
-                    { id: 'sim_1', firstName: 'Bella', lastName: 'Goth', age: 'Fiatal felnőtt', traits: 'Romantikus', color: '#ff5e7e', image: '', imageTransform: null, x: 450, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
-                    { id: 'sim_2', firstName: 'Mortimer', lastName: 'Goth', age: 'Felnőtt', traits: 'Könyvmoly', color: '#2ed573', image: '', imageTransform: null, x: 650, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
-                    { id: 'sim_3', firstName: 'Cassandra', lastName: 'Goth', age: 'Tini', traits: 'Borongós', color: '#2ed573', image: '', imageTransform: null, x: 550, y: 380, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] }
+                    { id: 'sim_1', firstName: 'Bella', lastName: 'Goth', age: 'Fiatal felnőtt', occult: 'Nincs', title: 'Nincs', traits: 'Romantikus', color: '#ff5e7e', image: '', imageTransform: null, x: 450, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
+                    { id: 'sim_2', firstName: 'Mortimer', lastName: 'Goth', age: 'Felnőtt', occult: 'Nincs', title: 'Nincs', traits: 'Könyvmoly', color: '#2ed573', image: '', imageTransform: null, x: 650, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
+                    { id: 'sim_3', firstName: 'Cassandra', lastName: 'Goth', age: 'Tini', occult: 'Nincs', title: 'Nincs', traits: 'Borongós', color: '#2ed573', image: '', imageTransform: null, x: 550, y: 380, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] }
                 ],
                 journal: [
                     { id: 'j_1', title: 'Megérkezés Goth birtokra', date: '2026-01-15', content: 'A család beköltözött az új kúriába. Bella azonnal nekilátott a ház szépítésének.' }
@@ -2223,6 +2255,12 @@
             }
         }
 
+        function normalizeSimExtraFields(sim) {
+            if (!sim.occult) sim.occult = 'Nincs';
+            if (!sim.title) sim.title = 'Nincs';
+            return sim;
+        }
+
         function getCurrentTree() { return familyTrees.find(t => t.id === currentTreeId); }
 
         function updateAddSimButtonVisibility() {
@@ -2758,6 +2796,8 @@
             document.getElementById('editFirstName').value = sim.firstName || '';
             document.getElementById('editLastName').value = sim.lastName || '';
             document.getElementById('editAge').value = sim.age || 'Fiatal felnőtt';
+            document.getElementById('editOccult').value = sim.occult || 'Nincs';
+            document.getElementById('editTitle').value = sim.title || 'Nincs';
             document.getElementById('editColor').value = sim.color || '#2ed573';
             document.getElementById('editTraits').value = sim.traits || '';
 
@@ -3142,6 +3182,8 @@
             sim.firstName = document.getElementById('editFirstName').value;
             sim.lastName = document.getElementById('editLastName').value;
             sim.age = document.getElementById('editAge').value;
+            sim.occult = document.getElementById('editOccult').value;
+            sim.title = document.getElementById('editTitle').value;
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
             sim.image = tempUploadedImage;
