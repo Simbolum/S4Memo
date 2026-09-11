@@ -1107,6 +1107,7 @@
                         <!-- Integrált szerkesztő vezérlők -->
                         <div class="avatar-edit-controls" id="imageEditorBox" style="display: none;">
                             <button type="button" class="avatar-edit-btn" onclick="rotateImage()">🔄</button>
+                            <button type="button" class="avatar-edit-btn" onclick="openImageCropModal()">✂️</button>
                             <select id="imgFilterSelect" class="avatar-edit-select" onchange="updateImageTransform()">
                                 <option value="none" selected>Normál</option>
                                 <option value="grayscale(100%)">Fekete-Fehér</option>
@@ -1396,8 +1397,13 @@
             if (!tempUploadedImage) {
                 triggerFileInput();
             } else {
-                // Ha van kép, akkor megnyitjuk a képvágó modalt
-                openImageCropModal();
+                // Ha van kép, akkor megjelenítjük/elrejtjük a szerkesztő vezérlőket
+                const controls = document.getElementById('imageEditorBox');
+                if (controls.style.display === 'none' || controls.style.display === '') {
+                    controls.style.display = 'flex';
+                } else {
+                    controls.style.display = 'none';
+                }
             }
         }
         
