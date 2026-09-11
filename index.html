@@ -712,7 +712,7 @@
         .status-alive { color: #2ed573; font-size: 11px; font-weight: 700; }
         .status-dead { color: #ff5e7e; font-size: 11px; font-weight: 700; }
         
-        .avatar-dead { filter: grayscale(100%); opacity: 30; }
+        .avatar-dead { filter: grayscale(100%); opacity: 0.5; }
 
         .gallery-section h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: var(--subtext-color); }
         .gallery-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
@@ -1081,10 +1081,10 @@
                 <div class="profile-header-info" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 12px;">
     <h2 id="modalName" style="margin: 0 0 4px 0;">Sim Neve</h2>
     <div style="display: inline-block;">
-        <select id="editStatus" onchange="updateModalStatus()" style="padding: 4px 12px; border-radius: 10px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); font-size: 11px; font-weight: 700; cursor: pointer; outline: none;">
-            <option value="alive">Élő</option>
-            <option value="dead">Halott</option>
-        </select>
+        <select id="editStatus" onchange="updateModalStatus()" style="padding: 4px 12px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--border-color); color: var(--text-color); font-size: 11px; font-weight: 700; cursor: pointer; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+    <option value="alive" style="background: var(--bg-color); color: var(--text-color);">Élő</option>
+    <option value="dead" style="background: var(--bg-color); color: var(--text-color);">Halott</option>
+</select>
     </div>
 </div>
 
@@ -2530,15 +2530,18 @@
                     imgEl.style.filter = filter || 'none';
                 }
                 
-                // Ha a Sim halott, akkor szürkítjük a képet
+                // Ha a Sim halott, akkor szürkítjük a teljes profilképet
                 if (sim.isDead) {
-                    imgEl.classList.add('avatar-dead');
+                    avatar.classList.add('avatar-dead');
                 }
 
                 avatar.appendChild(imgEl);
             } else {
                 avatar.style.backgroundColor = 'var(--card-solid)';
                 avatar.innerText = '👤';
+                if (sim.isDead) {
+                    avatar.classList.add('avatar-dead');
+                }
             }
 
             const label = document.createElement('div');
