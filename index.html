@@ -829,6 +829,15 @@
             width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 10px;
             border: 1px solid var(--border-color); cursor: zoom-in;
         }
+        .sim-gallery-caption-preview {
+  display: none !important;
+            position: absolute; left: 5px; right: 5px; bottom: 5px;
+            padding: 3px 6px; border-radius: 7px;
+            background: rgba(0,0,0,.62); color: #fff;
+            font-size: 9px; line-height: 1.2; text-align: center;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            pointer-events: none;
+        }
         .sim-gallery-remove {
             position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
             border: 0; border-radius: 50%; background: rgba(0,0,0,.72); color: #fff;
@@ -2936,24 +2945,88 @@
             event.target.value = '';
         }
 
+        function normalizeSimGallery(sim) {
+            if (!sim) return [];
+            if (!Array.isArray(sim.gallery)) sim.gallery = [];
+
+            // Régi mentett galériák támogatása: ["data:image/..."] -> [{src, caption}]
+            sim.gallery = sim.gallery.map(item => {
+                if (typeof item === 'string') return { src: item, caption: '' };
+                return {
+                    src: item?.src || '',
+                    caption: item?.caption || ''
+                };
+            }).filter(item => item.src);
+
+            return sim.gallery;
+        }
+
+        function triggerSimGalleryUpload() {
+            const input = document.getElementById('simGalleryInput');
+            if (input) input.click();
+        }
+
+        function handleSimGalleryUpload(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length || !editingSimId) return;
+
+            const tree = getCurrentTree();
+            const sim = tree && tree.sims.find(s => s.id === editingSimId);
+            if (!sim) return;
+
+            normalizeSimGallery(sim);
+
+            let remaining = files.length;
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) { remaining--; return; }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    sim.gallery.push({ src: e.target.result, caption: '' });
+                    remaining--;
+                    if (remaining === 0) {
+                        saveTreesToStorage();
+                        renderSimLifeGallery(sim);
+                    }
+                };
+                reader.onerror = function() {
+                    remaining--;
+                    if (remaining === 0) {
+                        saveTreesToStorage();
+                        renderSimLifeGallery(sim);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            event.target.value = '';
+        }
+
         function renderSimLifeGallery(sim) {
             const grid = document.getElementById('simLifeGalleryGrid');
             if (!grid) return;
             grid.innerHTML = '';
-            if (!sim || !Array.isArray(sim.gallery) || sim.gallery.length === 0) {
+
+            const gallery = normalizeSimGallery(sim);
+            if (!gallery.length) {
                 grid.innerHTML = '<div class="sim-gallery-empty">Még nincsenek pillanatok feltöltve.</div>';
                 return;
             }
 
-            sim.gallery.forEach((imgUrl, index) => {
-                const item = document.createElement('div');
-                item.className = 'sim-gallery-item';
+            gallery.forEach((item, index) => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'sim-gallery-item';
 
                 const img = document.createElement('img');
-                img.src = imgUrl;
-                img.alt = 'Pillanat ' + (index + 1);
-                img.title = 'Kattints a kép megtekintéséhez';
-                img.onclick = () => openSimGalleryPreview(imgUrl);
+                img.src = item.src;
+                img.alt = item.caption || ('Pillanat ' + (index + 1));
+                img.title = 'Kattints a kép megtekintéséhez és a felirat szerkesztéséhez';
+                img.onclick = () => openSimGalleryPreview(item.src, index);
+
+                if (item.caption) {
+                    const caption = document.createElement('div');
+                    caption.className = 'sim-gallery-caption-preview';
+                    caption.textContent = item.caption;
+                    galleryItem.appendChild(caption);
+                }
 
                 const remove = document.createElement('button');
                 remove.type = 'button';
@@ -2962,30 +3035,113 @@
                 remove.title = 'Kép törlése';
                 remove.onclick = (e) => {
                     e.stopPropagation();
-                    sim.gallery.splice(index, 1);
+                    gallery.splice(index, 1);
                     saveTreesToStorage();
                     renderSimLifeGallery(sim);
                 };
 
-                item.appendChild(img);
-                item.appendChild(remove);
-                grid.appendChild(item);
+                galleryItem.appendChild(img);
+                galleryItem.appendChild(remove);
+                grid.appendChild(galleryItem);
             });
         }
 
-        function openSimGalleryPreview(src) {
+        function openSimGalleryPreview(src, galleryIndex) {
             const old = document.getElementById('simGalleryPreview');
             if (old) old.remove();
+
+            const tree = getCurrentTree();
+            const sim = tree && tree.sims.find(s => s.id === editingSimId);
+            if (!sim) return;
+
+            const gallery = normalizeSimGallery(sim);
+            const item = gallery[galleryIndex];
+            if (!item) return;
+
             const overlay = document.createElement('div');
             overlay.id = 'simGalleryPreview';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out;';
+            overlay.style.cssText = `
+                position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:9999;
+                display:flex; align-items:center; justify-content:center; padding:24px;
+            `;
+
             overlay.onclick = () => overlay.remove();
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.innerHTML = '×';
+            closeBtn.title = 'Bezárás';
+            closeBtn.style.cssText = `
+                position:absolute; top:18px; right:24px; width:38px; height:38px;
+                border:1px solid rgba(255,255,255,.25); border-radius:50%;
+                background:rgba(0,0,0,.45); color:#fff; font-size:26px;
+                line-height:34px; cursor:pointer; z-index:3;
+            `;
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                overlay.remove();
+            };
+
+            const stage = document.createElement('div');
+            stage.style.cssText = `
+                position:relative; max-width:90vw; max-height:90vh;
+                display:flex; align-items:center; justify-content:center;
+            `;
+            stage.onclick = e => e.stopPropagation();
+
             const img = document.createElement('img');
-            img.src = src;
-            img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);';
-            img.onclick = e => e.stopPropagation();
-            overlay.appendChild(img);
+            img.src = item.src;
+            img.style.cssText = `
+                max-width:90vw; max-height:90vh; object-fit:contain;
+                border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.5);
+                display:block;
+            `;
+
+            // A felirat közvetlenül a nagy kép fölött jelenik meg,
+            // és szerkesztési módban kattintással módosítható.
+            const captionInput = document.createElement('input');
+            captionInput.type = 'text';
+            captionInput.value = item.caption || '';
+            captionInput.placeholder = 'Írj feliratot a kép fölé…';
+            captionInput.maxLength = 200;
+            captionInput.style.cssText = `
+                position:absolute; left:50%; bottom:calc(100% + 12px);
+                transform:translateX(-50%);
+                width:min(70vw, 620px); padding:10px 14px;
+                border:1px solid rgba(255,255,255,.35); border-radius:12px;
+                background:rgba(0,0,0,.68); color:#fff; outline:none;
+                font-size:15px; font-weight:700; text-align:center;
+                box-shadow:0 8px 25px rgba(0,0,0,.35);
+            `;
+
+            const saveCaption = () => {
+                item.caption = captionInput.value.trim();
+                saveTreesToStorage();
+                renderSimLifeGallery(sim);
+            };
+            captionInput.addEventListener('input', () => {
+                item.caption = captionInput.value;
+            });
+            captionInput.addEventListener('change', saveCaption);
+            captionInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveCaption();
+                    captionInput.blur();
+                }
+            });
+            captionInput.onclick = e => e.stopPropagation();
+
+            stage.appendChild(img);
+            stage.appendChild(captionInput);
+            overlay.appendChild(closeBtn);
+            overlay.appendChild(stage);
             document.body.appendChild(overlay);
+
+            setTimeout(() => {
+                captionInput.focus();
+                captionInput.select();
+            }, 0);
         }
 
         function openSimModal(simId) {
@@ -3011,6 +3167,7 @@
             document.getElementById('editTraits').value = sim.traits || '';
 
             document.getElementById('modalDiaryText').innerText = sim.traits ? sim.traits : 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
+            normalizeSimGallery(sim);
             
             renderSimLifeGallery(sim);
 
