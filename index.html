@@ -81,6 +81,11 @@
             background-image: linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
             background-size: 30px 30px; 
         }
+        body.editing-active .nav-item, 
+        body.editing-active .right-sidebar a,
+        body.editing-active .toggle-btn {
+            pointer-events: none;
+        }
         body.bg-custom {
             background-size: var(--custom-bg-size);
             background-position: var(--custom-bg-position);
@@ -662,6 +667,12 @@
             background-color: rgba(0, 0, 0, 0.4); z-index: 3000;
             display: none; align-items: center; justify-content: center;
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        .modal-overlay.editing-active {
+            pointer-events: none;
+        }
+        .modal-overlay.editing-active .modal-card {
+            pointer-events: auto;
         }
         .modal-overlay.active { display: flex; }
         
@@ -2412,9 +2423,12 @@
             
             label.addEventListener('focus', function() {
                 this.dataset.originalName = this.innerText;
+                document.body.classList.add('editing-active');
             });
             
-            label.addEventListener('blur', function() {
+            label.addEventListener('blur', function(e) {
+                e.stopPropagation();
+                document.body.classList.remove('editing-active');
                 if (this.innerText !== this.dataset.originalName) {
                     updateSimName(sim.id, this.innerText);
                 }
@@ -2423,6 +2437,7 @@
             label.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
+                    e.stopPropagation();
                     this.blur();
                 }
             });
@@ -2502,10 +2517,13 @@
             
             modalName.addEventListener('focus', function() {
                 this.style.borderColor = 'var(--accent-color)';
+                simModal.classList.add('editing-active');
             });
             
-            modalName.addEventListener('blur', function() {
+            modalName.addEventListener('blur', function(e) {
+                e.stopPropagation();
                 this.style.borderColor = 'transparent';
+                simModal.classList.remove('editing-active');
                 const nameParts = this.innerText.trim().split(' ');
                 if (nameParts.length >= 1) {
                     document.getElementById('editFirstName').value = nameParts[0];
@@ -2516,6 +2534,7 @@
             modalName.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
+                    e.stopPropagation();
                     this.blur();
                 }
             });
