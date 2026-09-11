@@ -1039,6 +1039,16 @@
                 </div>
 
                 <form id="simForm" onsubmit="saveSimDetails(event)">
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1;">
+                            <label>Vezetéknév</label>
+                            <input type="text" id="editLastName" required>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Keresztnév</label>
+                            <input type="text" id="editFirstName" required>
+                        </div>
+                    </div>
 
                     <div class="form-row">
                         <div class="form-group" style="flex:1;">
@@ -2489,7 +2499,6 @@
 
             const modalName = document.getElementById('modalName');
             modalName.innerText = `${sim.firstName} ${sim.lastName}`;
-            modalName.dataset.originalName = modalName.innerText;
             
             modalName.addEventListener('focus', function() {
                 this.style.borderColor = 'var(--accent-color)';
@@ -2497,6 +2506,11 @@
             
             modalName.addEventListener('blur', function() {
                 this.style.borderColor = 'transparent';
+                const nameParts = this.innerText.trim().split(' ');
+                if (nameParts.length >= 1) {
+                    document.getElementById('editFirstName').value = nameParts[0];
+                    document.getElementById('editLastName').value = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+                }
             });
             
             modalName.addEventListener('keydown', function(e) {
@@ -2509,9 +2523,23 @@
             const modalAvatar = document.getElementById('modalAvatar');
             const placeholder = document.getElementById('modalAvatarPlaceholder');
 
+            document.getElementById('editFirstName').value = sim.firstName || '';
+            document.getElementById('editLastName').value = sim.lastName || '';
             document.getElementById('editAge').value = sim.age || 'Fiatal felnőtt';
             document.getElementById('editColor').value = sim.color || '#2ed573';
             document.getElementById('editTraits').value = sim.traits || '';
+
+            // Sync name inputs with modal name
+            const firstNameInput = document.getElementById('editFirstName');
+            const lastNameInput = document.getElementById('editLastName');
+            
+            firstNameInput.addEventListener('input', function() {
+                modalName.innerText = `${this.value} ${lastNameInput.value}`;
+            });
+            
+            lastNameInput.addEventListener('input', function() {
+                modalName.innerText = `${firstNameInput.value} ${this.value}`;
+            });
 
             document.getElementById('modalDiaryText').innerText = sim.traits ? sim.traits : 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
             
@@ -2867,13 +2895,8 @@
             const tree = getCurrentTree(); if (!tree) return;
             const sim = tree.sims.find(s => s.id === editingSimId); if (!sim) return;
 
-            const modalName = document.getElementById('modalName');
-            const nameParts = modalName.innerText.trim().split(' ');
-            if (nameParts.length >= 1) {
-                sim.firstName = nameParts[0];
-                sim.lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-            }
-
+            sim.firstName = document.getElementById('editFirstName').value;
+            sim.lastName = document.getElementById('editLastName').value;
             sim.age = document.getElementById('editAge').value;
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
