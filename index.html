@@ -954,7 +954,103 @@
         .toggle-btn.open { right: 270px; }
         .arrow-icon { display: inline-block; transition: transform 0.4s ease; }
         .toggle-btn.open .arrow-icon { transform: rotate(180deg); }
-    </style>
+    
+        /* Kompakt, rugalmas kapcsolatok panel a Sim szerkesztésénél */
+        .sim-connections-editor {
+            margin-top: 9px;
+            padding: 8px 9px;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 11px;
+            background: rgba(255,255,255,0.018);
+            box-sizing: border-box;
+        }
+        .sim-connections-editor-title {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--subtext-color);
+            text-transform: uppercase;
+            letter-spacing: .55px;
+            margin-bottom: 6px;
+        }
+        .sim-connections-editor-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+            gap: 5px;
+            max-height: 112px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+        .sim-connection-editor-item {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 6px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.045);
+            transition: background .18s ease, border-color .18s ease, transform .18s ease;
+        }
+        .sim-connection-editor-item:hover {
+            background: rgba(255,255,255,0.065);
+            border-color: rgba(255,255,255,0.09);
+            transform: translateY(-1px);
+        }
+        .sim-connection-editor-avatar {
+            width: 23px;
+            height: 23px;
+            border-radius: 50%;
+            flex: 0 0 23px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--border-color);
+            background-size: cover;
+            background-position: center;
+            font-size: 12px;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
+        }
+        .sim-connection-editor-name {
+            min-width: 0;
+            flex: 1 1 auto;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-color);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .sim-connection-editor-type {
+            flex: 0 0 auto;
+            max-width: 72px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 8px;
+            line-height: 1;
+            font-weight: 700;
+            color: var(--subtext-color);
+            padding: 3px 5px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.055);
+        }
+        .sim-connections-empty {
+            font-size: 9px;
+            color: var(--subtext-color);
+            padding: 2px 0;
+        }
+        @media (max-width: 560px) {
+            .sim-connections-editor-list {
+                grid-template-columns: 1fr;
+                max-height: 120px;
+            }
+        }
+
+
+</style>
 </head>
 <body class="bg-dots">
 
@@ -1352,6 +1448,11 @@
                                 <option value="Úrnő">Úrnő</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="sim-connections-editor" id="simConnectionsEditor">
+                        <div class="sim-connections-editor-title">🔗 Kapcsolatok</div>
+                        <div id="simConnectionsEditorList" class="sim-connections-editor-list"></div>
                     </div>
 
                     <div class="form-row" style="margin-top: 10px; gap: 10px;">
@@ -3443,6 +3544,55 @@
             closeFamilyMemberPicker();
         }
 
+        function renderSimConnectionsInEditor(simId) {
+            const list = document.getElementById('simConnectionsEditorList');
+            if (!list) return;
+
+            const tree = getCurrentTree();
+            if (!tree) {
+                list.innerHTML = '<div class="sim-connections-empty">Nincs kapcsolat.</div>';
+                return;
+            }
+
+            const connections = getSimConnections(simId);
+            list.innerHTML = '';
+
+            if (!connections.length) {
+                list.innerHTML = '<div class="sim-connections-empty">Nincs még rögzített kapcsolat.</div>';
+                return;
+            }
+
+            connections.forEach(connection => {
+                const target = tree.sims.find(s => s.id === connection.targetId);
+                if (!target) return;
+
+                const item = document.createElement('div');
+                item.className = 'sim-connection-editor-item';
+
+                const avatar = document.createElement('div');
+                avatar.className = 'sim-connection-editor-avatar';
+                if (target.image) {
+                    avatar.style.backgroundImage = `url(${target.image})`;
+                    avatar.innerText = '';
+                } else {
+                    avatar.innerText = isAnimalSim(target) ? '🐾' : '👤';
+                }
+
+                const name = document.createElement('div');
+                name.className = 'sim-connection-editor-name';
+                name.textContent = `${target.firstName || ''} ${target.lastName || ''}`.trim() || 'Névtelen Sim';
+
+                const type = document.createElement('div');
+                type.className = 'sim-connection-editor-type';
+                type.textContent = connection.type || 'Kapcsolat';
+
+                item.appendChild(avatar);
+                item.appendChild(name);
+                item.appendChild(type);
+                list.appendChild(item);
+            });
+        }
+
         function openSimModal(simId) {
             const tree = getCurrentTree(); if (!tree) return;
             const sim = tree.sims.find(s => s.id === simId); if (!sim) return;
@@ -3469,6 +3619,7 @@
             tempParentIds = [...sim.parentIds];
             tempAnimalIds = [...sim.animalIds];
             updateFamilyPickerButtons();
+            renderSimConnectionsInEditor(simId);
             document.getElementById('editTraits').value = sim.traits || '';
 
             document.getElementById('modalDiaryText').innerText = sim.traits ? sim.traits : 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
