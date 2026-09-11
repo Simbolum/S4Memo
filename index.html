@@ -766,7 +766,7 @@
     <div id="authContainer" class="modal-overlay active">
         <div class="modal-card">
             <h2 id="authTitle" style="text-align: center; margin-bottom: 20px;">S4Memo Bejelentkezés</h2>
-            <form id="authForm">
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
                 <div class="form-group">
                     <label>Email cím</label>
                     <input type="email" id="authEmail" required placeholder="pelda@simsmail.com">
@@ -777,7 +777,7 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="handleLogout()" id="logoutBtn" style="display: none;">Kilépés</button>
-                    <button type="button" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
+                    <button type="submit" class="btn-primary" id="authSubmitBtn">Bejelentkezés</button>
                 </div>
             </form>
             <div style="text-align: center; margin-top: 15px;">
@@ -2118,9 +2118,15 @@
             }
         }
 
-        async function handleAuthSubmit() {
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            console.log("Bejelentkezés indítása...");
+            
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
+            
+            console.log("Email:", email);
+            console.log("Supabase client:", supabaseClient);
             
             if (!email || !password) {
                 alert('Kérlek töltsd ki az email és jelszó mezőket!');
@@ -2128,12 +2134,18 @@
             }
 
             if (isSignUpMode) {
+                console.log("Regisztráció indítása...");
                 const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                console.log("Regisztráció eredmény:", { data, error });
+                
                 if (error) {
                     alert('Regisztrációs hiba: ' + error.message);
                 } else {
                     // Regisztráció után automatikus bejelentkezés
+                    console.log("Bejelentkezés regisztráció után...");
                     const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
+                    console.log("Bejelentkezés eredmény:", { signInData, signInError });
+                    
                     if (signInError) {
                         alert('Sikeres regisztráció, de a bejelentkezés sikertelen: ' + signInError.message);
                         isSignUpMode = false;
@@ -2144,9 +2156,14 @@
                     }
                 }
             } else {
+                console.log("Bejelentkezés indítása...");
                 const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                console.log("Bejelentkezés eredmény:", { data, error });
+                
                 if (error) {
                     alert('Bejelentkezési hiba: ' + error.message);
+                } else {
+                    console.log("Sikeres bejelentkezés - session várt");
                 }
                 // Sikeres bejelentkezés - a handleSession automatikusan lefut
             }
@@ -3017,9 +3034,6 @@
         // SUPABASE INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
-            
-            // Auth submit gomb eseménykezelő
-            document.getElementById('authSubmitBtn').addEventListener('click', handleAuthSubmit);
 
             if (!supabaseClient) {
                 console.warn("Supabase kliens nem elérhető");
