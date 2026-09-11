@@ -312,8 +312,8 @@
         }
 
         .crop-circle-mask {
-            width: 100px;
-            height: 100px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             overflow: hidden;
             position: relative;
@@ -636,11 +636,12 @@
         /* INTEGRÁLT KÉPSZERKESZTŐ MODUL */
         .avatar-editor-container {
             display: flex; flex-direction: column; align-items: center; gap: 12px;
-            margin-bottom: 15px;
+            background-color: var(--input-bg); padding: 16px; border-radius: 20px;
+            border: 1px solid var(--border-color); margin-bottom: 15px;
         }
         .avatar-crop-view {
             width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-color);
-            overflow: hidden; position: relative; background-color: transparent;
+            overflow: hidden; position: relative; background-color: var(--card-solid);
             box-shadow: 0 4px 14px var(--shadow-color); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
@@ -1358,22 +1359,19 @@
 
         function saveCropedImage() {
             // A crop beállításokat átvisszük a fő változókba
-            // Most már ugyanolyan méretű a kör, így nincs átszámítás
             imageScale = cropImageScale;
             imageOffsetX = cropImageOffsetX;
             imageOffsetY = cropImageOffsetY;
-            
+
             // Frissítjük a modális avatar-t
             updateImageTransform();
-            
+
             closeImageCropModal();
         }
 
         function updateCropImageTransform() {
             const cropImage = document.getElementById('cropImage');
-            const filter = document.getElementById('cropImgFilterSelect').value;
-            cropImage.style.transform = `scale(${cropImageScale}) rotate(${currentRotation}deg) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
-            cropImage.style.filter = filter;
+            cropImage.style.transform = `scale(${cropImageScale}) translate(${cropImageOffsetX}px, ${cropImageOffsetY}px)`;
         }
 
         function initCropImageDrag() {
