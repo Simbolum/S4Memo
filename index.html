@@ -1394,7 +1394,10 @@
             const cropModalSize = 200;
             const editModalSize = 100;
             const sizeRatio = cropModalSize / editModalSize;
-            cropImageScale = (imageScale || 1) * sizeRatio;
+            
+            // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
+            // Az eltolást viszont arányosítjuk
+            cropImageScale = imageScale || 1;
             cropImageOffsetX = (imageOffsetX || 0) * sizeRatio;
             cropImageOffsetY = (imageOffsetY || 0) * sizeRatio;
             
@@ -1424,7 +1427,9 @@
             const editModalSize = 100;
             const editModalRatio = editModalSize / cropModalSize;
             
-            imageScale = cropImageScale * editModalRatio;
+            // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
+            // Az eltolást viszont arányosítjuk
+            imageScale = cropImageScale;
             imageOffsetX = cropImageOffsetX * editModalRatio;
             imageOffsetY = cropImageOffsetY * editModalRatio;
             
@@ -1435,7 +1440,7 @@
             updateImageTransform();
 
             // Visszaállítjuk a crop modal (200px) referencia értékeket a mentéshez
-            // így a mentett adatok mindig a crop modal méretéhez viszonyulnak
+            // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
             imageScale = cropImageScale;
             imageOffsetX = cropImageOffsetX;
             imageOffsetY = cropImageOffsetY;
@@ -2510,8 +2515,8 @@
                     const sizeRatio = currentNodeSize / cropModalSize;
                     
                     // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
-                    // Így az eltolás nem lesz skálázva
-                    imgEl.style.transform = `translate(${offsetX * sizeRatio}px, ${offsetY * sizeRatio}px) rotate(${rotate}deg) scale(${scale * sizeRatio})`;
+                    // A skálázás relatív, így nem arányosítjuk, de az eltolást igen
+                    imgEl.style.transform = `translate(${offsetX * sizeRatio}px, ${offsetY * sizeRatio}px) rotate(${rotate}deg) scale(${scale})`;
                     imgEl.style.filter = filter || 'none';
                 }
 
@@ -2633,7 +2638,9 @@
             const editModalSize = 100;
             const sizeRatio = editModalSize / cropModalSize;
             
-            imageScale = (transform.scale || 1) * sizeRatio;
+            // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
+            // Az eltolást viszont arányosítjuk
+            imageScale = transform.scale || 1;
             imageOffsetX = (transform.offsetX || 0) * sizeRatio;
             imageOffsetY = (transform.offsetY || 0) * sizeRatio;
             currentRotation = transform.rotate || 0;
@@ -2979,8 +2986,10 @@
                 const editModalSize = 100;
                 const sizeRatio = cropModalSize / editModalSize;
                 
+                // A skálázást nem arányosítjuk, mert az relatív a kontéter méretéhez
+                // Az eltolást viszont arányosítjuk
                 sim.imageTransform = {
-                    scale: imageScale * sizeRatio,
+                    scale: imageScale,
                     rotate: currentRotation,
                     offsetX: imageOffsetX * sizeRatio,
                     offsetY: imageOffsetY * sizeRatio,
