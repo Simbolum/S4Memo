@@ -842,28 +842,23 @@
             display: flex; align-items: center; justify-content: center; padding: 24px;
         }
         .sim-gallery-preview-card {
-            position: relative; max-width: 92vw; max-height: 92vh; display: flex;
-            flex-direction: column; align-items: center; gap: 10px;
-            padding-top: 44px; box-sizing: border-box;
+            position: relative; width: min(92vw, 900px); max-height: 92vh; display: flex;
+            flex-direction: column; align-items: center; gap: 12px;
         }
-        .sim-gallery-preview-toolbar {
-            position: absolute; top: 0; left: 0; right: 0; height: 36px;
-            display: flex; align-items: center; justify-content: flex-end; gap: 8px;
-            z-index: 30; pointer-events: none;
-        }
-        .sim-gallery-pencil {
-            pointer-events: auto;
+        .sim-gallery-editbar {
+            width: min(700px, 88vw); min-height: 42px; display: flex; align-items: center;
+            justify-content: center; gap: 8px; order: 0;
         }
         .sim-gallery-preview img {
-            max-width: 88vw; max-height: 78vh; object-fit: contain; border-radius: 14px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.5);
+            display: block; max-width: 88vw; max-height: 72vh; object-fit: contain; border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.5); order: 1;
         }
         .sim-gallery-pencil {
-            position: relative; top: auto; right: auto; width: 36px; height: 36px;
-            border: 1px solid rgba(255,255,255,.35); border-radius: 50%;
-            background: rgba(25,25,25,.96); color: #fff; cursor: pointer;
+            position: static; flex: 0 0 36px; width: 36px; height: 36px;
+            border: 1px solid rgba(255,255,255,.25); border-radius: 50%;
+            background: rgba(25,25,25,.92); color: #fff; cursor: pointer;
             display: flex; align-items: center; justify-content: center; font-size: 17px;
-            box-shadow: 0 6px 18px rgba(0,0,0,.5);
+            box-shadow: 0 6px 18px rgba(0,0,0,.35);
         }
         .sim-gallery-pencil:hover { transform: scale(1.06); }
         .sim-gallery-caption {
@@ -3051,15 +3046,11 @@
             img.className = 'sim-gallery-preview';
 
             // Ceruza: megnyitja a képaláírás szerkesztését.
-            const toolbar = document.createElement('div');
-            toolbar.className = 'sim-gallery-preview-toolbar';
-
             const pencil = document.createElement('button');
             pencil.type = 'button';
             pencil.className = 'sim-gallery-pencil';
-            pencil.innerHTML = '✏️';
+            pencil.innerHTML = '✎';
             pencil.title = 'Képaláírás szerkesztése';
-            pencil.setAttribute('aria-label', 'Képaláírás szerkesztése');
 
             const caption = document.createElement('input');
             caption.type = 'text';
@@ -3105,10 +3096,12 @@
                 }
             });
 
-            toolbar.appendChild(pencil);
-            card.appendChild(toolbar);
+            const editBar = document.createElement('div');
+            editBar.className = 'sim-gallery-editbar';
+            editBar.appendChild(pencil);
+            editBar.appendChild(caption);
+            card.appendChild(editBar);
             card.appendChild(img);
-            card.appendChild(caption);
             if (data.caption) card.appendChild(captionText);
             card.appendChild(hint);
             overlay.appendChild(card);
