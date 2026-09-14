@@ -2918,6 +2918,11 @@
             node.style.left = sim.x + 'px';
             node.style.top = sim.y + 'px';
 
+            // Ha a Sim állat, akkor láthatatlan
+            if (isAnimalSim(sim)) {
+                node.style.display = 'none';
+            }
+
             const editPencil = document.createElement('div');
             editPencil.className = 'sim-edit-pencil';
             editPencil.innerHTML = '✏️';
@@ -3011,24 +3016,56 @@
                 specialIcons.appendChild(icon);
             }
 
-            // Állat ikonok hozzáadása a Sim fejéhez bal oldalra
-            const animalIcons = {
-                'Kutya': '🐕',
-                'Macska': '🐱',
-                'Ló': '🐴',
-                'Más állat': '🐾'
-            };
+            // Állatok profilképeinek megjelenítése a Simnél bal oldalon
+            const animalIds = Array.isArray(sim.animalIds) ? sim.animalIds : [];
+            const tree = getCurrentTree();
 
-            if (sim.species && sim.species !== 'Ember' && animalIcons[sim.species]) {
-                const animalIcon = document.createElement('div');
-                animalIcon.className = 'sim-special-icon';
-                animalIcon.innerText = animalIcons[sim.species];
-                animalIcon.title = sim.species;
-                animalIcon.style.position = 'absolute';
-                animalIcon.style.left = '-28px';
-                animalIcon.style.top = '50%';
-                animalIcon.style.transform = 'translateY(-50%)';
-                specialIcons.appendChild(animalIcon);
+            if (animalIds.length > 0 && tree) {
+                let leftOffset = -28; // Első állat pozíciója
+
+                animalIds.forEach(animalId => {
+                    const animal = tree.sims.find(s => s.id === animalId);
+                    if (animal && isAnimalSim(animal)) {
+                        const animalIcon = document.createElement('div');
+                        animalIcon.className = 'sim-special-icon';
+                        animalIcon.style.position = 'absolute';
+                        animalIcon.style.left = leftOffset + 'px';
+                        animalIcon.style.top = '50%';
+                        animalIcon.style.transform = 'translateY(-50%)';
+                        animalIcon.style.width = '20px';
+                        animalIcon.style.height = '20px';
+                        animalIcon.style.borderRadius = '50%';
+                        animalIcon.style.overflow = 'hidden';
+                        animalIcon.style.border = '2px solid var(--border-color)';
+                        animalIcon.style.backgroundColor = 'var(--card-solid)';
+                        animalIcon.title = `${animal.firstName} ${animal.lastName} (${animal.species})`;
+
+                        if (animal.image) {
+                            const animalImg = document.createElement('img');
+                            animalImg.src = animal.image;
+                            animalImg.style.width = '100%';
+                            animalImg.style.height = '100%';
+                            animalImg.style.objectFit = 'cover';
+                            animalIcon.appendChild(animalImg);
+                        } else {
+                            // Ha nincs képe, akkor emoji alapján
+                            const animalEmojis = {
+                                'Kutya': '🐕',
+                                'Macska': '🐱',
+                                'Ló': '🐴',
+                                'Más állat': '🐾'
+                            };
+                            animalIcon.innerText = animalEmojis[animal.species] || '🐾';
+                            animalIcon.style.display = 'flex';
+                            animalIcon.style.alignItems = 'center';
+                            animalIcon.style.justifyContent = 'center';
+                            animalIcon.style.fontSize = '12px';
+                        }
+
+                        specialIcons.appendChild(animalIcon);
+                        leftOffset -= 24; // Következő állat 24px-balra
+                    }
+                });
             }
 
             if (specialIcons.children.length > 0) {
