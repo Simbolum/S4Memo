@@ -1585,12 +1585,12 @@
         <div class="modal-card" style="max-width: 430px;">
             <h2>Kapcsolat törlése</h2>
             <p id="deleteConnectionPickerHint" style="font-size:12px; color:var(--subtext-color); margin-top:-4px;">
-                Válaszd ki, melyik kapcsolatot szeretnéd törölni.
+                Válaszd ki, melyik kapcsolatokat szeretnéd törölni (többet is kiválaszthatsz).
             </p>
             <div id="deleteConnectionPickerList" style="display:flex; flex-direction:column; gap:7px; max-height:330px; overflow-y:auto; margin-top:12px;"></div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closeDeleteConnectionPicker()">Mégse</button>
-                <button type="button" class="btn-danger" onclick="confirmDeleteSelectedConnection()">Kapcsolat törlése</button>
+                <button type="button" class="btn-danger" onclick="confirmDeleteSelectedConnection()">Kapcsolatok törlése</button>
             </div>
         </div>
     </div>
@@ -1721,7 +1721,7 @@
         let familyPickerMode = null;
         let familyPickerSelectedIds = [];
         let deleteConnectionSimId = null;
-        let deleteConnectionTargetId = null;
+        let deleteConnectionTargetIds = [];
 
         let partnerPickerForChildSimId = null;
         let selectedPartnerForChildId = null;
@@ -4009,7 +4009,7 @@
 
             const connections = getSimConnections(simId);
             deleteConnectionSimId = simId;
-            deleteConnectionTargetId = null;
+            deleteConnectionTargetIds = [];
 
             const list = document.getElementById('deleteConnectionPickerList');
             list.innerHTML = '';
@@ -4024,29 +4024,41 @@
                     const target = tree.sims.find(s => s.id === connection.targetId);
                     if (!target) return;
 
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
+                    const btn = document.createElement('div');
                     btn.className = 'family-picker-item';
                     btn.style.cssText += 'width:100%; background:transparent; color:var(--text-color); text-align:left;';
 
                     btn.innerHTML = `
+                        <input type="checkbox" class="delete-connection-checkbox" value="${connection.targetId}" style="accent-color: var(--accent-color); width: 16px; height: 16px; margin-right: 10px;">
                         ${target.image ? `<img src="${target.image}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">` : ''}
                         <div style="flex:1;">
                             <strong>${target.firstName || ''} ${target.lastName || ''}</strong>
                             <div style="font-size:10px;color:var(--subtext-color);">${connection.type}</div>
                         </div>
-                        <span style="font-size:16px;">›</span>
                     `;
 
-                    btn.onclick = () => {
-                        document.querySelectorAll('#deleteConnectionPickerList .family-picker-item').forEach(el => {
-                            el.style.borderColor = 'var(--border-color)';
-                            el.style.background = 'transparent';
-                        });
-                        btn.style.borderColor = 'var(--accent-color)';
-                        btn.style.background = 'rgba(255,255,255,.06)';
-                        deleteConnectionTargetId = connection.targetId;
-                    };
+                    const checkbox = btn.querySelector('.delete-connection-checkbox');
+                    checkbox.addEventListener('change', (e) => {
+                        if (e.target.checked) {
+                            if (!deleteConnectionTargetIds.includes(connection.targetId)) {
+                                deleteConnectionTargetIds.push(connection.targetId);
+                            }
+                            btn.style.borderColor = 'var(--accent-color)';
+                            btn.style.background = 'rgba(255,255,255,.06)';
+                        } else {
+                            deleteConnectionTargetIds = deleteConnectionTargetIds.filter(id => id !== connection.targetId);
+                            btn.style.borderColor = 'var(--border-color)';
+                            btn.style.background = 'transparent';
+                        }
+                    });
+
+                    // Ha az egész elemre kattintanak, akkor is váltson
+                    btn.addEventListener('click', (e) => {
+                        if (e.target !== checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                            checkbox.dispatchEvent(new Event('change'));
+                        }
+                    });
 
                     list.appendChild(btn);
                 });
@@ -4058,7 +4070,7 @@
         function closeDeleteConnectionPicker() {
             document.getElementById('deleteConnectionPickerModal').classList.remove('active');
             deleteConnectionSimId = null;
-            deleteConnectionTargetId = null;
+            deleteConnectionTargetIds = [];
         }
 
         // KAPCSOLATOK SZERKESZTÉSE
@@ -4261,12 +4273,14 @@
         }
 
         function confirmDeleteSelectedConnection() {
-            if (!deleteConnectionSimId || !deleteConnectionTargetId) {
-                alert('Válaszd ki, melyik kapcsolatot szeretnéd törölni.');
+            if (!deleteConnectionSimId || deleteConnectionTargetIds.length === 0) {
+                alert('Válassz ki legalább egy kapcsolatot a törléshez!');
                 return;
             }
 
-            deleteSimConnection(deleteConnectionSimId, deleteConnectionTargetId);
+            deleteConnectionTargetIds.forEach(targetId => {
+                deleteSimConnection(deleteConnectionSimId, targetId);
+            });
             closeDeleteConnectionPicker();
         }
 
