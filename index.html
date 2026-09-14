@@ -4707,8 +4707,9 @@
             try {
                 // DataURL átalakítása File objektummá
                 const response = await fetch(dataUrl);
-                const blob = await response.blob();
-                const file = new File([blob], 'image.webp', { type: 'image/webp' });
+const blob = await response.blob();
+// Biztosítjuk, hogy webp típusúként hozza létre a fájlt
+const file = new File([blob], 'image.webp', { type: 'image/webp' });
 
                 // Egyedi fájlnév generálása
                 const timestamp = Date.now();
