@@ -2588,6 +2588,11 @@
                 sim.partnerIds = sim.partnerId ? [sim.partnerId] : [];
             }
 
+            // Közös gyerekek jelölése
+            if (!Array.isArray(sim.sharedChildren)) {
+                sim.sharedChildren = [];
+            }
+
             return sim;
         }
 
@@ -3717,14 +3722,50 @@
                             const endX = partner.x;
                             const endY = partner.y + 44;
 
-                            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                            const midX = startX + (endX - startX) / 2;
-                            path.setAttribute('d', `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
+                            // Ellenőrizzük, hogy van-e közös gyerek
+                            const hasSharedChild = tree.sims.some(child => {
+                                const childParentIds = Array.isArray(child.parentIds)
+                                    ? child.parentIds
+                                    : (child.parentId ? [child.parentId] : []);
+                                return childParentIds.includes(sim.id) && childParentIds.includes(partner.id);
+                            });
 
-                            const isLove = ['Házas', 'Jegyes', 'Szerelmes', null].includes(sim.relationType);
-                            path.setAttribute('class', isLove ? 'line-love' : 'line-child');
+                            if (hasSharedChild) {
+                                // Ha van közös gyerek, akkor a vonal közepétől húzunk vonalat a gyerekekhez
+                                const midX = startX + (endX - startX) / 2;
+                                const midY = startY + (endY - startY) / 2;
 
-                            svgLayer.appendChild(path);
+                                // Először a két szülő közötti vonal (rövidebb, halványabb)
+                                const parentPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                parentPath.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`);
+                                parentPath.setAttribute('class', 'line-love');
+                                parentPath.style.opacity = '0.3'; // Halványabb a szülői vonal
+                                svgLayer.appendChild(parentPath);
+
+                                // Vonalak a közös gyerekekhez
+                                tree.sims.forEach(child => {
+                                    const childParentIds = Array.isArray(child.parentIds)
+                                        ? child.parentIds
+                                        : (child.parentId ? [child.parentId] : []);
+
+                                    if (childParentIds.includes(sim.id) && childParentIds.includes(partner.id)) {
+                                        const childPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                        childPath.setAttribute('d', `M ${midX} ${midY} L ${child.x + 44} ${child.y + 44}`);
+                                        childPath.setAttribute('class', 'line-child');
+                                        svgLayer.appendChild(childPath);
+                                    }
+                                });
+                            } else {
+                                // Ha nincs közös gyerek, akkor normál partner vonal
+                                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                const midX = startX + (endX - startX) / 2;
+                                path.setAttribute('d', `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
+
+                                const isLove = ['Házas', 'Jegyes', 'Szerelmes', null].includes(sim.relationType);
+                                path.setAttribute('class', isLove ? 'line-love' : 'line-child');
+
+                                svgLayer.appendChild(path);
+                            }
                         }
                     });
                 }
@@ -3937,11 +3978,13 @@
                 // Két szülővel hozzuk létre a gyereket
                 const partnerSim = tree.sims.find(s => s.id === selectedPartnerForChildId);
                 if (partnerSim) {
-                    const childX = (parentSim.x + partnerSim.x) / 2;
-                    const childY = Math.max(parentSim.y, partnerSim.y) + 160;
+                    // A gyereket a két szülő közötti vonal közepére helyezzük
+                    const midX = (parentSim.x + partnerSim.x) / 2 + 44; // +44 a node szélességének fele
+                    const midY = (parentSim.y + partnerSim.y) / 2 + 44; // +44 a node magasságának fele
+                    const childY = midY + 120; // 120px lejjebb a vonal közepétől
                     const childLastName = parentSim.lastName || partnerSim.lastName || 'Sim';
 
-                    const newChild = addNewSim("Gyermek", childLastName, childX, childY, parentSim.id, null, 'Gyerek');
+                    const newChild = addNewSim("Gyermek", childLastName, midX - 44, childY - 44, parentSim.id, null, 'Gyerek');
                     normalizeSimExtraFields(newChild);
                     if (!newChild.parentIds.includes(selectedPartnerForChildId)) {
                         newChild.parentIds.push(selectedPartnerForChildId);
