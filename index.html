@@ -1585,12 +1585,12 @@
         <div class="modal-card" style="max-width: 430px;">
             <h2>Kapcsolat törlése</h2>
             <p id="deleteConnectionPickerHint" style="font-size:12px; color:var(--subtext-color); margin-top:-4px;">
-                Válaszd ki, melyik kapcsolatokat szeretnéd törölni (többet is kiválaszthatsz).
+                Válaszd ki, melyik kapcsolatot szeretnéd törölni.
             </p>
             <div id="deleteConnectionPickerList" style="display:flex; flex-direction:column; gap:7px; max-height:330px; overflow-y:auto; margin-top:12px;"></div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closeDeleteConnectionPicker()">Mégse</button>
-                <button type="button" class="btn-danger" onclick="confirmDeleteSelectedConnection()">Kapcsolatok törlése</button>
+                <button type="button" class="btn-danger" onclick="confirmDeleteSelectedConnection()">Kapcsolat törlése</button>
             </div>
         </div>
     </div>
@@ -1721,7 +1721,7 @@
         let familyPickerMode = null;
         let familyPickerSelectedIds = [];
         let deleteConnectionSimId = null;
-        let deleteConnectionTargetIds = [];
+        let deleteConnectionTargetId = null;
 
         let partnerPickerForChildSimId = null;
         let selectedPartnerForChildId = null;
@@ -1795,28 +1795,27 @@
         function handleCropImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
-                // Kép tömörítése és feltöltése Storage-ba
-                compressImage(file, 300, 300, 0.7).then(compressedImage => {
-                    uploadImageToStorage(compressedImage, 'avatars').then(finalImage => {
-                        tempUploadedImage = finalImage;
-                        currentRotation = 0;
-                        imageScale = 1;
-                        imageOffsetX = 0;
-                        imageOffsetY = 0;
-                        
-                        const cropImage = document.getElementById('cropImage');
-                        cropImage.src = tempUploadedImage;
-                        cropImage.style.display = 'block';
-                        
-                        // Reset crop variables
-                        cropImageScale = 1;
-                        cropImageOffsetX = 0;
-                        cropImageOffsetY = 0;
-                        document.getElementById('cropImgFilterSelect').value = 'none';
-                        
-                        updateCropImageTransform();
-                    });
-                });
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempUploadedImage = e.target.result;
+                    currentRotation = 0;
+                    imageScale = 1;
+                    imageOffsetX = 0;
+                    imageOffsetY = 0;
+                    
+                    const cropImage = document.getElementById('cropImage');
+                    cropImage.src = tempUploadedImage;
+                    cropImage.style.display = 'block';
+                    
+                    // Reset crop variables
+                    cropImageScale = 1;
+                    cropImageOffsetX = 0;
+                    cropImageOffsetY = 0;
+                    document.getElementById('cropImgFilterSelect').value = 'none';
+                    
+                    updateCropImageTransform();
+                };
+                reader.readAsDataURL(file);
             }
         }
 
@@ -2054,16 +2053,15 @@
         function handleCustomBgUpload(event) {
             const file = event.target.files[0];
             if (file) {
-                // Háttérkép tömörítése és feltöltése Storage-ba - nagyobb felbontás
-                compressImage(file, 1920, 1080, 0.5).then(compressedImage => {
-                    uploadImageToStorage(compressedImage, 'backgrounds').then(finalImage => {
-                        const config = getActiveBgConfig();
-                        config.customUrl = finalImage;
-                        config.style = 'custom';
-                        if (currentView === 'tree') saveTreesToStorage();
-                        applyPageBackground();
-                    });
-                });
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const config = getActiveBgConfig();
+                    config.customUrl = e.target.result;
+                    config.style = 'custom';
+                    if (currentView === 'tree') saveTreesToStorage();
+                    applyPageBackground();
+                };
+                reader.readAsDataURL(file);
             }
         }
 
@@ -2596,30 +2594,6 @@
             if (!treeToDelete) return;
 
             if (confirm(`Biztosan törölni szeretnéd a(z) "${treeToDelete.name}" családfát? Ez a művelet nem visszavonható!`)) {
-                // Minden kép törlése a Storage-ból
-                if (treeToDelete.sims) {
-                    treeToDelete.sims.forEach(sim => {
-                        // Profil kép törlése
-                        if (sim.image) {
-                            deleteImageFromStorage(sim.image);
-                        }
-                        // Galéria képek törlése
-                        if (Array.isArray(sim.gallery)) {
-                            sim.gallery.forEach(item => {
-                                const imageUrl = typeof item === 'string' ? item : item.src;
-                                if (imageUrl) {
-                                    deleteImageFromStorage(imageUrl);
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                // Háttérkép törlése
-                if (treeToDelete.bgConfig && treeToDelete.bgConfig.customUrl) {
-                    deleteImageFromStorage(treeToDelete.bgConfig.customUrl);
-                }
-
                 familyTrees = familyTrees.filter(t => t.id !== treeId);
 
                 if (currentTreeId === treeId) {
@@ -2883,87 +2857,55 @@
             if (!currentUser || !supabaseClient) return;
 
             try {
-                // Adatellenőrzés - biztosítjuk, hogy az adatok érvényesek
-                const safeTree = {
-                    id: tree.id,
-                    user_id: currentUser.id,
-                    name: tree.name || 'Névtelen családfa',
-                    background_config: tree.bgConfig || {},
-                    sims: tree.sims || [],
-                    journal: tree.journal || [],
-                    updated_at: new Date()
-                };
+                const { error } = await supabaseClient
+                    .from('family_trees')
+                    .upsert({
+                        id: tree.id,
+                        user_id: currentUser.id,
+                        name: tree.name,
+                        background_config: tree.bgConfig,
+                        sims: tree.sims,
+                        journal: tree.journal || [],
+                        updated_at: new Date()
+                    }, {
+                        onConflict: 'id'
+                    });
 
-                // Mivel a képek már URL-ként vannak tárolva a Storage-ban, az adatméret sokkal kisebb
-                const dataSize = JSON.stringify(safeTree).length;
-                console.log("Családfa mentése Supabase-be:", tree.name, "Méret:", Math.round(dataSize/1024) + "KB");
-
-                // Növelt timeout és retry mechanizmus a timeout hibák ellen
-                const maxRetries = 3;
-                let retryCount = 0;
-                let lastError = null;
-
-                while (retryCount < maxRetries) {
-                    try {
-                        // Timeout és retry beállítások
-                        const { error } = await Promise.race([
-                            supabaseClient
-                                .from('family_trees')
-                                .upsert(safeTree, {
-                                    onConflict: 'id'
-                                }),
-                            new Promise((_, reject) => 
-                                setTimeout(() => reject(new Error('Timeout')), 45000)
-                            )
-                        ]);
-
-                        if (error) {
-                            lastError = error;
-                            console.error(`Mentési hiba (próba ${retryCount + 1}/${maxRetries}):`, error);
-                            retryCount++;
-                            
-                            // Várakozás retry előtt (exponential backoff)
-                            if (retryCount < maxRetries) {
-                                await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
-                            }
-                        } else {
-                            console.log("Családfa sikeresen mentve:", tree.name);
-                            return; // Sikeres mentés, kilépünk
-                        }
-                    } catch (timeoutError) {
-                        lastError = timeoutError;
-                        console.error(`Timeout hiba (próba ${retryCount + 1}/${maxRetries}):`, timeoutError);
-                        retryCount++;
+                if (error) {
+                    console.error("Hiba a családfa mentésekor:", error);
+                    
+                    // Ha schema cache hiba, próbáljuk meg újra
+                    if (error.message && error.message.includes('journal')) {
+                        console.log("Schema cache hiba - kényszerített újrapróbálkozás...");
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                         
-                        // Várakozás retry előtt (exponential backoff)
-                        if (retryCount < maxRetries) {
-                            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+                        const retryResult = await supabaseClient
+                            .from('family_trees')
+                            .upsert({
+                                id: tree.id,
+                                user_id: currentUser.id,
+                                name: tree.name,
+                                background_config: tree.bgConfig,
+                                sims: tree.sims,
+                                journal: tree.journal || [],
+                                updated_at: new Date()
+                            }, {
+                                onConflict: 'id'
+                            });
+                            
+                        if (retryResult.error) {
+                            alert("Hiba a családfa mentésekor: " + retryResult.error.message);
+                        } else {
+                            console.log("Családfa sikeresen mentve (újrapróbálkozás):", tree.name);
                         }
-                    }
-                }
-
-                // Ha minden retry sikertelen volt
-                if (lastError) {
-                    console.error("Hiba a családfa mentésekor:", lastError);
-                    console.error("Hiba részletei:", JSON.stringify(lastError, null, 2));
-                    
-                    let errorMsg = "Ismeretlen hiba";
-                    if (lastError.message) {
-                        errorMsg = lastError.message;
-                    } else if (typeof lastError === 'object') {
-                        errorMsg = JSON.stringify(lastError);
                     } else {
-                        errorMsg = String(lastError);
+                        alert("Hiba a családfa mentésekor: " + error.message);
                     }
-                    
-                    alert("Hiba a családfa mentésekor: " + errorMsg);
+                } else {
+                    console.log("Családfa sikeresen mentve:", tree.name);
                 }
             } catch (error) {
                 console.error("Váratlan hiba a családfa mentésekor:", error);
-                const errorMsg = typeof error === 'object' 
-                    ? JSON.stringify(error) 
-                    : error.message || error;
-                alert("Váratlan hiba a családfa mentésekor: " + errorMsg);
             }
         }
 
@@ -3393,30 +3335,23 @@
             let remaining = files.length;
             files.forEach(file => {
                 if (!file.type.startsWith('image/')) { remaining--; return; }
-                
-                // Kép tömörítése és feltöltése Storage-ba - nagyobb felbontás a galériában
-                compressImage(file, 600, 600, 0.6).then(compressedImage => {
-                    uploadImageToStorage(compressedImage, 'gallery').then(finalImage => {
-                        sim.gallery.push({ src: finalImage, caption: '' });
-                        remaining--;
-                        if (remaining === 0) {
-                            saveTreesToStorage();
-                            renderSimLifeGallery(sim);
-                        }
-                    }).catch(() => {
-                        remaining--;
-                        if (remaining === 0) {
-                            saveTreesToStorage();
-                            renderSimLifeGallery(sim);
-                        }
-                    });
-                }).catch(() => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    sim.gallery.push({ src: e.target.result, caption: '' });
                     remaining--;
                     if (remaining === 0) {
                         saveTreesToStorage();
                         renderSimLifeGallery(sim);
                     }
-                });
+                };
+                reader.onerror = function() {
+                    remaining--;
+                    if (remaining === 0) {
+                        saveTreesToStorage();
+                        renderSimLifeGallery(sim);
+                    }
+                };
+                reader.readAsDataURL(file);
             });
             event.target.value = '';
         }
@@ -3456,11 +3391,6 @@
                 remove.title = 'Kép törlése';
                 remove.onclick = (e) => {
                     e.stopPropagation();
-                    // Kép törlése a Storage-ból
-                    const imageUrl = typeof item === 'string' ? item : item.src;
-                    if (imageUrl) {
-                        deleteImageFromStorage(imageUrl);
-                    }
                     gallery.splice(index, 1);
                     saveTreesToStorage();
                     renderSimLifeGallery(sim);
@@ -4079,7 +4009,7 @@
 
             const connections = getSimConnections(simId);
             deleteConnectionSimId = simId;
-            deleteConnectionTargetIds = [];
+            deleteConnectionTargetId = null;
 
             const list = document.getElementById('deleteConnectionPickerList');
             list.innerHTML = '';
@@ -4094,41 +4024,29 @@
                     const target = tree.sims.find(s => s.id === connection.targetId);
                     if (!target) return;
 
-                    const btn = document.createElement('div');
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
                     btn.className = 'family-picker-item';
                     btn.style.cssText += 'width:100%; background:transparent; color:var(--text-color); text-align:left;';
 
                     btn.innerHTML = `
-                        <input type="checkbox" class="delete-connection-checkbox" value="${connection.targetId}" style="accent-color: var(--accent-color); width: 16px; height: 16px; margin-right: 10px;">
                         ${target.image ? `<img src="${target.image}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">` : ''}
                         <div style="flex:1;">
                             <strong>${target.firstName || ''} ${target.lastName || ''}</strong>
                             <div style="font-size:10px;color:var(--subtext-color);">${connection.type}</div>
                         </div>
+                        <span style="font-size:16px;">›</span>
                     `;
 
-                    const checkbox = btn.querySelector('.delete-connection-checkbox');
-                    checkbox.addEventListener('change', (e) => {
-                        if (e.target.checked) {
-                            if (!deleteConnectionTargetIds.includes(connection.targetId)) {
-                                deleteConnectionTargetIds.push(connection.targetId);
-                            }
-                            btn.style.borderColor = 'var(--accent-color)';
-                            btn.style.background = 'rgba(255,255,255,.06)';
-                        } else {
-                            deleteConnectionTargetIds = deleteConnectionTargetIds.filter(id => id !== connection.targetId);
-                            btn.style.borderColor = 'var(--border-color)';
-                            btn.style.background = 'transparent';
-                        }
-                    });
-
-                    // Ha az egész elemre kattintanak, akkor is váltson
-                    btn.addEventListener('click', (e) => {
-                        if (e.target !== checkbox) {
-                            checkbox.checked = !checkbox.checked;
-                            checkbox.dispatchEvent(new Event('change'));
-                        }
-                    });
+                    btn.onclick = () => {
+                        document.querySelectorAll('#deleteConnectionPickerList .family-picker-item').forEach(el => {
+                            el.style.borderColor = 'var(--border-color)';
+                            el.style.background = 'transparent';
+                        });
+                        btn.style.borderColor = 'var(--accent-color)';
+                        btn.style.background = 'rgba(255,255,255,.06)';
+                        deleteConnectionTargetId = connection.targetId;
+                    };
 
                     list.appendChild(btn);
                 });
@@ -4140,7 +4058,7 @@
         function closeDeleteConnectionPicker() {
             document.getElementById('deleteConnectionPickerModal').classList.remove('active');
             deleteConnectionSimId = null;
-            deleteConnectionTargetIds = [];
+            deleteConnectionTargetId = null;
         }
 
         // KAPCSOLATOK SZERKESZTÉSE
@@ -4343,14 +4261,12 @@
         }
 
         function confirmDeleteSelectedConnection() {
-            if (!deleteConnectionSimId || deleteConnectionTargetIds.length === 0) {
-                alert('Válassz ki legalább egy kapcsolatot a törléshez!');
+            if (!deleteConnectionSimId || !deleteConnectionTargetId) {
+                alert('Válaszd ki, melyik kapcsolatot szeretnéd törölni.');
                 return;
             }
 
-            deleteConnectionTargetIds.forEach(targetId => {
-                deleteSimConnection(deleteConnectionSimId, targetId);
-            });
+            deleteSimConnection(deleteConnectionSimId, deleteConnectionTargetId);
             closeDeleteConnectionPicker();
         }
 
@@ -4445,26 +4361,7 @@
 
         function deleteSim(simId) {
             const tree = getCurrentTree(); if (!tree) return;
-            const simToDelete = tree.sims.find(s => s.id === simId);
-            
             if (confirm("Törölni szeretnéd ezt a Simet?")) {
-                // Képek törlése a Storage-ból
-                if (simToDelete) {
-                    // Profil kép törlése
-                    if (simToDelete.image) {
-                        deleteImageFromStorage(simToDelete.image);
-                    }
-                    // Galéria képek törlése
-                    if (Array.isArray(simToDelete.gallery)) {
-                        simToDelete.gallery.forEach(item => {
-                            const imageUrl = typeof item === 'string' ? item : item.src;
-                            if (imageUrl) {
-                                deleteImageFromStorage(imageUrl);
-                            }
-                        });
-                    }
-                }
-                
                 tree.sims = tree.sims.filter(s => s.id !== simId);
                 tree.sims.forEach(s => {
                     if (s.parentId === simId) s.parentId = null;
@@ -4658,179 +4555,43 @@
             document.getElementById('searchResultsList').classList.remove('active');
         }
 
-        // KÉP TÖMÖRÍTÉS ÉS OPTIMALIZÁLÁS
-        function compressImage(file, maxWidth = 300, maxHeight = 300, quality = 0.7) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        // Kép átméretezése a megadott méretekre
-                        if (width > maxWidth || height > maxHeight) {
-                            const ratio = Math.min(maxWidth / width, maxHeight / height);
-                            width = Math.round(width * ratio);
-                            height = Math.round(height * ratio);
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        // WebP formátum (jobb tömörítés)
-                        canvas.toBlob(function(blob) {
-                            const compressedReader = new FileReader();
-                            compressedReader.onload = function(e) {
-                                resolve(e.target.result);
-                            };
-                            compressedReader.readAsDataURL(blob);
-                        }, 'image/webp', quality);
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // SUPABASE STORAGE KÉPFELTÖLTÉS
-        async function uploadImageToStorage(dataUrl, folder = 'avatars') {
-            if (!currentUser || !supabaseClient) {
-                console.warn("Nincs bejelentkezett felhasználó, képek tárolása lokálisan");
-                return dataUrl; // Fallback: visszatérünk az eredeti dataURL-lel
-            }
-
-            try {
-                // DataURL átalakítása File objektummá
-                const response = await fetch(dataUrl);
-const blob = await response.blob();
-// Biztosítjuk, hogy webp típusúként hozza létre a fájlt
-const file = new File([blob], 'image.webp', { type: 'image/webp' });
-
-                // Egyedi fájlnév generálása
-                const timestamp = Date.now();
-                const randomId = Math.random().toString(36).substring(2, 15);
-                const fileName = `${folder}/${currentUser.id}_${timestamp}_${randomId}.webp`;
-
-                // Fájl feltöltése a Supabase Storage-ba CORS workaround-dal
-                let uploadError = null;
-                let uploadData = null;
-                
-                try {
-                    const result = await supabaseClient
-                        .storage
-                        .from('family-tree-images')
-                        .upload(fileName, file, {
-                            cacheControl: '3600',
-                            upsert: false
-                        });
-                    uploadData = result.data;
-                    uploadError = result.error;
-                } catch (err) {
-                    uploadError = err;
-                }
-
-                if (uploadError) {
-                    console.error("Hiba a kép feltöltésekor:", uploadError);
-                    // Ha CORS hiba, fallback lokális tárolás
-                    if (uploadError.message && uploadError.message.includes('CORS')) {
-                        console.warn("CORS hiba, fallback lokális tárolás");
-                        return dataUrl;
-                    }
-                    // Fallback: visszatérünk az eredeti dataURL-lel
-                    return dataUrl;
-                }
-
-                // Public URL lekérése
-                const { data: { publicUrl } } = supabaseClient
-                    .storage
-                    .from('family-tree-images')
-                    .getPublicUrl(fileName);
-
-                console.log("Kép sikeresen feltöltve:", publicUrl);
-                return publicUrl;
-
-            } catch (error) {
-                console.error("Hiba a kép feltöltésekor:", error);
-                // Fallback: visszatérünk az eredeti dataURL-lel
-                return dataUrl;
-            }
-        }
-
-        // SUPABASE STORAGE KÉPTÖRLÉS
-        async function deleteImageFromStorage(imageUrl) {
-            if (!currentUser || !supabaseClient || !imageUrl) return;
-            
-            // Csak Storage URL-eket töröljük, dataURL-eket nem
-            if (!imageUrl.includes('family-tree-images')) return;
-
-            try {
-                // URL-ból kinyerjük a fájlnevet
-                const url = new URL(imageUrl);
-                const pathParts = url.pathname.split('/');
-                const fileName = pathParts[pathParts.length - 1];
-                const folder = pathParts[pathParts.length - 2];
-                const fullPath = `${folder}/${fileName}`;
-
-                console.log("Kép törlése Storage-ból:", fullPath);
-
-                const { error } = await supabaseClient
-                    .storage
-                    .from('family-tree-images')
-                    .remove([fullPath]);
-
-                if (error) {
-                    console.error("Hiba a kép törlésekor:", error);
-                } else {
-                    console.log("Kép sikeresen törölve:", fullPath);
-                }
-            } catch (error) {
-                console.error("Hiba a kép törlésekor:", error);
-            }
-        }
-
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
-                // Kép tömörítése és feltöltése Storage-ba
-                compressImage(file, 300, 300, 0.7).then(compressedImage => {
-                    uploadImageToStorage(compressedImage, 'avatars').then(finalImage => {
-                        tempUploadedImage = finalImage;
-                        currentRotation = 0;
-                        imageScale = 1;
-                        imageOffsetX = 0;
-                        imageOffsetY = 0;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempUploadedImage = e.target.result;
+                    currentRotation = 0;
+                    imageScale = 1;
+                    imageOffsetX = 0;
+                    imageOffsetY = 0;
 
-                        const modalAvatar = document.getElementById('modalAvatar');
-                        const placeholder = document.getElementById('modalAvatarPlaceholder');
-                        modalAvatar.src = tempUploadedImage;
-                        modalAvatar.style.display = 'block';
-                        placeholder.style.display = 'none';
+                    const modalAvatar = document.getElementById('modalAvatar');
+                    const placeholder = document.getElementById('modalAvatarPlaceholder');
+                    modalAvatar.src = tempUploadedImage;
+                    modalAvatar.style.display = 'block';
+                    placeholder.style.display = 'none';
 
-                        document.getElementById('imgFilterSelect').value = 'none';
+                    document.getElementById('imgFilterSelect').value = 'none';
 
-                        document.getElementById('imageEditorBox').style.display = 'none';
-                        updateImageTransform();
+                    document.getElementById('imageEditorBox').style.display = 'none';
+                    updateImageTransform();
+                    
+                    // Ha a képvágó modal nyitva van, frissítjük azt is
+                    const cropModal = document.getElementById('imageCropModal');
+                    if (cropModal.classList.contains('active')) {
+                        const cropImage = document.getElementById('cropImage');
+                        cropImage.src = tempUploadedImage;
+                        cropImage.style.display = 'block';
                         
-                        // Ha a képvágó modal nyitva van, frissítjük azt is
-                        const cropModal = document.getElementById('imageCropModal');
-                        if (cropModal.classList.contains('active')) {
-                            const cropImage = document.getElementById('cropImage');
-                            cropImage.src = tempUploadedImage;
-                            cropImage.style.display = 'block';
-                            
-                            // Reset crop variables
-                            cropImageScale = 1;
-                            cropImageOffsetX = 0;
-                            cropImageOffsetY = 0;
-                            updateCropImageTransform();
-                        }
-                    });
-                });
+                        // Reset crop variables
+                        cropImageScale = 1;
+                        cropImageOffsetX = 0;
+                        cropImageOffsetY = 0;
+                        updateCropImageTransform();
+                    }
+                };
+                reader.readAsDataURL(file);
             }
         }
 
