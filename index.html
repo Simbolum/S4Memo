@@ -2614,6 +2614,15 @@
                 sim.sharedChildren = [];
             }
 
+            // Egyedi kapcsolat típusok támogatása
+            if (!sim.connectionTypes) {
+                sim.connectionTypes = {};
+                // Ha van régi relationType, akkor a fő partnernek adjuk hozzá
+                if (sim.relationType && sim.partnerIds && sim.partnerIds.length > 0) {
+                    sim.connectionTypes[sim.partnerIds[0]] = sim.relationType;
+                }
+            }
+
             return sim;
         }
 
@@ -3883,8 +3892,9 @@
                         `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`
                     );
 
+                    const relationType = (sim.connectionTypes && sim.connectionTypes[partnerId]) || sim.relationType;
                     const isLove = ['Házas', 'Jegyes', 'Szerelmes', 'Özvegy', null]
-                        .includes(sim.relationType);
+                        .includes(relationType);
 
                     path.setAttribute('class', isLove ? 'line-love' : 'line-child');
 
@@ -3940,7 +3950,8 @@
                 : (sim.partnerId ? [sim.partnerId] : []);
 
             partnerIds.forEach(partnerId => {
-                addConnection(tree.sims.find(s => s.id === partnerId), sim.relationType || 'Partner');
+                const relationType = (sim.connectionTypes && sim.connectionTypes[partnerId]) || sim.relationType || 'Partner';
+                addConnection(tree.sims.find(s => s.id === partnerId), relationType);
             });
 
             // Szülők
@@ -4124,11 +4135,13 @@
                 normalizeSimExtraFields(target);
 
                 if (Array.isArray(sim.partnerIds) && sim.partnerIds.includes(target.id)) {
-                    sim.relationType = editConnectionsNewType;
+                    sim.connectionTypes = sim.connectionTypes || {};
+                    sim.connectionTypes[target.id] = editConnectionsNewType;
                 }
 
                 if (Array.isArray(target.partnerIds) && target.partnerIds.includes(sim.id)) {
-                    target.relationType = editConnectionsNewType;
+                    target.connectionTypes = target.connectionTypes || {};
+                    target.connectionTypes[sim.id] = editConnectionsNewType;
                 }
 
                 saveTreesToStorage();
@@ -4283,6 +4296,10 @@
             if (Array.isArray(sim.partnerIds)) {
                 sim.partnerIds = sim.partnerIds.filter(id => id !== targetId);
                 sim.partnerId = sim.partnerIds[0] || null;
+                // Töröljük a kapcsolat típust is
+                if (sim.connectionTypes) {
+                    delete sim.connectionTypes[targetId];
+                }
             } else if (sim.partnerId === targetId) {
                 sim.partnerId = null;
                 sim.relationType = null;
@@ -4290,6 +4307,10 @@
             if (Array.isArray(target.partnerIds)) {
                 target.partnerIds = target.partnerIds.filter(id => id !== simId);
                 target.partnerId = target.partnerIds[0] || null;
+                // Töröljük a kapcsolat típust is
+                if (target.connectionTypes) {
+                    delete target.connectionTypes[simId];
+                }
             } else if (target.partnerId === simId) {
                 target.partnerId = null;
                 target.relationType = null;
@@ -4458,7 +4479,7 @@
                     sourceSim.parentId = sourceSim.parentIds[0] || null;
                 }
                 else {
-                    // Kétirányú partner kapcsolat
+                    // Kétirányú partner kapcsolat egyedi típussal
                     normalizeSimExtraFields(sourceSim);
                     normalizeSimExtraFields(targetSim);
 
@@ -4466,13 +4487,17 @@
                         sourceSim.partnerIds.push(targetSim.id);
                     }
                     sourceSim.partnerId = sourceSim.partnerIds[0] || null;
-                    sourceSim.relationType = relationType;
+                    // Egyedi kapcsolat típus tárolása
+                    sourceSim.connectionTypes = sourceSim.connectionTypes || {};
+                    sourceSim.connectionTypes[targetSim.id] = relationType;
 
                     if (!targetSim.partnerIds.includes(sourceSim.id)) {
                         targetSim.partnerIds.push(sourceSim.id);
                     }
                     targetSim.partnerId = targetSim.partnerIds[0] || null;
-                    targetSim.relationType = relationType;
+                    // Egyedi kapcsolat típus tárolása (oda-vissza)
+                    targetSim.connectionTypes = targetSim.connectionTypes || {};
+                    targetSim.connectionTypes[sourceSim.id] = relationType;
                 }
             }
 
@@ -4502,7 +4527,8 @@
                     sourceSim.partnerIds.push(newSim.id);
                 }
                 sourceSim.partnerId = sourceSim.partnerIds[0] || null;
-                sourceSim.relationType = relationType;
+                sourceSim.connectionTypes = sourceSim.connectionTypes || {};
+                sourceSim.connectionTypes[newSim.id] = relationType;
                 saveTreesToStorage();
                 loadCurrentTreeCanvas();
             }
