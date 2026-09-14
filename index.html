@@ -1263,6 +1263,7 @@
     <div class="context-menu" id="contextMenu">
         <div class="context-menu-item" onclick="contextAction('edit')">✏️ Szerkesztés</div>
         <div class="context-menu-item" onclick="contextAction('connect')">🔗 Kapcsolat hozzáadása...</div>
+        <div class="context-menu-item" onclick="contextAction('editConnections')">💑 Kapcsolatok szerkesztése...</div>
         <div class="context-menu-item" onclick="contextAction('disconnect')">✂️ Kapcsolatok törlése</div>
         <div class="context-menu-item" onclick="contextAction('lock')" id="contextLockLabel">🔒 Zárolás</div>
         <div class="context-menu-item" style="color: #ff5e7e;" onclick="contextAction('delete')">🗑️ Karakter törlése</div>
@@ -1548,6 +1549,7 @@
                     <option value="Házas">Házas (Rózsaszín kötél)</option>
                     <option value="Jegyes">Jegyes (Rózsaszín kötél)</option>
                     <option value="Szerelmes">Szerelmes (Rózsaszín kötél)</option>
+                    <option value="Özvegy">Özvegy (Rózsaszín kötél)</option>
                     <option value="Gyerek">Gyerek (Zöld kötél)</option>
                     <option value="Szülő">Szülő (Zöld kötél)</option>
                 </select>
@@ -1588,6 +1590,21 @@
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closePartnerPickerForChild()">Mégse</button>
                 <button type="button" class="btn-primary" onclick="confirmPartnerForChild()">Gyerek létrehozása</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KAPCSOLATOK SZERKESZTÉSE MODAL -->
+    <div class="modal-overlay" id="editConnectionsModal">
+        <div class="modal-card" style="max-width: 430px;">
+            <h2 id="editConnectionsTitle">Kapcsolatok szerkesztése</h2>
+            <p id="editConnectionsHint" style="font-size:12px; color:var(--subtext-color); margin-top:-4px;">
+                Válaszd ki, melyik kapcsolatot szeretnéd módosítani.
+            </p>
+            <div id="editConnectionsList" style="display:flex; flex-direction:column; gap:7px; max-height:330px; overflow-y:auto; margin-top:12px;"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeEditConnectionsPicker()">Mégse</button>
+                <button type="button" class="btn-primary" onclick="confirmEditConnection()">Mentés</button>
             </div>
         </div>
     </div>
@@ -1692,6 +1709,10 @@
 
         let partnerPickerForChildSimId = null;
         let selectedPartnerForChildId = null;
+
+        let editConnectionsSimId = null;
+        let editConnectionsTargetId = null;
+        let editConnectionsNewType = null;
 
         let familyTrees = loadTreesFromStorage();
         let currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
@@ -3862,7 +3883,7 @@
                         `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`
                     );
 
-                    const isLove = ['Házas', 'Jegyes', 'Szerelmes', null]
+                    const isLove = ['Házas', 'Jegyes', 'Szerelmes', 'Özvegy', null]
                         .includes(sim.relationType);
 
                     path.setAttribute('class', isLove ? 'line-love' : 'line-child');
@@ -4013,6 +4034,110 @@
             deleteConnectionTargetId = null;
         }
 
+        // KAPCSOLATOK SZERKESZTÉSE
+        function openEditConnectionsPicker(simId) {
+            editConnectionsSimId = simId;
+            editConnectionsTargetId = null;
+            editConnectionsNewType = null;
+            const tree = getCurrentTree(); if (!tree) return;
+            const currentSim = tree.sims.find(s => s.id === simId); if (!currentSim) return;
+
+            document.getElementById('editConnectionsTitle').innerText = `${currentSim.firstName} ${currentSim.lastName} - Kapcsolatok szerkesztése`;
+            document.getElementById('editConnectionsHint').innerText = 'Válaszd ki, melyik kapcsolatot szeretnéd módosítani.';
+
+            const list = document.getElementById('editConnectionsList');
+            list.innerHTML = '';
+
+            const connections = getSimConnections(simId);
+
+            if (!connections.length) {
+                list.innerHTML = '<div style="color:var(--subtext-color); font-size:12px; padding:10px;">Ennek a Simnek nincs szerkeszthető kapcsolata.</div>';
+            } else {
+                connections.forEach(connection => {
+                    // Csak a partner kapcsolatokat engedjük szerkeszteni
+                    if (connection.type === 'Partner' || ['Házas', 'Jegyes', 'Szerelmes', 'Özvegy'].includes(connection.type)) {
+                        const target = tree.sims.find(s => s.id === connection.targetId);
+                        if (!target) return;
+
+                        const btn = document.createElement('div');
+                        btn.className = 'family-picker-item';
+                        btn.innerHTML = `
+                            ${target.image ? `<img src="${target.image}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--border-color);">` : ''}
+                            <div style="flex:1;">
+                                <strong>${target.firstName || ''} ${target.lastName || ''}</strong>
+                                <div style="font-size:10px;color:var(--subtext-color);">${connection.type}</div>
+                            </div>
+                            <select class="edit-relation-type-select" style="padding:4px 8px; border-radius:6px; border:1px solid var(--border-color); background:var(--card-solid); color:var(--text-color); font-size:10px; font-weight:700;">
+                                <option value="Házas" ${connection.type === 'Házas' ? 'selected' : ''}>Házas</option>
+                                <option value="Jegyes" ${connection.type === 'Jegyes' ? 'selected' : ''}>Jegyes</option>
+                                <option value="Szerelmes" ${connection.type === 'Szerelmes' ? 'selected' : ''}>Szerelmes</option>
+                                <option value="Özvegy" ${connection.type === 'Özvegy' ? 'selected' : ''}>Özvegy</option>
+                            </select>
+                        `;
+
+                        const select = btn.querySelector('.edit-relation-type-select');
+                        select.onclick = (e) => e.stopPropagation();
+                        select.onchange = (e) => {
+                            editConnectionsTargetId = connection.targetId;
+                            editConnectionsNewType = e.target.value;
+                        };
+
+                        btn.onclick = () => {
+                            document.querySelectorAll('#editConnectionsList .family-picker-item').forEach(el => {
+                                el.style.borderColor = 'var(--border-color)';
+                                el.style.background = 'transparent';
+                            });
+                            btn.style.borderColor = 'var(--accent-color)';
+                            btn.style.background = 'rgba(255,255,255,.06)';
+                            editConnectionsTargetId = connection.targetId;
+                            editConnectionsNewType = select.value;
+                        };
+
+                        list.appendChild(btn);
+                    }
+                });
+            }
+
+            document.getElementById('editConnectionsModal').classList.add('active');
+        }
+
+        function closeEditConnectionsPicker() {
+            document.getElementById('editConnectionsModal').classList.remove('active');
+            editConnectionsSimId = null;
+            editConnectionsTargetId = null;
+            editConnectionsNewType = null;
+        }
+
+        function confirmEditConnection() {
+            if (!editConnectionsSimId || !editConnectionsTargetId || !editConnectionsNewType) {
+                alert('Válassz ki egy kapcsolatot és az új típust!');
+                return;
+            }
+
+            const tree = getCurrentTree(); if (!tree) return;
+            const sim = tree.sims.find(s => s.id === editConnectionsSimId);
+            const target = tree.sims.find(s => s.id === editConnectionsTargetId);
+
+            if (sim && target) {
+                // Frissítjük mindkét fél kapcsolat típusát
+                normalizeSimExtraFields(sim);
+                normalizeSimExtraFields(target);
+
+                if (Array.isArray(sim.partnerIds) && sim.partnerIds.includes(target.id)) {
+                    sim.relationType = editConnectionsNewType;
+                }
+
+                if (Array.isArray(target.partnerIds) && target.partnerIds.includes(sim.id)) {
+                    target.relationType = editConnectionsNewType;
+                }
+
+                saveTreesToStorage();
+                loadCurrentTreeCanvas();
+            }
+
+            closeEditConnectionsPicker();
+        }
+
         // PARTNER VÁLASZTÓ GYEREKHOZ
         function openPartnerPickerForChild(simId) {
             partnerPickerForChildSimId = simId;
@@ -4123,11 +4248,12 @@
 
             if (action === 'edit') openSimModal(sim.id);
             else if (action === 'connect') openConnectionPicker(sim.id);
+            else if (action === 'editConnections') openEditConnectionsPicker(sim.id);
             else if (action === 'disconnect') openDeleteConnectionPicker(sim.id);
-            else if (action === 'lock') { 
-                sim.locked = !sim.locked; 
+            else if (action === 'lock') {
+                sim.locked = !sim.locked;
                 saveTreesToStorage();
-                loadCurrentTreeCanvas(); 
+                loadCurrentTreeCanvas();
             }
             else if (action === 'delete') deleteSim(sim.id);
             closeContextMenu();
