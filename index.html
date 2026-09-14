@@ -3021,15 +3021,14 @@
             const tree = getCurrentTree();
 
             if (animalIds.length > 0 && tree) {
-                let topOffset = 40; // Első állat pozíciója (a node alatt)
+                let topOffset = 10; // Első állat pozíciója (a node felett)
 
                 animalIds.forEach(animalId => {
                     const animal = tree.sims.find(s => s.id === animalId);
                     if (animal && isAnimalSim(animal)) {
                         const animalIcon = document.createElement('div');
-                        animalIcon.className = 'sim-special-icon';
                         animalIcon.style.position = 'absolute';
-                        animalIcon.style.left = '-28px'; // Fix bal pozíció
+                        animalIcon.style.left = '-32px'; // Fix bal pozíció a node-on kívül
                         animalIcon.style.top = topOffset + 'px';
                         animalIcon.style.width = '20px';
                         animalIcon.style.height = '20px';
@@ -3037,6 +3036,8 @@
                         animalIcon.style.overflow = 'hidden';
                         animalIcon.style.border = '2px solid var(--border-color)';
                         animalIcon.style.backgroundColor = 'var(--card-solid)';
+                        animalIcon.style.zIndex = '150';
+                        animalIcon.style.boxShadow = '0 3px 8px var(--shadow-color)';
                         animalIcon.title = `${animal.firstName} ${animal.lastName} (${animal.species})`;
 
                         if (animal.image) {
@@ -3061,7 +3062,7 @@
                             animalIcon.style.fontSize = '12px';
                         }
 
-                        specialIcons.appendChild(animalIcon);
+                        node.appendChild(animalIcon); // Közvetlenül a node-ra tesszük, nem a specialIcons konténerbe
                         topOffset += 24; // Következő állat 24px-lejjebb
                     }
                 });
