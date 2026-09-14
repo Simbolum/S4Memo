@@ -2918,6 +2918,11 @@
             node.style.left = sim.x + 'px';
             node.style.top = sim.y + 'px';
 
+            // Ha a Sim állat, akkor láthatatlan
+            if (isAnimalSim(sim)) {
+                node.style.display = 'none';
+            }
+
             const editPencil = document.createElement('div');
             editPencil.className = 'sim-edit-pencil';
             editPencil.innerHTML = '✏️';
