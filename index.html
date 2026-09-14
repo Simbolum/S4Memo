@@ -2918,11 +2918,6 @@
             node.style.left = sim.x + 'px';
             node.style.top = sim.y + 'px';
 
-            // Ha a Sim állat, akkor láthatatlan
-            if (isAnimalSim(sim)) {
-                node.style.display = 'none';
-            }
-
             const editPencil = document.createElement('div');
             editPencil.className = 'sim-edit-pencil';
             editPencil.innerHTML = '✏️';
@@ -3014,6 +3009,26 @@
                 icon.innerText = titleIcons[sim.title];
                 icon.title = sim.title;
                 specialIcons.appendChild(icon);
+            }
+
+            // Állat ikonok hozzáadása a Sim fejéhez bal oldalra
+            const animalIcons = {
+                'Kutya': '🐕',
+                'Macska': '🐱',
+                'Ló': '🐴',
+                'Más állat': '🐾'
+            };
+
+            if (sim.species && sim.species !== 'Ember' && animalIcons[sim.species]) {
+                const animalIcon = document.createElement('div');
+                animalIcon.className = 'sim-special-icon';
+                animalIcon.innerText = animalIcons[sim.species];
+                animalIcon.title = sim.species;
+                animalIcon.style.position = 'absolute';
+                animalIcon.style.left = '-28px';
+                animalIcon.style.top = '50%';
+                animalIcon.style.transform = 'translateY(-50%)';
+                specialIcons.appendChild(animalIcon);
             }
 
             if (specialIcons.children.length > 0) {
