@@ -2895,56 +2895,68 @@
                 };
 
                 // Mivel a képek már URL-ként vannak tárolva a Storage-ban, az adatméret sokkal kisebb
-                // Nincs szükség 1MB korlátra - 100 generáció is befér
                 const dataSize = JSON.stringify(safeTree).length;
-                console.log("Családfa mentése, méret:", Math.round(dataSize/1024) + "KB");
-
                 console.log("Családfa mentése Supabase-be:", tree.name, "Méret:", Math.round(dataSize/1024) + "KB");
 
-                const { error } = await supabaseClient
-                    .from('family_trees')
-                    .upsert(safeTree, {
-                        onConflict: 'id'
-                    });
+                // Növelt timeout és retry mechanizmus a timeout hibák ellen
+                const maxRetries = 3;
+                let retryCount = 0;
+                let lastError = null;
 
-                if (error) {
-                    console.error("Hiba a családfa mentésekor:", error);
-                    console.error("Hiba részletei:", JSON.stringify(error, null, 2));
-                    
-                    // Részletesebb hibaüzenet
-                    let errorMsg = "Ismeretlen hiba";
-                    if (error.message) {
-                        errorMsg = error.message;
-                    } else if (typeof error === 'object') {
-                        errorMsg = JSON.stringify(error);
-                    } else {
-                        errorMsg = String(error);
-                    }
-                    
-                    // Ha schema cache hiba, próbáljuk meg újra
-                    if (errorMsg.includes('journal') || errorMsg.includes('column')) {
-                        console.log("Schema cache hiba - kényszerített újrapróbálkozás...");
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        
-                        const retryResult = await supabaseClient
-                            .from('family_trees')
-                            .upsert(safeTree, {
-                                onConflict: 'id'
-                            });
+                while (retryCount < maxRetries) {
+                    try {
+                        // Timeout és retry beállítások
+                        const { error } = await Promise.race([
+                            supabaseClient
+                                .from('family_trees')
+                                .upsert(safeTree, {
+                                    onConflict: 'id'
+                                }),
+                            new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Timeout')), 45000)
+                            )
+                        ]);
+
+                        if (error) {
+                            lastError = error;
+                            console.error(`Mentési hiba (próba ${retryCount + 1}/${maxRetries}):`, error);
+                            retryCount++;
                             
-                        if (retryResult.error) {
-                            const retryErrorMsg = typeof retryResult.error === 'object' 
-                                ? JSON.stringify(retryResult.error) 
-                                : retryResult.error.message || retryResult.error;
-                            alert("Hiba a családfa mentésekor: " + retryErrorMsg);
+                            // Várakozás retry előtt (exponential backoff)
+                            if (retryCount < maxRetries) {
+                                await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+                            }
                         } else {
-                            console.log("Családfa sikeresen mentve (újrapróbálkozás):", tree.name);
+                            console.log("Családfa sikeresen mentve:", tree.name);
+                            return; // Sikeres mentés, kilépünk
                         }
-                    } else {
-                        alert("Hiba a családfa mentésekor: " + errorMsg);
+                    } catch (timeoutError) {
+                        lastError = timeoutError;
+                        console.error(`Timeout hiba (próba ${retryCount + 1}/${maxRetries}):`, timeoutError);
+                        retryCount++;
+                        
+                        // Várakozás retry előtt (exponential backoff)
+                        if (retryCount < maxRetries) {
+                            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+                        }
                     }
-                } else {
-                    console.log("Családfa sikeresen mentve:", tree.name);
+                }
+
+                // Ha minden retry sikertelen volt
+                if (lastError) {
+                    console.error("Hiba a családfa mentésekor:", lastError);
+                    console.error("Hiba részletei:", JSON.stringify(lastError, null, 2));
+                    
+                    let errorMsg = "Ismeretlen hiba";
+                    if (lastError.message) {
+                        errorMsg = lastError.message;
+                    } else if (typeof lastError === 'object') {
+                        errorMsg = JSON.stringify(lastError);
+                    } else {
+                        errorMsg = String(lastError);
+                    }
+                    
+                    alert("Hiba a családfa mentésekor: " + errorMsg);
                 }
             } catch (error) {
                 console.error("Váratlan hiba a családfa mentésekor:", error);
