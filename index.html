@@ -2857,55 +2857,78 @@
             if (!currentUser || !supabaseClient) return;
 
             try {
+                // Adatellenőrzés - biztosítjuk, hogy az adatok érvényesek
+                const safeTree = {
+                    id: tree.id,
+                    user_id: currentUser.id,
+                    name: tree.name || 'Névtelen családfa',
+                    background_config: tree.bgConfig || {},
+                    sims: tree.sims || [],
+                    journal: tree.journal || [],
+                    updated_at: new Date()
+                };
+
+                // Adatméret ellenőrzése (Supabase limit 1MB per sor)
+                const dataSize = JSON.stringify(safeTree).length;
+                if (dataSize > 1024 * 1024) {
+                    console.warn(`Figyelem: A családfa adata túl nagy (${Math.round(dataSize/1024)}KB), lehet mentési problémák`);
+                    alert(`Figyelem: A családfa adata túl nagy (${Math.round(dataSize/1024)}KB). Próbáld meg csökkenteni a képek számát vagy méretét.`);
+                    return;
+                }
+
+                console.log("Családfa mentése Supabase-be:", tree.name, "Méret:", Math.round(dataSize/1024) + "KB");
+
                 const { error } = await supabaseClient
                     .from('family_trees')
-                    .upsert({
-                        id: tree.id,
-                        user_id: currentUser.id,
-                        name: tree.name,
-                        background_config: tree.bgConfig,
-                        sims: tree.sims,
-                        journal: tree.journal || [],
-                        updated_at: new Date()
-                    }, {
+                    .upsert(safeTree, {
                         onConflict: 'id'
                     });
 
                 if (error) {
                     console.error("Hiba a családfa mentésekor:", error);
+                    console.error("Hiba részletei:", JSON.stringify(error, null, 2));
+                    
+                    // Részletesebb hibaüzenet
+                    let errorMsg = "Ismeretlen hiba";
+                    if (error.message) {
+                        errorMsg = error.message;
+                    } else if (typeof error === 'object') {
+                        errorMsg = JSON.stringify(error);
+                    } else {
+                        errorMsg = String(error);
+                    }
                     
                     // Ha schema cache hiba, próbáljuk meg újra
-                    if (error.message && error.message.includes('journal')) {
+                    if (errorMsg.includes('journal') || errorMsg.includes('column')) {
                         console.log("Schema cache hiba - kényszerített újrapróbálkozás...");
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         
                         const retryResult = await supabaseClient
                             .from('family_trees')
-                            .upsert({
-                                id: tree.id,
-                                user_id: currentUser.id,
-                                name: tree.name,
-                                background_config: tree.bgConfig,
-                                sims: tree.sims,
-                                journal: tree.journal || [],
-                                updated_at: new Date()
-                            }, {
+                            .upsert(safeTree, {
                                 onConflict: 'id'
                             });
                             
                         if (retryResult.error) {
-                            alert("Hiba a családfa mentésekor: " + retryResult.error.message);
+                            const retryErrorMsg = typeof retryResult.error === 'object' 
+                                ? JSON.stringify(retryResult.error) 
+                                : retryResult.error.message || retryResult.error;
+                            alert("Hiba a családfa mentésekor: " + retryErrorMsg);
                         } else {
                             console.log("Családfa sikeresen mentve (újrapróbálkozás):", tree.name);
                         }
                     } else {
-                        alert("Hiba a családfa mentésekor: " + error.message);
+                        alert("Hiba a családfa mentésekor: " + errorMsg);
                     }
                 } else {
                     console.log("Családfa sikeresen mentve:", tree.name);
                 }
             } catch (error) {
                 console.error("Váratlan hiba a családfa mentésekor:", error);
+                const errorMsg = typeof error === 'object' 
+                    ? JSON.stringify(error) 
+                    : error.message || error;
+                alert("Váratlan hiba a családfa mentésekor: " + errorMsg);
             }
         }
 
