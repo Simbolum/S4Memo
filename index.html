@@ -4208,26 +4208,37 @@
 
             if (sourceSim && targetSim) {
                 if (relationType === 'Gyerek') {
-                    targetSim.parentId = sourceSim.id;
+                    // Kétirányú kapcsolat: a targetSim a sourceSim gyereke
                     normalizeSimExtraFields(targetSim);
                     if (!targetSim.parentIds.includes(sourceSim.id)) {
                         if (targetSim.parentIds.length < 2) targetSim.parentIds.push(sourceSim.id);
                     }
+                    targetSim.parentId = targetSim.parentIds[0] || null;
                 }
                 else if (relationType === 'Szülő') {
-                    sourceSim.parentId = targetSim.id;
+                    // Kétirányú kapcsolat: a sourceSim a targetSim gyereke
                     normalizeSimExtraFields(sourceSim);
                     if (!sourceSim.parentIds.includes(targetSim.id)) {
                         if (sourceSim.parentIds.length < 2) sourceSim.parentIds.push(targetSim.id);
                     }
+                    sourceSim.parentId = sourceSim.parentIds[0] || null;
                 }
                 else {
+                    // Kétirányú partner kapcsolat
                     normalizeSimExtraFields(sourceSim);
+                    normalizeSimExtraFields(targetSim);
+
                     if (!sourceSim.partnerIds.includes(targetSim.id)) {
                         sourceSim.partnerIds.push(targetSim.id);
                     }
                     sourceSim.partnerId = sourceSim.partnerIds[0] || null;
                     sourceSim.relationType = relationType;
+
+                    if (!targetSim.partnerIds.includes(sourceSim.id)) {
+                        targetSim.partnerIds.push(sourceSim.id);
+                    }
+                    targetSim.partnerId = targetSim.partnerIds[0] || null;
+                    targetSim.relationType = relationType;
                 }
             }
 
