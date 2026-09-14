@@ -3016,12 +3016,12 @@
                 specialIcons.appendChild(icon);
             }
 
-            // Állatok profilképeinek megjelenítése a Simnél bal oldalon
+            // Állatok profilképeinek megjelenítése a Simnél bal oldalon lefelé
             const animalIds = Array.isArray(sim.animalIds) ? sim.animalIds : [];
             const tree = getCurrentTree();
 
             if (animalIds.length > 0 && tree) {
-                let leftOffset = -28; // Első állat pozíciója
+                let topOffset = 40; // Első állat pozíciója (a node alatt)
 
                 animalIds.forEach(animalId => {
                     const animal = tree.sims.find(s => s.id === animalId);
@@ -3029,9 +3029,8 @@
                         const animalIcon = document.createElement('div');
                         animalIcon.className = 'sim-special-icon';
                         animalIcon.style.position = 'absolute';
-                        animalIcon.style.left = leftOffset + 'px';
-                        animalIcon.style.top = '50%';
-                        animalIcon.style.transform = 'translateY(-50%)';
+                        animalIcon.style.left = '-28px'; // Fix bal pozíció
+                        animalIcon.style.top = topOffset + 'px';
                         animalIcon.style.width = '20px';
                         animalIcon.style.height = '20px';
                         animalIcon.style.borderRadius = '50%';
@@ -3063,7 +3062,7 @@
                         }
 
                         specialIcons.appendChild(animalIcon);
-                        leftOffset -= 24; // Következő állat 24px-balra
+                        topOffset += 24; // Következő állat 24px-lejjebb
                     }
                 });
             }
