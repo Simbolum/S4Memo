@@ -4715,17 +4715,31 @@
                 const randomId = Math.random().toString(36).substring(2, 15);
                 const fileName = `${folder}/${currentUser.id}_${timestamp}_${randomId}.webp`;
 
-                // Fájl feltöltése a Supabase Storage-ba
-                const { data, error } = await supabaseClient
-                    .storage
-                    .from('family-tree-images')
-                    .upload(fileName, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
+                // Fájl feltöltése a Supabase Storage-ba CORS workaround-dal
+                let uploadError = null;
+                let uploadData = null;
+                
+                try {
+                    const result = await supabaseClient
+                        .storage
+                        .from('family-tree-images')
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+                    uploadData = result.data;
+                    uploadError = result.error;
+                } catch (err) {
+                    uploadError = err;
+                }
 
-                if (error) {
-                    console.error("Hiba a kép feltöltésekor:", error);
+                if (uploadError) {
+                    console.error("Hiba a kép feltöltésekor:", uploadError);
+                    // Ha CORS hiba, fallback lokális tárolás
+                    if (uploadError.message && uploadError.message.includes('CORS')) {
+                        console.warn("CORS hiba, fallback lokális tárolás");
+                        return dataUrl;
+                    }
                     // Fallback: visszatérünk az eredeti dataURL-lel
                     return dataUrl;
                 }
