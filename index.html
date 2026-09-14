@@ -919,7 +919,14 @@
         .search-item { padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
         .search-item:hover { background-color: transparent; color: var(--accent-color); }
 
-        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; background: transparent; }
+        .btn-primary.solid {
+            background: var(--accent-color) !important;
+            opacity: 1 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background-color: var(--accent-color) !important;
+        }
         .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 12px; }
         .btn-primary { 
             background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%) !important; 
@@ -929,6 +936,7 @@
             opacity: 1 !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
+            background-color: var(--accent-color) !important;
         }
         .btn-primary:hover { 
             transform: translateY(-2px); 
@@ -1564,7 +1572,7 @@
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closeConnectionModal()">Mégse</button>
                 <button type="button" class="btn-secondary" onclick="createNewSimInConnection()" style="border-style: dashed;">+ Új Sim Létrehozása</button>
-                <button type="button" class="btn-primary" onclick="confirmConnection()">Kapcsolás</button>
+                <button type="button" class="btn-primary solid" onclick="confirmConnection()" style="background: var(--accent-color) !important; opacity: 1 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background-color: var(--accent-color) !important; background-image: none !important;">Kapcsolás</button>
             </div>
         </div>
     </div>
