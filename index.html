@@ -767,6 +767,9 @@
             position: relative; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             animation: fadeInUp 0.4s ease-out;
         }
+        .modal-card .btn-primary {
+            opacity: 1 !important;
+        }
 
         .close-btn {
             position: absolute; top: 16px; right: 20px; background: none; border: none;
@@ -919,10 +922,13 @@
         .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 12px; }
         .btn-primary { 
-            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%); 
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%) !important; 
             border: none; color: white; padding: 8px 16px; border-radius: 12px; cursor: pointer; 
             font-weight: 700; font-size: 12px; box-shadow: 0 4px 12px var(--active-glow);
             transition: all 0.3s ease; position: relative; overflow: hidden;
+            opacity: 1 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
         .btn-primary:hover { 
             transform: translateY(-2px); 
