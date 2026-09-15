@@ -311,6 +311,30 @@
             border: 1px solid var(--border-color);
         }
 
+        .sims-family-section {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.sims-family-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sims-family-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.sims-family-empty {
+    color: var(--subtext-color);
+    font-size: 13px;
+    padding: 12px 0;
+}
 
         /* Sötét lenyíló opciók – a natív fehér lista helyett */
         select option {
@@ -2501,63 +2525,94 @@
             renderActivityFeed();
         }
 
-        function renderActivityFeed() {
-            const feedContainer = document.getElementById('activityFeed');
-            const selectedTreeId = document.getElementById('activityTreeFilter').value;
-            feedContainer.innerHTML = '';
+        function renderSimsLibrary() {
+    const grid = document.getElementById('simsLibraryGrid');
+    if (!grid) return;
 
-            let allEntries = [];
+    grid.innerHTML = '';
 
-            familyTrees.forEach(tree => {
-                if (selectedTreeId === 'all' || tree.id === selectedTreeId) {
-                    if (tree.journal && tree.journal.length > 0) {
-                        tree.journal.forEach(entry => {
-                            allEntries.push({
-                                ...entry,
-                                treeName: tree.name,
-                                treeId: tree.id
-                            });
-                        });
-                    }
-                }
-            });
+    if (!familyTrees || familyTrees.length === 0) {
+        grid.innerHTML = `
+            <div class="sims-empty-state" style="grid-column:1/-1;">
+                <div style="font-size:48px; margin-bottom:10px;">🌳</div>
+                <h3>Még nincsenek családfák</h3>
+                <p style="font-size:12px;">
+                    Először hozz létre egy családfát.
+                </p>
+            </div>
+        `;
+        return;
+    }
 
-            allEntries.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    familyTrees.forEach(tree => {
+        const sims = tree.sims || [];
 
-            if (allEntries.length === 0) {
-                feedContainer.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: var(--subtext-color);">
-                        <div style="font-size: 48px; margin-bottom: 10px;">📖</div>
-                        <h3>Még nincsenek rögzített történetek!</h3>
-                        <p style="font-size: 13px;">Kattints az "+ Új Történet" gombra egy bejegyzés hozzáadásához.</p>
-                    </div>
-                `;
-                return;
-            }
+        const familySection = document.createElement('div');
+        familySection.className = 'sims-family-section';
 
-            allEntries.forEach(entry => {
+        const familyTitle = document.createElement('div');
+        familyTitle.className = 'sims-family-title';
+        familyTitle.textContent = `🌳 ${tree.name}`;
+
+        familySection.appendChild(familyTitle);
+
+        const simsGrid = document.createElement('div');
+        simsGrid.className = 'sims-family-grid';
+
+        if (sims.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'sims-family-empty';
+            empty.innerText = 'Ebben a családfában még nincs Sim.';
+            simsGrid.appendChild(empty);
+        } else {
+            sims.forEach(sim => {
+                normalizeSimExtraFields(sim);
+
                 const card = document.createElement('div');
-                card.className = 'timeline-card';
+                card.className = 'sim-library-card';
+                card.title = 'Megnyitás a családfában';
 
-                card.innerHTML = `
-                    <div class="timeline-icon">📖</div>
-                    <div class="timeline-card-header">
-                        <div>
-                            <span class="timeline-tree-badge">🌳 ${entry.treeName}</span>
-                            <h3 class="timeline-title">${entry.title}</h3>
-                        </div>
-                        <span class="timeline-date">🗓️ ${entry.date || 'Nincs dátum'}</span>
-                    </div>
-                    <div class="timeline-body">${entry.content}</div>
-                    <div class="timeline-actions">
-                        <button class="btn-secondary" style="font-size: 11px; padding: 5px 12px;" onclick="openJournalModal('${entry.id}', true, '${entry.treeId}')">✏️ Szerkesztés</button>
-                        <button class="btn-danger" style="font-size: 11px; padding: 5px 12px; margin-right: 0;" onclick="deleteJournalEntry('${entry.id}')">🗑️ Törlés</button>
-                    </div>
-                `;
+                card.onclick = () => {
+                    currentTreeId = tree.id;
+                    switchView('tree');
 
-                feedContainer.appendChild(card);
+                    requestAnimationFrame(() => {
+                        openSimModal(sim.id);
+                    });
+                };
+
+                const avatar = document.createElement('div');
+                avatar.className = 'sim-library-avatar';
+                avatar.style.borderColor =
+                    sim.color || 'var(--accent-color)';
+
+                if (sim.image) {
+                    avatar.style.backgroundImage =
+                        `url(${JSON.stringify(sim.image)})`;
+                } else {
+                    avatar.innerText = '👤';
+                }
+
+                const name = document.createElement('div');
+                name.className = 'sim-library-name';
+                name.innerText =
+                    `${sim.firstName || ''} ${sim.lastName || ''}`.trim()
+                    || 'Névtelen Sim';
+
+                const meta = document.createElement('div');
+                meta.className = 'sim-library-meta';
+                meta.innerText =
+                    `${sim.age || ''}${sim.isDead ? ' • Halott' : ''}`;
+
+                card.append(avatar, name, meta);
+                simsGrid.appendChild(card);
             });
         }
+
+        familySection.appendChild(simsGrid);
+        grid.appendChild(familySection);
+    });
+}
 
         function selectTree(treeId) {
             currentTreeId = treeId;
