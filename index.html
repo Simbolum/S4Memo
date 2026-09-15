@@ -2972,8 +2972,8 @@ function openSimsFamily(treeId) {
         gap:16px;
     `;
 
-    sims.forEach(sim => {
-        normalizeSimExtraFields(sim);
+    (Array.isArray(tree.sims) ? tree.sims : []).forEach(sim => {
+    normalizeSimExtraFields(sim);
 
         const card = document.createElement('div');
 
