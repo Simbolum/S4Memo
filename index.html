@@ -4953,8 +4953,8 @@
                 await handleSession(session, 'INITIAL');
 
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    await handleSession(session, event);
-                });
+    await handleSession(session, event);
+});
             } catch (error) {
                 console.warn("Supabase hiba:", error);
                 // Hiba esetén localStorage fallback
