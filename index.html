@@ -2554,49 +2554,61 @@
 
     grid.innerHTML = '';
 
-    // Nincs még családfa
     if (!familyTrees || familyTrees.length === 0) {
-        grid.innerHTML = `
-            <div class="sims-empty-state" style="grid-column:1/-1;">
-                <div style="font-size:48px; margin-bottom:10px;">🌳</div>
-                <h3>Még nincsenek családfák</h3>
-                <p style="font-size:12px;">
-                    Először hozz létre egy családfát.
-                </p>
+        const empty = document.createElement('div');
+
+        empty.style.cssText = `
+            text-align:center;
+            padding:50px 20px;
+            color:var(--subtext-color);
+        `;
+
+        empty.innerHTML = `
+            <div style="font-size:45px;">🌳</div>
+            <h3 style="color:var(--text-color);">
+                Még nincsenek családfák
+            </h3>
+            <div style="font-size:13px;">
+                Először hozz létre egy családfát.
             </div>
         `;
+
+        grid.appendChild(empty);
         return;
     }
 
-    // Csak a családfák jelenjenek meg
     familyTrees.forEach(tree => {
 
         const card = document.createElement('div');
 
         card.style.cssText = `
             width:100%;
-            padding:22px;
+            padding:20px;
             margin-bottom:15px;
+            box-sizing:border-box;
             background:var(--card-bg);
             border:1px solid var(--border-color);
             border-radius:16px;
             cursor:pointer;
             display:flex;
             align-items:center;
-            gap:16px;
+            gap:15px;
             transition:0.2s;
-            box-sizing:border-box;
         `;
+
+        const simCount = Array.isArray(tree.sims)
+            ? tree.sims.length
+            : 0;
 
         card.innerHTML = `
             <div style="
                 width:55px;
                 height:55px;
                 border-radius:14px;
+                background:var(--accent-color);
                 display:flex;
                 align-items:center;
                 justify-content:center;
-                background:var(--accent-color);
                 font-size:28px;
                 flex-shrink:0;
             ">🌳</div>
@@ -2606,21 +2618,21 @@
                     font-size:18px;
                     font-weight:700;
                     color:var(--text-color);
-                    margin-bottom:5px;
                 ">
-                    ${escapeHtml(tree.name)}
+                    ${escapeHtml(tree.name || 'Névtelen családfa')}
                 </div>
 
                 <div style="
+                    margin-top:5px;
                     font-size:13px;
                     color:var(--subtext-color);
                 ">
-                    ${(tree.sims || []).length} Sim
+                    ${simCount} Sim
                 </div>
             </div>
 
             <div style="
-                font-size:28px;
+                font-size:30px;
                 color:var(--subtext-color);
             ">›</div>
         `;
@@ -2635,7 +2647,6 @@
             card.style.borderColor = 'var(--border-color)';
         };
 
-        // Kattintáskor az adott családfa Simei nyílnak meg
         card.onclick = () => {
             openSimsFamily(tree.id);
         };
