@@ -2554,94 +2554,91 @@
 
     grid.innerHTML = '';
 
+    // Nincs még családfa
     if (!familyTrees || familyTrees.length === 0) {
         grid.innerHTML = `
-            <div style="
-                text-align:center;
-                padding:60px 20px;
-                color:var(--subtext-color);
-                grid-column:1/-1;
-            ">
-                <div style="font-size:50px;margin-bottom:15px;">🌳</div>
-                <h2 style="color:var(--text-color);margin:0 0 8px;">
-                    Még nincsenek családfák
-                </h2>
-                <p>Először hozz létre egy családfát.</p>
+            <div class="sims-empty-state" style="grid-column:1/-1;">
+                <div style="font-size:48px; margin-bottom:10px;">🌳</div>
+                <h3>Még nincsenek családfák</h3>
+                <p style="font-size:12px;">
+                    Először hozz létre egy családfát.
+                </p>
             </div>
         `;
         return;
     }
 
+    // Csak a családfák jelenjenek meg
     familyTrees.forEach(tree => {
-        const sims = tree.sims || [];
 
         const card = document.createElement('div');
 
         card.style.cssText = `
+            width:100%;
+            padding:22px;
+            margin-bottom:15px;
             background:var(--card-bg);
             border:1px solid var(--border-color);
-            border-radius:22px;
-            padding:25px;
-            margin-bottom:18px;
+            border-radius:16px;
             cursor:pointer;
-            box-shadow:0 8px 25px var(--shadow-color);
-            transition:all .25s ease;
+            display:flex;
+            align-items:center;
+            gap:16px;
+            transition:0.2s;
+            box-sizing:border-box;
         `;
 
         card.innerHTML = `
             <div style="
+                width:55px;
+                height:55px;
+                border-radius:14px;
                 display:flex;
                 align-items:center;
-                justify-content:space-between;
-                gap:15px;
-            ">
-                <div>
-                    <div style="
-                        font-size:22px;
-                        font-weight:800;
-                        color:var(--text-color);
-                    ">
-                        🌳 ${tree.name || 'Névtelen családfa'}
-                    </div>
+                justify-content:center;
+                background:var(--accent-color);
+                font-size:28px;
+                flex-shrink:0;
+            ">🌳</div>
 
-                    <div style="
-                        margin-top:6px;
-                        font-size:12px;
-                        color:var(--subtext-color);
-                    ">
-                        ${sims.length} Sim
-                    </div>
+            <div style="flex:1;">
+                <div style="
+                    font-size:18px;
+                    font-weight:700;
+                    color:var(--text-color);
+                    margin-bottom:5px;
+                ">
+                    ${escapeHtml(tree.name)}
                 </div>
 
                 <div style="
-                    width:42px;
-                    height:42px;
-                    border-radius:50%;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    background:var(--nav-bg);
-                    border:1px solid var(--border-color);
-                    font-size:20px;
+                    font-size:13px;
+                    color:var(--subtext-color);
                 ">
-                    →
+                    ${(tree.sims || []).length} Sim
                 </div>
             </div>
+
+            <div style="
+                font-size:28px;
+                color:var(--subtext-color);
+            ">›</div>
         `;
 
         card.onmouseenter = () => {
-            card.style.transform = 'translateY(-4px)';
+            card.style.transform = 'translateY(-2px)';
             card.style.borderColor = 'var(--accent-color)';
-            card.style.boxShadow = '0 12px 35px var(--active-glow)';
         };
 
         card.onmouseleave = () => {
-            card.style.transform = '';
+            card.style.transform = 'translateY(0)';
             card.style.borderColor = 'var(--border-color)';
-            card.style.boxShadow = '0 8px 25px var(--shadow-color)';
         };
 
-        card.onclick = () => openSimsFamily(tree.id);
+        // Kattintáskor az adott családfa Simei nyílnak meg
+        card.onclick = () => {
+            openSimsFamily(tree.id);
+        };
 
         grid.appendChild(card);
     });
@@ -2707,9 +2704,6 @@ function openSimsFamily(treeId) {
         `;
         return;
     }
-
-    sims.forEach(sim => {
-        normalizeSimExtraFields(sim);
 
         const card = document.createElement('div');
 
