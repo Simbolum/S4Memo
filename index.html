@@ -4940,7 +4940,6 @@
 
             if (!supabaseClient) {
                 console.warn("Supabase kliens nem elérhető");
-                // Ha nincs Supabase, akkor a localStorage-ból töltünk
                 familyTrees = loadTreesFromStorage();
                 if (familyTrees.length > 0) {
                     currentTreeId = familyTrees[0].id;
@@ -4952,12 +4951,17 @@
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 await handleSession(session, 'INITIAL');
 
+                // Stabilizált onAuthStateChange, ami nem dob vissza feleslegesen
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    await handleSession(session, event);
-});
+                    if (event === 'SIGNED_OUT') {
+                        await handleSession(session, event);
+                    } else if (event === 'SIGNED_IN' && !currentUser) {
+                        await handleSession(session, event);
+                    }
+                    // A TOKEN_REFRESHED és egyéb események alatt nem bántjuk az aktív nézetet
+                });
             } catch (error) {
                 console.warn("Supabase hiba:", error);
-                // Hiba esetén localStorage fallback
                 familyTrees = loadTreesFromStorage();
                 if (familyTrees.length > 0) {
                     currentTreeId = familyTrees[0].id;
