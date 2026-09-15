@@ -1199,6 +1199,24 @@
         </div>
     </div>
 
+        <!-- 3. SIMEK NÉZET -->
+<div class="page-view" id="simsView">
+
+    <main class="main-card">
+
+        <div class="activity-header">
+            <div class="activity-header-left">
+                <h1>👤 Simek</h1>
+                <p>Válassz egy családfát a hozzá tartozó Simek megtekintéséhez.</p>
+            </div>
+        </div>
+
+        <div id="simsLibraryGrid"></div>
+
+    </main>
+
+</div>
+        
     <!-- 3. AKTIVITÁS / TÖRTÉNETEK NÉZET -->
     <div class="page-view" id="activityView">
         <main class="main-card">
@@ -2185,6 +2203,10 @@
                 renderJournalEntries();
                 loadCurrentTreeCanvas();
                 updateAddSimButtonVisibility();
+                } else if (viewName === 'sims') {
+    document.getElementById('simsView').classList.add('active');
+    document.getElementById('menuSims').classList.add('active');
+    renderSimsLibrary();
             } else if (viewName === 'activity') {
                 document.getElementById('activityView').classList.add('active');
                 document.getElementById('navActivity').classList.add('active');
@@ -2534,33 +2556,36 @@
 
     if (!familyTrees || familyTrees.length === 0) {
         grid.innerHTML = `
-            <div class="sims-empty-state" style="grid-column:1/-1;">
-                <div style="font-size:48px; margin-bottom:10px;">🌳</div>
+            <div style="
+                text-align:center;
+                padding:50px;
+                color:var(--subtext-color);
+            ">
+                <div style="font-size:50px;">🌳</div>
                 <h3>Még nincsenek családfák</h3>
-                <p style="font-size:12px;">
-                    Először hozz létre egy családfát.
-                </p>
+                <p>Először hozz létre egy családfát.</p>
             </div>
         `;
         return;
     }
 
     familyTrees.forEach(tree => {
+
         const familyCard = document.createElement('div');
 
         familyCard.style.cssText = `
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 22px;
-            cursor: pointer;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-            margin-bottom: 12px;
+            padding:20px;
+            margin-bottom:14px;
+            border:1px solid var(--border-color);
+            border-radius:16px;
+            background:var(--card-bg);
+            cursor:pointer;
+            transition:0.2s;
         `;
 
         familyCard.innerHTML = `
             <div style="
-                font-size:18px;
+                font-size:17px;
                 font-weight:700;
                 color:var(--text-color);
             ">
@@ -2577,12 +2602,10 @@
         `;
 
         familyCard.onmouseenter = () => {
-            familyCard.style.transform = 'translateY(-2px)';
             familyCard.style.borderColor = 'var(--accent-color)';
         };
 
         familyCard.onmouseleave = () => {
-            familyCard.style.transform = 'translateY(0)';
             familyCard.style.borderColor = 'var(--border-color)';
         };
 
@@ -2594,7 +2617,146 @@
     });
 }
 
+function openSimsFamily(treeId) {
 
+    const grid = document.getElementById('simsLibraryGrid');
+    if (!grid) return;
+
+    const tree = familyTrees.find(t => t.id === treeId);
+
+    if (!tree) return;
+
+    grid.innerHTML = '';
+
+    const backButton = document.createElement('button');
+
+    backButton.innerText = '← Vissza a családfákhoz';
+
+    backButton.style.cssText = `
+        padding:10px 16px;
+        margin-bottom:20px;
+        border:none;
+        border-radius:10px;
+        background:var(--border-color);
+        color:var(--text-color);
+        cursor:pointer;
+        font-weight:600;
+    `;
+
+    backButton.onclick = () => {
+        renderSimsLibrary();
+    };
+
+    grid.appendChild(backButton);
+
+
+    const title = document.createElement('h2');
+
+    title.innerText = `🌳 ${tree.name}`;
+
+    title.style.cssText = `
+        margin-bottom:20px;
+        color:var(--text-color);
+    `;
+
+    grid.appendChild(title);
+
+
+    const sims = tree.sims || [];
+
+    if (sims.length === 0) {
+
+        const empty = document.createElement('div');
+
+        empty.style.cssText = `
+            text-align:center;
+            padding:40px;
+            color:var(--subtext-color);
+        `;
+
+        empty.innerHTML = `
+            <div style="font-size:45px;">👤</div>
+            <h3>Ebben a családfában még nincs Sim.</h3>
+        `;
+
+        grid.appendChild(empty);
+
+        return;
+    }
+
+
+    const simsGrid = document.createElement('div');
+
+    simsGrid.style.cssText = `
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+        gap:16px;
+    `;
+
+
+    sims.forEach(sim => {
+
+        normalizeSimExtraFields(sim);
+
+        const card = document.createElement('div');
+
+        card.className = 'sim-library-card';
+
+        card.onclick = () => {
+
+            currentTreeId = tree.id;
+
+            switchView('tree');
+
+            requestAnimationFrame(() => {
+                openSimModal(sim.id);
+            });
+
+        };
+
+
+        const avatar = document.createElement('div');
+
+        avatar.className = 'sim-library-avatar';
+
+        avatar.style.borderColor =
+            sim.color || 'var(--accent-color)';
+
+        if (sim.image) {
+            avatar.style.backgroundImage =
+                `url(${JSON.stringify(sim.image)})`;
+        } else {
+            avatar.innerText = '👤';
+        }
+
+
+        const name = document.createElement('div');
+
+        name.className = 'sim-library-name';
+
+        name.innerText =
+            `${sim.firstName || ''} ${sim.lastName || ''}`.trim()
+            || 'Névtelen Sim';
+
+
+        const meta = document.createElement('div');
+
+        meta.className = 'sim-library-meta';
+
+        meta.innerText =
+            `${sim.age || ''}${sim.isDead ? ' • Halott' : ''}`;
+
+
+        card.append(avatar, name, meta);
+
+        simsGrid.appendChild(card);
+
+    });
+
+
+    grid.appendChild(simsGrid);
+}
+        
 function openSimsFamily(treeId) {
     const grid = document.getElementById('simsLibraryGrid');
     if (!grid) return;
