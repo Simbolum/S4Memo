@@ -2546,73 +2546,189 @@
     }
 
     familyTrees.forEach(tree => {
-        const sims = tree.sims || [];
+        const familyCard = document.createElement('div');
 
-        const familySection = document.createElement('div');
-        familySection.className = 'sims-family-section';
+        familyCard.style.cssText = `
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            margin-bottom: 12px;
+        `;
 
-        const familyTitle = document.createElement('div');
-        familyTitle.className = 'sims-family-title';
-        familyTitle.textContent = `🌳 ${tree.name}`;
+        familyCard.innerHTML = `
+            <div style="
+                font-size:18px;
+                font-weight:700;
+                color:var(--text-color);
+            ">
+                🌳 ${tree.name}
+            </div>
 
-        familySection.appendChild(familyTitle);
+            <div style="
+                margin-top:6px;
+                font-size:12px;
+                color:var(--subtext-color);
+            ">
+                ${(tree.sims || []).length} Sim
+            </div>
+        `;
 
-        const simsGrid = document.createElement('div');
-        simsGrid.className = 'sims-family-grid';
+        familyCard.onmouseenter = () => {
+            familyCard.style.transform = 'translateY(-2px)';
+            familyCard.style.borderColor = 'var(--accent-color)';
+        };
 
-        if (sims.length === 0) {
-            const empty = document.createElement('div');
-            empty.className = 'sims-family-empty';
-            empty.innerText = 'Ebben a családfában még nincs Sim.';
-            simsGrid.appendChild(empty);
-        } else {
-            sims.forEach(sim => {
-                normalizeSimExtraFields(sim);
+        familyCard.onmouseleave = () => {
+            familyCard.style.transform = 'translateY(0)';
+            familyCard.style.borderColor = 'var(--border-color)';
+        };
 
-                const card = document.createElement('div');
-                card.className = 'sim-library-card';
-                card.title = 'Megnyitás a családfában';
+        familyCard.onclick = () => {
+            openSimsFamily(tree.id);
+        };
 
-                card.onclick = () => {
-                    currentTreeId = tree.id;
-                    switchView('tree');
+        grid.appendChild(familyCard);
+    });
+}
 
-                    requestAnimationFrame(() => {
-                        openSimModal(sim.id);
-                    });
-                };
 
-                const avatar = document.createElement('div');
-                avatar.className = 'sim-library-avatar';
-                avatar.style.borderColor =
-                    sim.color || 'var(--accent-color)';
+function openSimsFamily(treeId) {
+    const grid = document.getElementById('simsLibraryGrid');
+    if (!grid) return;
 
-                if (sim.image) {
-                    avatar.style.backgroundImage =
-                        `url(${JSON.stringify(sim.image)})`;
-                } else {
-                    avatar.innerText = '👤';
-                }
+    const tree = familyTrees.find(t => t.id === treeId);
+    if (!tree) return;
 
-                const name = document.createElement('div');
-                name.className = 'sim-library-name';
-                name.innerText =
-                    `${sim.firstName || ''} ${sim.lastName || ''}`.trim()
-                    || 'Névtelen Sim';
+    grid.innerHTML = '';
 
-                const meta = document.createElement('div');
-                meta.className = 'sim-library-meta';
-                meta.innerText =
-                    `${sim.age || ''}${sim.isDead ? ' • Halott' : ''}`;
+    // Vissza gomb
+    const backButton = document.createElement('button');
 
-                card.append(avatar, name, meta);
-                simsGrid.appendChild(card);
+    backButton.innerText = '← Vissza a családfákhoz';
+
+    backButton.style.cssText = `
+        display:block;
+        margin-bottom:20px;
+        padding:10px 16px;
+        border:none;
+        border-radius:10px;
+        background:var(--border-color);
+        color:var(--text-color);
+        cursor:pointer;
+        font-size:13px;
+        font-weight:600;
+    `;
+
+    backButton.onclick = () => {
+        renderSimsLibrary();
+    };
+
+    grid.appendChild(backButton);
+
+
+    // Családfa neve
+    const title = document.createElement('h2');
+
+    title.innerText = `🌳 ${tree.name}`;
+
+    title.style.cssText = `
+        margin:0 0 20px 0;
+        color:var(--text-color);
+    `;
+
+    grid.appendChild(title);
+
+
+    const sims = tree.sims || [];
+
+    // Ha nincs Sim
+    if (sims.length === 0) {
+        const empty = document.createElement('div');
+
+        empty.style.cssText = `
+            padding:40px;
+            text-align:center;
+            color:var(--subtext-color);
+        `;
+
+        empty.innerHTML = `
+            <div style="font-size:45px;">👤</div>
+            <h3>Ebben a családfában még nincs Sim.</h3>
+        `;
+
+        grid.appendChild(empty);
+        return;
+    }
+
+
+    // Simek rácsa
+    const simsGrid = document.createElement('div');
+
+    simsGrid.style.cssText = `
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+        gap:16px;
+    `;
+
+    sims.forEach(sim => {
+        normalizeSimExtraFields(sim);
+
+        const card = document.createElement('div');
+
+        card.className = 'sim-library-card';
+        card.title = 'Megnyitás a családfában';
+
+        card.onclick = () => {
+            currentTreeId = tree.id;
+            switchView('tree');
+
+            requestAnimationFrame(() => {
+                openSimModal(sim.id);
             });
+        };
+
+
+        const avatar = document.createElement('div');
+
+        avatar.className = 'sim-library-avatar';
+
+        avatar.style.borderColor =
+            sim.color || 'var(--accent-color)';
+
+        if (sim.image) {
+            avatar.style.backgroundImage =
+                `url(${JSON.stringify(sim.image)})`;
+        } else {
+            avatar.innerText = '👤';
         }
 
-        familySection.appendChild(simsGrid);
-        grid.appendChild(familySection);
+
+        const name = document.createElement('div');
+
+        name.className = 'sim-library-name';
+
+        name.innerText =
+            `${sim.firstName || ''} ${sim.lastName || ''}`.trim()
+            || 'Névtelen Sim';
+
+
+        const meta = document.createElement('div');
+
+        meta.className = 'sim-library-meta';
+
+        meta.innerText =
+            `${sim.age || ''}${sim.isDead ? ' • Halott' : ''}`;
+
+
+        card.append(avatar, name, meta);
+
+        simsGrid.appendChild(card);
     });
+
+    grid.appendChild(simsGrid);
 }
 
         function selectTree(treeId) {
@@ -3712,6 +3828,7 @@
         function openFamilyMemberPicker(mode) {
             const tree = getCurrentTree();
             if (!tree || !editingSimId) return;
+            
 
             familyPickerMode = mode;
             familyPickerSelectedIds = mode === 'parents'
