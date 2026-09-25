@@ -778,10 +778,32 @@
         .public-viewer-title { font-size:16px; font-weight:800; color:var(--text-color); }
         .public-viewer-subtitle { font-size:10px; color:var(--subtext-color); margin-top:2px; }
         .public-viewer-close { border:1px solid var(--border-color); background:var(--card-solid); color:var(--text-color); border-radius:10px; padding:7px 10px; font-weight:800; cursor:pointer; }
-        .public-tree-viewport { position:absolute; inset:58px 0 0; overflow:hidden; cursor:grab; }
+        .public-tree-viewport {
+            position:absolute; inset:58px 0 0; overflow:hidden; cursor:grab;
+            background-color:var(--bg-color); background-repeat:no-repeat;
+            background-position:center; background-size:cover;
+            --public-bg-blur: 0px;
+        }
+        .public-tree-viewport::before {
+            content:""; position:absolute; inset:-28px; z-index:0; pointer-events:none;
+            background-image:inherit; background-color:inherit;
+            background-repeat:inherit; background-position:inherit; background-size:inherit;
+            filter:blur(var(--public-bg-blur));
+            transform:scale(1.03);
+        }
         .public-tree-viewport:active { cursor:grabbing; }
-        .public-tree-world { position:absolute; left:0; top:0; width:0; height:0; transform-origin:0 0; }
-        .public-tree-svg { position:absolute; left:-10000px; top:-10000px; width:20000px; height:20000px; pointer-events:none; }
+        .public-tree-viewport.bg-dots { background-image:var(--bg-pattern); background-size:24px 24px; }
+        .public-tree-viewport.bg-clean { background-image:none !important; }
+        .public-tree-viewport.bg-grid {
+            background-image:linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size:30px 30px;
+        }
+        .public-tree-viewport.bg-custom {
+            background-repeat:no-repeat;
+            background-attachment:scroll;
+        }
+        .public-tree-world { position:absolute; left:0; top:0; width:0; height:0; transform-origin:0 0; z-index:1; }
+        .public-tree-svg { position:absolute; left:-10000px; top:-10000px; width:20000px; height:20000px; pointer-events:none; z-index:1; }
         .public-tree-node { position:absolute; width:88px; height:88px; z-index:2; display:flex; align-items:center; justify-content:center; }
         .public-tree-avatar { width:88px; height:88px; border-radius:var(--sim-node-radius); clip-path:var(--sim-node-clip-path); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--card-solid); border:3px solid #fff; box-shadow:0 8px 20px var(--shadow-color); background-size:cover; background-position:center; }
         .public-tree-label { position:absolute; bottom:-24px; white-space:nowrap; font-weight:700; font-size:11px; color:var(--text-color); background:var(--card-solid); padding:3px 10px; border-radius:12px; border:1px solid var(--border-color); box-shadow:0 4px 12px var(--shadow-color); }
@@ -792,6 +814,36 @@
         .public-tree-controls { position:absolute; left:14px; bottom:14px; z-index:4; display:flex; gap:4px; padding:4px; border:1px solid var(--border-color); border-radius:11px; background:var(--nav-bg); }
         .public-tree-controls button { width:26px; height:26px; border:1px solid var(--border-color); border-radius:7px; background:var(--card-solid); color:var(--text-color); cursor:pointer; font-weight:800; }
         .public-tree-empty { padding:30px; text-align:center; color:var(--subtext-color); border:1px dashed var(--border-color); border-radius:16px; margin-top:20px; }
+
+        /* PUBLIKUS SIM ADATLAP */
+        .public-sim-modal-overlay { position:fixed; inset:0; z-index:6200; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.58); backdrop-filter:blur(8px); }
+        .public-sim-modal-overlay.active { display:flex; }
+        .public-sim-modal-card { width:min(720px, 94vw); max-height:92vh; overflow:auto; background:var(--card-bg); border:1px solid var(--border-color); border-radius:24px; box-shadow:0 24px 80px rgba(0,0,0,.4); position:relative; padding:22px; }
+        .public-sim-close { position:absolute; right:14px; top:14px; z-index:3; border:1px solid var(--border-color); background:var(--card-solid); color:var(--text-color); width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:18px; font-weight:800; }
+        .public-sim-hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding:4px 35px 18px; }
+        .public-sim-avatar { width:150px; height:150px; border-radius:50%; overflow:hidden; border:4px solid var(--accent-color); background:var(--card-solid); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-size:54px; box-shadow:0 10px 30px var(--shadow-color); }
+        .public-sim-name { margin:12px 0 4px; font-size:24px; font-weight:900; color:var(--text-color); }
+        .public-sim-status { font-size:11px; color:var(--subtext-color); }
+        .public-sim-section { margin-top:14px; padding:15px; border:1px solid var(--border-color); border-radius:16px; background:rgba(255,255,255,.025); }
+        .public-sim-section h4 { margin:0 0 10px; font-size:12px; font-weight:900; color:var(--text-color); }
+        .public-sim-info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:8px; }
+        .public-sim-info-item { padding:9px 10px; border-radius:11px; background:var(--card-solid); border:1px solid var(--border-color); }
+        .public-sim-info-item small { display:block; font-size:9px; color:var(--subtext-color); margin-bottom:3px; }
+        .public-sim-info-item strong { display:block; font-size:11px; color:var(--text-color); word-break:break-word; }
+        .public-sim-text { font-size:12px; line-height:1.6; color:var(--text-color); white-space:pre-wrap; word-break:break-word; }
+        .public-sim-relations { display:flex; flex-direction:column; gap:7px; }
+        .public-sim-relation { display:flex; align-items:center; gap:9px; padding:7px; border-radius:11px; border:1px solid var(--border-color); background:var(--card-solid); }
+        .public-sim-relation-avatar { width:34px; height:34px; flex:0 0 34px; border-radius:50%; background-size:cover; background-position:center; background-color:var(--border-color); display:flex; align-items:center; justify-content:center; font-size:16px; overflow:hidden; }
+        .public-sim-relation-name { font-size:11px; font-weight:800; color:var(--text-color); }
+        .public-sim-relation-type { font-size:9px; color:var(--subtext-color); margin-top:2px; }
+        .public-sim-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(125px,1fr)); gap:9px; }
+        .public-sim-gallery-item { border:1px solid var(--border-color); border-radius:12px; overflow:hidden; background:var(--card-solid); cursor:pointer; transition:transform .16s ease,border-color .16s ease; }
+        .public-sim-gallery-item:hover { transform:translateY(-2px); border-color:var(--accent-color); }
+        .public-sim-gallery-item img { width:100%; height:105px; display:block; object-fit:cover; }
+        .public-sim-gallery-caption { padding:6px 8px; font-size:9px; color:var(--subtext-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .public-sim-empty { font-size:11px; color:var(--subtext-color); }
+        .public-tree-avatar { cursor:pointer; }
+        .public-tree-avatar:hover { filter:brightness(1.08); box-shadow:0 10px 26px var(--shadow-color), 0 0 0 3px rgba(46,213,115,.16); }
 
         .zoom-controls {
             position: absolute; bottom: 16px; left: 252px; z-index: 1050;
@@ -1499,6 +1551,13 @@
                 <button onclick="adjustPublicTreeZoom(-0.1)">−</button>
                 <button onclick="resetPublicTreeView()">100%</button>
             </div>
+        </div>
+    </div>
+
+    <div class="public-sim-modal-overlay" id="publicSimModal" onclick="if(event.target===this) closePublicSimModal()">
+        <div class="public-sim-modal-card">
+            <button type="button" class="public-sim-close" onclick="closePublicSimModal()">×</button>
+            <div id="publicSimModalContent"></div>
         </div>
     </div>
 
@@ -2438,7 +2497,14 @@
             applyPageBackground(); 
         }
 
-        function changeLineStyle(styleClass) { treeWorld.className = `tree-canvas-world ${styleClass}`; }
+        function changeLineStyle(styleClass) {
+            treeWorld.className = `tree-canvas-world ${styleClass}`;
+            const tree = getCurrentTree();
+            if (tree) {
+                tree.lineStyle = styleClass;
+                markTreeDirty();
+            }
+        }
 
         function changeSimShape(shape) {
             if (shape === 'circle') {
@@ -3374,6 +3440,7 @@ function openSimsFamily(treeId) {
                 id: 'tree_' + Date.now(),
                 name: name.trim(),
                 bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
+                lineStyle: 'style-glow',
                 sims: [],
                 journal: [],
                 isPublic: false
@@ -3627,6 +3694,7 @@ function openSimsFamily(treeId) {
                     id: tree.id,
                     name: tree.name,
                     bgConfig: tree.background_config || {},
+                    lineStyle: (tree.background_config && tree.background_config.lineStyle) || 'style-glow',
                     sims: tree.sims || [],
                     journal: tree.journal || [],
                     userId: tree.user_id,
@@ -3731,10 +3799,39 @@ function openSimsFamily(treeId) {
             applyPublicTreeTransform();
         }
 
+        function applyPublicTreeBackground(tree) {
+            const viewport = document.getElementById('publicTreeViewport');
+            if (!viewport || !tree) return;
+
+            const cfg = tree.bgConfig || {};
+            const style = cfg.style || 'dots';
+            viewport.classList.remove('bg-dots', 'bg-clean', 'bg-grid', 'bg-custom');
+            viewport.style.backgroundImage = '';
+            viewport.style.backgroundSize = '';
+            viewport.style.backgroundPosition = '';
+            viewport.style.backgroundColor = 'var(--bg-color)';
+            viewport.style.setProperty('--public-bg-blur', `${Number(cfg.blur) || 0}px`);
+
+            if (style === 'custom' && cfg.customUrl) {
+                viewport.classList.add('bg-custom');
+                viewport.style.backgroundImage = `url("${String(cfg.customUrl).replace(/"/g, '\\"')}")`;
+                viewport.style.backgroundSize = cfg.size || 'cover';
+                viewport.style.backgroundPosition = cfg.position || 'center';
+            } else {
+                viewport.classList.add(`bg-${style}`);
+            }
+        }
+
         function renderPublicTreeViewer(tree) {
             const world = document.getElementById('publicTreeWorld');
             const svg = document.getElementById('publicTreeSvg');
             if (!world || !svg || !tree) return;
+
+            // A publikus nézetben a családfa vonalai mindig jól látható, nem szerkeszthető
+            // formában jelennek meg. A node-ok továbbra is csak vizuális elemek.
+            world.className = `public-tree-world ${tree.lineStyle || 'style-glow'}`;
+            applyPublicTreeBackground(tree);
+
             world.querySelectorAll('.public-tree-node').forEach(node => node.remove());
             svg.innerHTML = '';
 
@@ -3773,6 +3870,12 @@ function openSimsFamily(treeId) {
                 const titleIcons = {'Herceg':'👑','Hercegnő':'👑','Király':'👑','Királynő':'👑','Gróf':'🎩','Grófnő':'🎩','Báró':'🎖️','Bárónő':'🎖️','Úr':'🏅','Úrnő':'🏅'};
                 if (occultIcons[sim.occult]) { const el=document.createElement('span'); el.textContent=occultIcons[sim.occult]; special.appendChild(el); }
                 if (titleIcons[sim.title]) { const el=document.createElement('span'); el.textContent=titleIcons[sim.title]; special.appendChild(el); }
+
+                avatar.title = 'Kattints a Sim adatlapjának megtekintéséhez';
+                avatar.setAttribute('role', 'button');
+                avatar.setAttribute('tabindex', '0');
+                avatar.onclick = (e) => { e.stopPropagation(); openPublicSimModal(tree, sim.id); };
+                avatar.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openPublicSimModal(tree, sim.id); } };
 
                 node.appendChild(avatar);
                 node.appendChild(label);
@@ -3831,6 +3934,205 @@ function openSimsFamily(treeId) {
             });
 
             applyPublicTreeTransform();
+        }
+
+        function publicSimDisplayName(sim) {
+            return `${sim.firstName || ''} ${sim.lastName || ''}`.trim() || 'Névtelen Sim';
+        }
+
+        function publicRelationAvatar(sim) {
+            if (!sim) return '👤';
+            return sim.image ? '' : (isAnimalSim(sim) ? '🐾' : '👤');
+        }
+
+        function createPublicRelationRow(target, typeLabel) {
+            const row = document.createElement('div');
+            row.className = 'public-sim-relation';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'public-sim-relation-avatar';
+            if (target.image) {
+                avatar.style.backgroundImage = `url(${JSON.stringify(target.image)})`;
+                if (target.imageTransform && target.imageTransform.filter) avatar.style.filter = target.imageTransform.filter;
+            } else {
+                avatar.textContent = publicRelationAvatar(target);
+            }
+
+            const textWrap = document.createElement('div');
+            const name = document.createElement('div');
+            name.className = 'public-sim-relation-name';
+            name.textContent = publicSimDisplayName(target);
+            const type = document.createElement('div');
+            type.className = 'public-sim-relation-type';
+            type.textContent = typeLabel || 'Kapcsolat';
+            textWrap.appendChild(name);
+            textWrap.appendChild(type);
+            row.appendChild(avatar);
+            row.appendChild(textWrap);
+            return row;
+        }
+
+        function openPublicGalleryLightbox(src, caption = '') {
+            const old = document.getElementById('publicGalleryLightbox');
+            if (old) old.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'publicGalleryLightbox';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:7200;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:30px;cursor:zoom-out;';
+            overlay.onclick = () => overlay.remove();
+
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'max-width:92vw;max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:default;';
+            wrap.onclick = e => e.stopPropagation();
+
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = caption || 'Galéria kép';
+            img.style.cssText = 'max-width:92vw;max-height:82vh;object-fit:contain;border-radius:14px;box-shadow:0 20px 70px rgba(0,0,0,.55);';
+
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.textContent = '✕ Bezárás';
+            close.style.cssText = 'border:1px solid rgba(255,255,255,.28);background:rgba(20,20,20,.72);color:#fff;border-radius:10px;padding:8px 13px;font-weight:800;cursor:pointer;';
+            close.onclick = () => overlay.remove();
+
+            wrap.appendChild(img);
+            if (caption) {
+                const cap = document.createElement('div');
+                cap.textContent = caption;
+                cap.style.cssText = 'color:#fff;font-size:12px;font-weight:700;text-align:center;max-width:80vw;';
+                wrap.appendChild(cap);
+            }
+            wrap.appendChild(close);
+            overlay.appendChild(wrap);
+            document.body.appendChild(overlay);
+            document.addEventListener('keydown', function esc(e) {
+                if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); }
+            });
+        }
+
+        function openPublicSimModal(tree, simId) {
+            if (!tree) return;
+            const sim = (tree.sims || []).find(s => s.id === simId);
+            if (!sim) return;
+            normalizeSimExtraFields(sim);
+            const gallery = normalizeSimGallery(sim);
+            const modal = document.getElementById('publicSimModal');
+            const content = document.getElementById('publicSimModalContent');
+            if (!modal || !content) return;
+
+            const name = publicSimDisplayName(sim);
+            const fullName = name;
+            const statusText = sim.isDead ? '💀 Halott' : '💚 Élő';
+            const avatarStyle = sim.image ? `background-image:url(${JSON.stringify(sim.image)});` : '';
+            const transform = sim.imageTransform || {};
+            const avatarFilter = transform.filter && transform.filter !== 'none' ? `filter:${transform.filter};` : '';
+            const avatarTransform = transform.rotate || transform.scale ? `transform:rotate(${Number(transform.rotate)||0}deg) scale(${Number(transform.scale)||1});` : '';
+
+            content.innerHTML = `
+                <div class="public-sim-hero">
+                    <div class="public-sim-avatar ${sim.isDead ? 'avatar-dead' : ''}" style="${avatarStyle}${avatarFilter}${avatarTransform}">${sim.image ? '' : '👤'}</div>
+                    <div class="public-sim-name">${escapeHtml(fullName)}</div>
+                    <div class="public-sim-status">${statusText}</div>
+                </div>
+                <div class="public-sim-section">
+                    <h4>📋 Sim adatai</h4>
+                    <div class="public-sim-info-grid" id="publicSimInfoGrid"></div>
+                </div>
+                <div class="public-sim-section" id="publicSimDescriptionSection">
+                    <h4>📝 Személyiség / Leírás</h4>
+                    <div class="public-sim-text" id="publicSimDescription"></div>
+                </div>
+                <div class="public-sim-section" id="publicSimRelationsSection">
+                    <h4>🔗 Kapcsolatok</h4>
+                    <div class="public-sim-relations" id="publicSimRelations"></div>
+                </div>
+                <div class="public-sim-section">
+                    <h4>🖼️ Galéria</h4>
+                    <div class="public-sim-gallery" id="publicSimGallery"></div>
+                </div>
+            `;
+
+            const infoGrid = document.getElementById('publicSimInfoGrid');
+            const addInfo = (label, value) => {
+                const item = document.createElement('div');
+                item.className = 'public-sim-info-item';
+                const small = document.createElement('small'); small.textContent = label;
+                const strong = document.createElement('strong'); strong.textContent = value || 'Nincs megadva';
+                item.appendChild(small); item.appendChild(strong); infoGrid.appendChild(item);
+            };
+            addInfo('Keresztnév', sim.firstName);
+            addInfo('Vezetéknév', sim.lastName);
+            addInfo('Életkor', sim.age);
+            addInfo('Faj', sim.species);
+            addInfo('Okkult', sim.occult);
+            addInfo('Cím', sim.title);
+            addInfo('Státusz', sim.isDead ? 'Halott' : 'Élő');
+            addInfo('Keretszín', sim.color || 'Alapértelmezett');
+
+            const description = document.getElementById('publicSimDescription');
+            description.textContent = sim.traits || 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
+
+            const relationList = document.getElementById('publicSimRelations');
+            const relationEntries = [];
+            const addRelation = (id, type) => {
+                if (!id || id === sim.id) return;
+                const target = (tree.sims || []).find(s => s.id === id);
+                if (!target) return;
+                const key = `${target.id}|${type}`;
+                if (relationEntries.some(x => x.key === key)) return;
+                relationEntries.push({key, target, type});
+            };
+
+            (sim.parentIds || []).forEach(id => addRelation(id, 'Szülő'));
+            const partnerIds = Array.isArray(sim.partnerIds) ? sim.partnerIds : (sim.partnerId ? [sim.partnerId] : []);
+            partnerIds.forEach(id => addRelation(id, (sim.connectionTypes && sim.connectionTypes[id]) || sim.relationType || 'Partner'));
+            (sim.animalIds || []).forEach(id => addRelation(id, 'Állat'));
+            (tree.sims || []).forEach(other => {
+                if (isAnimalSim(other)) return;
+                const parents = Array.isArray(other.parentIds) ? other.parentIds : (other.parentId ? [other.parentId] : []);
+                if (parents.includes(sim.id)) addRelation(other.id, 'Gyermek');
+                const othersPartners = Array.isArray(other.partnerIds) ? other.partnerIds : (other.partnerId ? [other.partnerId] : []);
+                if (othersPartners.includes(sim.id)) addRelation(other.id, (other.connectionTypes && other.connectionTypes[sim.id]) || other.relationType || 'Partner');
+            });
+
+            if (!relationEntries.length) {
+                relationList.innerHTML = '<div class="public-sim-empty">Nincsenek rögzített kapcsolatok.</div>';
+            } else {
+                relationEntries.forEach(entry => relationList.appendChild(createPublicRelationRow(entry.target, entry.type)));
+            }
+
+            const galleryGrid = document.getElementById('publicSimGallery');
+            if (!gallery.length) {
+                galleryGrid.innerHTML = '<div class="public-sim-empty">Nincsenek feltöltött képek.</div>';
+            } else {
+                gallery.forEach(item => {
+                    const src = typeof item === 'string' ? item : item.src;
+                    const caption = typeof item === 'string' ? '' : (item.caption || '');
+                    if (!src) return;
+                    const card = document.createElement('div');
+                    card.className = 'public-sim-gallery-item';
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = caption || 'Sim galéria kép';
+                    card.appendChild(img);
+                    if (caption) {
+                        const cap = document.createElement('div');
+                        cap.className = 'public-sim-gallery-caption';
+                        cap.textContent = caption;
+                        card.appendChild(cap);
+                    }
+                    card.onclick = () => openPublicGalleryLightbox(src, caption);
+                    galleryGrid.appendChild(card);
+                });
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closePublicSimModal() {
+            const modal = document.getElementById('publicSimModal');
+            if (modal) modal.classList.remove('active');
         }
 
         // A publikus nézetben nincs szerkesztő eseménykezelő: a node-ok csak vizuális elemek.
@@ -3971,6 +4273,7 @@ function openSimsFamily(treeId) {
                         bgConfig: tree.background_config || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
                         sims: tree.sims || [],
                         journal: tree.journal || [],
+                        lineStyle: (tree.background_config && tree.background_config.lineStyle) || 'style-glow',
                         isPublic: !!tree.is_public
                     }));
 
@@ -4002,7 +4305,7 @@ function openSimsFamily(treeId) {
                     id: tree.id,
                     user_id: currentUser.id,
                     name: tree.name || 'Névtelen családfa',
-                    background_config: tree.bgConfig || {},
+                    background_config: { ...(tree.bgConfig || {}), lineStyle: tree.lineStyle || 'style-glow' },
                     sims: tree.sims || [],
                     journal: tree.journal || [],
                     is_public: !!tree.isPublic,
@@ -4086,9 +4389,14 @@ function openSimsFamily(treeId) {
         }
 
         function loadCurrentTreeCanvas() {
+            const tree = getCurrentTree();
+            const lineStyle = tree?.lineStyle || 'style-glow';
+            treeWorld.className = `tree-canvas-world ${lineStyle}`;
+            const lineSelect = document.getElementById('lineStyleSelect');
+            if (lineSelect) lineSelect.value = lineStyle;
+
             const nodes = treeWorld.querySelectorAll('.sim-node');
             nodes.forEach(n => n.remove());
-            const tree = getCurrentTree();
             if (tree) {
                 tree.sims.forEach(sim => renderSimNode(sim));
                 updateConnections();
