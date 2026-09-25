@@ -858,6 +858,7 @@
         .public-profile-modal-card { width:min(430px,94vw); max-height:88vh; overflow:auto; background:var(--card-bg); border:1px solid var(--border-color); border-radius:24px; box-shadow:0 24px 80px rgba(0,0,0,.4); position:relative; padding:28px; text-align:center; }
         .public-profile-close { position:absolute; right:14px; top:14px; z-index:3; border:1px solid var(--border-color); background:var(--card-solid); color:var(--text-color); width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:18px; font-weight:800; }
         .public-profile-avatar { width:112px; height:112px; margin:4px auto 14px; border-radius:50%; overflow:hidden; border:3px solid var(--accent-color); background:var(--card-solid); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-size:42px; box-shadow:0 10px 30px var(--shadow-color); }
+        .public-profile-avatar img { width:100%; height:100%; display:block; object-fit:cover; object-position:center; }
         .public-profile-name { font-size:24px; font-weight:900; color:var(--text-color); }
         .public-profile-label { margin-top:4px; font-size:10px; color:var(--subtext-color); }
         .public-profile-section { margin-top:20px; padding:16px; border:1px solid var(--border-color); border-radius:16px; background:rgba(255,255,255,.025); text-align:left; }
@@ -4113,11 +4114,18 @@ function openSimsFamily(treeId) {
             const bio = document.getElementById('publicProfileBio');
             name.textContent = profile.display_name || 'Ismeretlen felhasználó';
             bio.textContent = profile.bio || 'Nincs bemutatkozás megadva.';
+            avatar.style.backgroundImage = 'none';
+            avatar.innerHTML = '';
             if (profile.avatar_url) {
-                avatar.style.backgroundImage = `url(${JSON.stringify(profile.avatar_url)})`;
-                avatar.textContent = '';
+                const img = document.createElement('img');
+                img.src = profile.avatar_url;
+                img.alt = `${profile.display_name || 'Felhasználó'} profilképe`;
+                img.referrerPolicy = 'no-referrer';
+                img.onerror = () => {
+                    avatar.innerHTML = '👤';
+                };
+                avatar.appendChild(img);
             } else {
-                avatar.style.backgroundImage = 'none';
                 avatar.textContent = '👤';
             }
             document.getElementById('publicProfileModal').classList.add('active');
@@ -4361,7 +4369,9 @@ function openSimsFamily(treeId) {
             const img = document.createElement('img');
             img.src = src;
             img.alt = caption || 'Galéria kép';
-            img.style.cssText = 'max-width:92vw;max-height:82vh;object-fit:contain;border-radius:14px;box-shadow:0 20px 70px rgba(0,0,0,.55);';
+            img.decoding = 'async';
+            img.referrerPolicy = 'no-referrer';
+            img.style.cssText = 'max-width:92vw;max-height:82vh;width:auto;height:auto;object-fit:contain;border-radius:14px;box-shadow:0 20px 70px rgba(0,0,0,.55);image-rendering:auto;';
 
             const close = document.createElement('button');
             close.type = 'button';
@@ -4493,6 +4503,9 @@ function openSimsFamily(treeId) {
                     const img = document.createElement('img');
                     img.src = src;
                     img.alt = caption || 'Sim galéria kép';
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.referrerPolicy = 'no-referrer';
                     card.appendChild(img);
                     if (caption) {
                         const cap = document.createElement('div');
@@ -5198,29 +5211,31 @@ function openSimsFamily(treeId) {
             files.forEach(file => {
                 if (!file.type.startsWith('image/')) { remaining--; return; }
                 
-                // Kép tömörítése és feltöltése Storage-ba - nagyobb felbontás a galériában
-                compressImage(file, 600, 600, 0.6).then(compressedImage => {
-                    uploadImageToStorage(compressedImage, 'gallery').then(finalImage => {
-                        sim.gallery.push({ src: finalImage, caption: '' });
+                // A galériaképeket eredeti felbontásban töltjük fel.
+                // A korábbi 600x600 / 0.6 tömörítés jelentősen rontotta a publikus galéria minőségét.
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    try {
+                        const finalImage = await uploadImageToStorage(reader.result, 'gallery');
+                        if (finalImage) sim.gallery.push({ src: finalImage, caption: '' });
+                    } catch (error) {
+                        console.error('Galériakép feltöltési hiba:', error);
+                    } finally {
                         remaining--;
                         if (remaining === 0) {
                             markTreeDirty();
                             renderSimLifeGallery(sim);
                         }
-                    }).catch(() => {
-                        remaining--;
-                        if (remaining === 0) {
-                            markTreeDirty();
-                            renderSimLifeGallery(sim);
-                        }
-                    });
-                }).catch(() => {
+                    }
+                };
+                reader.onerror = () => {
                     remaining--;
                     if (remaining === 0) {
                         markTreeDirty();
                         renderSimLifeGallery(sim);
                     }
-                });
+                };
+                reader.readAsDataURL(file);
             });
             event.target.value = '';
         }
