@@ -765,6 +765,13 @@
 
         .zoom-percentage-text { font-size: 11px; font-weight: 800; color: var(--subtext-color); padding: 0 8px; cursor: pointer; user-select: none; }
 
+        .tree-save-controls { position: absolute; bottom: 24px; left: 392px; z-index: 1050; display: flex; align-items: center; gap: 7px; }
+        .tree-save-btn { background: var(--card-solid); color: var(--text-color); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 11px; cursor: pointer; box-shadow: 0 8px 24px var(--shadow-color); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: all .2s ease; }
+        .tree-save-btn:hover:not(:disabled) { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: translateY(-1px); }
+        .tree-save-btn:disabled { opacity: .45; cursor: default; }
+        .tree-save-status { font-size: 9px; font-weight: 700; color: var(--subtext-color); background: var(--nav-bg); border: 1px solid var(--border-color); padding: 6px 8px; border-radius: 10px; box-shadow: 0 5px 16px var(--shadow-color); }
+        @media (max-width: 700px) { .tree-save-controls { left: 250px; bottom: 70px; } }
+
         .tree-canvas-viewport { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; overflow: hidden; cursor: grab; z-index: 5; }
         .tree-canvas-viewport:active { cursor: grabbing; }
         
@@ -1355,6 +1362,11 @@
             <button class="zoom-btn" onclick="adjustZoom(0.1)" title="Nagyítás">+</button>
             <button class="zoom-btn" onclick="adjustZoom(-0.1)" title="Kicsinyítés">-</button>
             <span class="zoom-percentage-text" id="zoomPercentLabel" onclick="resetZoom()" title="Visszaállítás">100%</span>
+        </div>
+
+        <div class="tree-save-controls" id="treeSaveControls">
+            <button class="tree-save-btn" id="treeSaveBtn" onclick="saveTreeChanges()" disabled>💾 Mentés</button>
+            <span class="tree-save-status" id="treeSaveStatus">Nincs mentetlen módosítás</span>
         </div>
 
         <button class="add-sim-floating-btn" id="addSimBtn" onclick="addNewSimDialog()" style="display: none;">+ Új Sim Hozzáadása</button>
@@ -1990,6 +2002,8 @@
 
         let familyTrees = loadTreesFromStorage();
         let currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
+        let dirtyTreeIds = new Set();
+        let isSavingTreeChanges = false;
         let editingSimId = null;
         let editingJournalId = null;
         let editingJournalTreeId = null;
@@ -2140,7 +2154,7 @@
                             rotation: currentRotation,
                             filter: currentFilter
                         };
-                        saveTreesToStorage();
+                        markTreeDirty();
                         loadCurrentTreeCanvas();
                     }
                 }
@@ -2298,14 +2312,14 @@
         function changeBgStyle(style) {
             const config = getActiveBgConfig();
             config.style = style;
-            if (currentView === 'tree') saveTreesToStorage();
+            if (currentView === 'tree') markTreeDirty();
             applyPageBackground();
         }
 
         function changeBgBlur(val) {
             const config = getActiveBgConfig();
             config.blur = parseInt(val);
-            if (currentView === 'tree') saveTreesToStorage();
+            if (currentView === 'tree') markTreeDirty();
             applyPageBackground();
         }
 
@@ -2318,7 +2332,7 @@
                         const config = getActiveBgConfig();
                         config.customUrl = finalImage;
                         config.style = 'custom';
-                        if (currentView === 'tree') saveTreesToStorage();
+                        if (currentView === 'tree') markTreeDirty();
                         applyPageBackground();
                     });
                 });
@@ -2328,14 +2342,14 @@
         function changeBgSize(val) { 
             const config = getActiveBgConfig();
             config.size = val;
-            if (currentView === 'tree') saveTreesToStorage();
+            if (currentView === 'tree') markTreeDirty();
             applyPageBackground(); 
         }
 
         function changeBgPosition(val) { 
             const config = getActiveBgConfig();
             config.position = val;
-            if (currentView === 'tree') saveTreesToStorage();
+            if (currentView === 'tree') markTreeDirty();
             applyPageBackground(); 
         }
 
@@ -2360,21 +2374,43 @@
             }
         }
 
-        function saveTreesToStorage() {
-            // Mentés a Supabase-ba
-            if (currentUser && supabaseClient) {
-                const tree = getCurrentTree();
-                if (tree) {
-                    saveFamilyTreeToSupabase(tree);
-                }
-            }
+        function markTreeDirty() {
+            if (currentTreeId) dirtyTreeIds.add(currentTreeId);
+            updateTreeSaveUI();
+        }
 
-            // Mentés a localStorage-ba (biztonsági mentés)
+        function updateTreeSaveUI() {
+            const btn = document.getElementById('treeSaveBtn');
+            const status = document.getElementById('treeSaveStatus');
+            if (!btn || !status) return;
+            const hasChanges = dirtyTreeIds.size > 0;
+            btn.disabled = !hasChanges || isSavingTreeChanges;
+            status.textContent = isSavingTreeChanges ? 'Mentés folyamatban…' : (hasChanges ? 'Mentetlen módosítások' : 'Nincs mentetlen módosítás');
+        }
+
+        async function saveTreeChanges() {
+            if (isSavingTreeChanges || dirtyTreeIds.size === 0) return;
+            isSavingTreeChanges = true;
+            updateTreeSaveUI();
             try {
+                if (currentUser && supabaseClient) {
+                    const treesToSave = familyTrees.filter(tree => dirtyTreeIds.has(tree.id));
+                    for (const tree of treesToSave) await saveFamilyTreeToSupabase(tree);
+                }
                 localStorage.setItem('s4memo_family_trees', JSON.stringify(familyTrees));
+                dirtyTreeIds.clear();
             } catch (e) {
-                console.error("Nem sikerült az elmentés:", e);
+                console.error('Nem sikerült az elmentés:', e);
+                alert('Nem sikerült elmenteni a módosításokat.');
+            } finally {
+                isSavingTreeChanges = false;
+                updateTreeSaveUI();
             }
+        }
+
+        // Kompatibilitási név: a régi automatikus mentési hívások helyett most csak módosításnak jelöljük.
+        function saveTreesToStorage() {
+            markTreeDirty();
         }
 
         function loadTreesFromStorage() {
@@ -2650,7 +2686,7 @@
         });
 
         window.addEventListener('mouseup', () => {
-            if (activeDrag) saveTreesToStorage();
+            if (activeDrag) markTreeDirty();
 
             if (activeDrag && currentDropTargetSim) {
                 const sourceSimId = activeDrag.id;
@@ -2840,7 +2876,7 @@
                 });
             }
 
-            saveTreesToStorage();
+            markTreeDirty();
             closeJournalModal();
             renderJournalEntries();
             if (currentView === 'activity') renderActivityFeed();
@@ -2853,7 +2889,7 @@
                         t.journal = t.journal.filter(j => j.id !== entryId);
                     }
                 });
-                saveTreesToStorage();
+                markTreeDirty();
                 renderJournalEntries();
                 if (currentView === 'activity') renderActivityFeed();
             }
@@ -3221,6 +3257,7 @@ function openSimsFamily(treeId) {
 
         function selectTree(treeId) {
             currentTreeId = treeId;
+            updateTreeSaveUI();
             setSelectedSim(null);
             renderTreeTabs();
             renderJournalEntries();
@@ -3243,7 +3280,7 @@ function openSimsFamily(treeId) {
 
             familyTrees.push(newTree);
             currentTreeId = newTree.id;
-            saveTreesToStorage();
+            markTreeDirty();
             renderTreeTabs();
             renderJournalEntries();
             applyPageBackground();
@@ -3286,7 +3323,7 @@ function openSimsFamily(treeId) {
                     currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
                 }
 
-                saveTreesToStorage();
+                markTreeDirty();
                 renderTreeTabs();
                 renderJournalEntries();
                 applyPageBackground();
@@ -3338,6 +3375,8 @@ function openSimsFamily(treeId) {
                 addSimBtn.style.display = 'none';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', updateTreeSaveUI);
 
         // SUPABASE HITELESÍTÉS FÜGGVÉNYEK
         function toggleAuthMode() {
@@ -3536,6 +3575,8 @@ function openSimsFamily(treeId) {
                     console.log("Nincsenek családfák");
                 }
 
+                dirtyTreeIds.clear();
+                updateTreeSaveUI();
                 renderTreeTabs();
                 loadCurrentTreeCanvas();
             } catch (error) {
@@ -3671,7 +3712,7 @@ function openSimsFamily(treeId) {
             };
 
             tree.sims.push(newSim);
-            saveTreesToStorage();
+            markTreeDirty();
             renderSimNode(newSim);
             updateConnections();
             setSelectedSim(newSim.id);
@@ -3967,7 +4008,7 @@ function openSimsFamily(treeId) {
                     sim.lastName = lastName;
                     document.getElementById('editFirstName').value = sim.firstName;
                     document.getElementById('editLastName').value = sim.lastName;
-                    saveTreesToStorage();
+                    markTreeDirty();
                     loadCurrentTreeCanvas();
                 }
             }
@@ -4007,14 +4048,14 @@ function openSimsFamily(treeId) {
                     sim.gallery.push(e.target.result);
                     remaining--;
                     if (remaining === 0) {
-                        saveTreesToStorage();
+                        markTreeDirty();
                         renderSimLifeGallery(sim);
                     }
                 };
                 reader.onerror = function() {
                     remaining--;
                     if (remaining === 0) {
-                        saveTreesToStorage();
+                        markTreeDirty();
                         renderSimLifeGallery(sim);
                     }
                 };
@@ -4064,20 +4105,20 @@ function openSimsFamily(treeId) {
                         sim.gallery.push({ src: finalImage, caption: '' });
                         remaining--;
                         if (remaining === 0) {
-                            saveTreesToStorage();
+                            markTreeDirty();
                             renderSimLifeGallery(sim);
                         }
                     }).catch(() => {
                         remaining--;
                         if (remaining === 0) {
-                            saveTreesToStorage();
+                            markTreeDirty();
                             renderSimLifeGallery(sim);
                         }
                     });
                 }).catch(() => {
                     remaining--;
                     if (remaining === 0) {
-                        saveTreesToStorage();
+                        markTreeDirty();
                         renderSimLifeGallery(sim);
                     }
                 });
@@ -4126,7 +4167,7 @@ function openSimsFamily(treeId) {
                         deleteImageFromStorage(imageUrl);
                     }
                     gallery.splice(index, 1);
-                    saveTreesToStorage();
+                    markTreeDirty();
                     renderSimLifeGallery(sim);
                 };
 
@@ -4250,7 +4291,7 @@ function openSimsFamily(treeId) {
 
             const saveCaption = () => {
                 item.caption = captionInput.value.trim();
-                saveTreesToStorage();
+                markTreeDirty();
                 renderSimLifeGallery(sim);
             };
             captionInput.addEventListener('input', () => {
@@ -4907,7 +4948,7 @@ function openSimsFamily(treeId) {
                     target.connectionTypes[sim.id] = editConnectionsNewType;
                 }
 
-                saveTreesToStorage();
+                markTreeDirty();
                 loadCurrentTreeCanvas();
             }
 
@@ -4998,7 +5039,7 @@ function openSimsFamily(treeId) {
                     if (!newChild.parentIds.includes(selectedPartnerId)) {
                         newChild.parentIds.push(selectedPartnerId);
                     }
-                    saveTreesToStorage();
+                    markTreeDirty();
                     loadCurrentTreeCanvas();
                 }
             } else {
@@ -5030,7 +5071,7 @@ function openSimsFamily(treeId) {
             else if (action === 'disconnect') openDeleteConnectionPicker(sim.id);
             else if (action === 'lock') {
                 sim.locked = !sim.locked;
-                saveTreesToStorage();
+                markTreeDirty();
                 loadCurrentTreeCanvas();
             }
             else if (action === 'delete') deleteSim(sim.id);
@@ -5104,7 +5145,7 @@ function openSimsFamily(treeId) {
                 target.animalIds = target.animalIds.filter(id => id !== simId);
             }
 
-            saveTreesToStorage();
+            markTreeDirty();
             loadCurrentTreeCanvas();
         }
 
@@ -5145,7 +5186,7 @@ function openSimsFamily(treeId) {
                     }
                 });
                 if (selectedSimId === simId) setSelectedSim(null);
-                saveTreesToStorage();
+                markTreeDirty();
                 loadCurrentTreeCanvas();
             }
         }
@@ -5285,7 +5326,7 @@ function openSimsFamily(treeId) {
                 }
             }
 
-            saveTreesToStorage();
+            markTreeDirty();
             closeConnectionModal();
             loadCurrentTreeCanvas();
         }
@@ -5302,7 +5343,7 @@ function openSimsFamily(treeId) {
             } else if (relationType === 'Szülő') {
                 const parent = addNewSim("Szülő", sourceSim.lastName, sourceSim.x, sourceSim.y - 160, null, null, null);
                 sourceSim.parentId = parent.id;
-                saveTreesToStorage();
+                markTreeDirty();
                 loadCurrentTreeCanvas();
             } else {
                 const newSim = addNewSim("Partner", "", sourceSim.x + 160, sourceSim.y, null, sourceSim.id, relationType);
@@ -5313,7 +5354,7 @@ function openSimsFamily(treeId) {
                 sourceSim.partnerId = sourceSim.partnerIds[0] || null;
                 sourceSim.connectionTypes = sourceSim.connectionTypes || {};
                 sourceSim.connectionTypes[newSim.id] = relationType;
-                saveTreesToStorage();
+                markTreeDirty();
                 loadCurrentTreeCanvas();
             }
         }
@@ -5553,7 +5594,7 @@ function openSimsFamily(treeId) {
                 sim.imageTransform = null;
             }
 
-            saveTreesToStorage();
+            markTreeDirty();
             closeSimModal();
             loadCurrentTreeCanvas();
         }
