@@ -768,9 +768,11 @@
         /* PUBLIKUS / CSAÁDFA MEGTEKINTŐ */
         .public-tree-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-top:20px; }
         .public-tree-card { border:1px solid var(--border-color); border-radius:18px; padding:0; overflow:hidden; background:rgba(255,255,255,.035); box-shadow:0 8px 22px var(--shadow-color); }
-        .public-tree-card-cover { height:150px; position:relative; background:var(--card-solid); background-size:cover; background-position:center; overflow:hidden; }
-        .public-tree-card-cover::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.52)); pointer-events:none; }
-        .public-tree-card-cover-title { position:absolute; left:14px; right:14px; bottom:12px; z-index:1; color:#fff; font-size:16px; font-weight:900; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+        .public-tree-card-cover { height:150px; position:relative; background:var(--card-solid); overflow:hidden; }
+        .public-tree-card-cover-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; z-index:0; }
+        .public-tree-card-cover-placeholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:46px; opacity:.8; z-index:0; }
+        .public-tree-card-cover::after { content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.52)); pointer-events:none; }
+        .public-tree-card-cover-title { position:absolute; left:14px; right:14px; bottom:12px; z-index:2; color:#fff; font-size:16px; font-weight:900; text-shadow:0 2px 12px rgba(0,0,0,.6); }
         .public-tree-card-body { padding:14px 16px 16px; }
         .public-tree-card h3 { margin:0 0 6px; font-size:15px; }
         .public-tree-card p { margin:0 0 12px; color:var(--subtext-color); font-size:11px; line-height:1.5; }
@@ -1869,8 +1871,12 @@
                             </select>
                         </div>
                         <div class="form-group" style="flex:1;">
-                            <label>Keretszín</label>
-                            <input type="color" id="editColor" value="#2ed573">
+                            <label>Nem</label>
+                            <select id="editGender">
+                                <option value="Férfi">Férfi</option>
+                                <option value="Nő">Nő</option>
+                                <option value="Egyéb">Egyéb</option>
+                            </select>
                         </div>
                     </div>
 
@@ -1903,6 +1909,10 @@
                                 <option value="Úr">Úr</option>
                                 <option value="Úrnő">Úrnő</option>
                             </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Keretszín</label>
+                            <input type="color" id="editColor" value="#2ed573">
                         </div>
                     </div>
 
@@ -3579,6 +3589,7 @@ function openSimsFamily(treeId) {
             if (!sim.occult) sim.occult = 'Nincs';
             if (!sim.title) sim.title = 'Nincs';
             if (!sim.species) sim.species = sim.faj || 'Ember';
+            if (!sim.gender) sim.gender = sim.nem || 'Egyéb';
 
             // Régi családfa-adatokból is létrehozzuk a több szülőt támogató tömböt.
             if (!Array.isArray(sim.parentIds)) {
@@ -3799,9 +3810,9 @@ function openSimsFamily(treeId) {
                     const simsCount = (tree.sims || []).filter(s => !isAnimalSim(s)).length;
                     const updated = tree.updatedAt ? new Date(tree.updatedAt).toLocaleString('hu-HU') : '';
                     const indexImage = tree.bgConfig?.publicIndexImage || '';
-                    const coverStyle = indexImage ? `background-image:url("${String(indexImage).replace(/"/g, '\\"')}")` : '';
                     card.innerHTML = `
-                        <div class="public-tree-card-cover" style="${coverStyle}">
+                        <div class="public-tree-card-cover">
+                            ${indexImage ? `<img class="public-tree-card-cover-image" src="${escapeHtml(indexImage)}" alt="${escapeHtml(tree.name || 'Családfa indexkép')}" loading="lazy">` : '<div class="public-tree-card-cover-placeholder">🌳</div>'}
                             <div class="public-tree-card-cover-title">🌳 ${escapeHtml(tree.name || 'Névtelen családfa')}</div>
                         </div>
                         <div class="public-tree-card-body">
@@ -4151,6 +4162,7 @@ function openSimsFamily(treeId) {
             addInfo('🏷️', 'Vezetéknév', sim.lastName);
             addInfo('🎂', 'Életkor', sim.age);
             addInfo('🧬', 'Faj', sim.species);
+            addInfo('⚧️', 'Nem', sim.gender || 'Egyéb');
             if (sim.occult && sim.occult !== 'Nincs') addInfo('✨', 'Okkult', sim.occult);
             if (sim.title && sim.title !== 'Nincs') addInfo('👑', 'Cím', sim.title);
             addInfo(sim.isDead ? '💀' : '💚', 'Státusz', sim.isDead ? 'Halott' : 'Élő');
@@ -4513,7 +4525,7 @@ function openSimsFamily(treeId) {
                 id: 'sim_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 firstName: firstName, lastName: lastName, age: 'Fiatal felnőtt',
                 traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y,
-                species: 'Ember', parentId: parentId, parentIds: parentId ? [parentId] : [], partnerId: partnerId, partnerIds: partnerId ? [partnerId] : [],
+                species: 'Ember', gender: 'Egyéb', parentId: parentId, parentIds: parentId ? [parentId] : [], partnerId: partnerId, partnerIds: partnerId ? [partnerId] : [],
                 relationType: relationType, animalIds: [], locked: false, isDead: false, gallery: []
             };
 
@@ -5326,6 +5338,7 @@ function openSimsFamily(treeId) {
             document.getElementById('editOccult').value = sim.occult || 'Nincs';
             document.getElementById('editTitle').value = sim.title || 'Nincs';
             document.getElementById('editSpecies').value = sim.species || 'Ember';
+            document.getElementById('editGender').value = sim.gender || 'Egyéb';
             document.getElementById('editColor').value = sim.color || '#2ed573';
 
             tempParentIds = [...sim.parentIds];
@@ -6372,6 +6385,7 @@ function openSimsFamily(treeId) {
             sim.occult = document.getElementById('editOccult').value;
             sim.title = document.getElementById('editTitle').value;
             sim.species = document.getElementById('editSpecies').value;
+            sim.gender = document.getElementById('editGender').value;
             sim.color = document.getElementById('editColor').value;
             sim.traits = document.getElementById('editTraits').value;
 
