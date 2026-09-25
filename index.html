@@ -850,6 +850,19 @@
         .public-tree-empty { padding:30px; text-align:center; color:var(--subtext-color); border:1px dashed var(--border-color); border-radius:16px; margin-top:20px; }
 
         /* PUBLIKUS SIM ADATLAP */
+        .public-tree-owner-link { display:block; margin-top:4px; padding:0; border:0; background:transparent; color:var(--subtext-color); font:inherit; font-size:10px; text-align:left; cursor:pointer; }
+        .public-tree-owner-link strong { color:var(--accent-color); font-weight:900; }
+        .public-tree-owner-link:hover strong { text-decoration:underline; }
+        .public-profile-modal-overlay { position:fixed; inset:0; z-index:6400; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.58); backdrop-filter:blur(8px); }
+        .public-profile-modal-overlay.active { display:flex; }
+        .public-profile-modal-card { width:min(430px,94vw); max-height:88vh; overflow:auto; background:var(--card-bg); border:1px solid var(--border-color); border-radius:24px; box-shadow:0 24px 80px rgba(0,0,0,.4); position:relative; padding:28px; text-align:center; }
+        .public-profile-close { position:absolute; right:14px; top:14px; z-index:3; border:1px solid var(--border-color); background:var(--card-solid); color:var(--text-color); width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:18px; font-weight:800; }
+        .public-profile-avatar { width:112px; height:112px; margin:4px auto 14px; border-radius:50%; overflow:hidden; border:3px solid var(--accent-color); background:var(--card-solid); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-size:42px; box-shadow:0 10px 30px var(--shadow-color); }
+        .public-profile-name { font-size:24px; font-weight:900; color:var(--text-color); }
+        .public-profile-label { margin-top:4px; font-size:10px; color:var(--subtext-color); }
+        .public-profile-section { margin-top:20px; padding:16px; border:1px solid var(--border-color); border-radius:16px; background:rgba(255,255,255,.025); text-align:left; }
+        .public-profile-section-title { font-size:12px; font-weight:900; color:var(--text-color); margin-bottom:9px; }
+        .public-profile-bio { font-size:12px; line-height:1.65; color:var(--text-color); white-space:pre-wrap; word-break:break-word; }
         .public-sim-modal-overlay { position:fixed; inset:0; z-index:6200; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.58); backdrop-filter:blur(8px); }
         .public-sim-modal-overlay.active { display:flex; }
         .public-sim-modal-card { width:min(720px, 94vw); max-height:92vh; overflow:auto; background:var(--card-bg); border:1px solid var(--border-color); border-radius:24px; box-shadow:0 24px 80px rgba(0,0,0,.4); position:relative; padding:22px; }
@@ -1709,6 +1722,7 @@
                 <div>
                     <div class="public-viewer-title" id="publicViewerTitle">Családfa</div>
                     <div class="public-viewer-subtitle">Csak megtekintési mód</div>
+                    <button type="button" class="public-tree-owner-link" id="publicTreeOwnerLink" onclick="openPublicOwnerProfile()">Készítette: <strong id="publicTreeOwnerName">Ismeretlen felhasználó</strong></button>
                 </div>
                 <button class="public-viewer-close" onclick="closePublicTreeViewer()">✕ Bezárás</button>
             </div>
@@ -1729,6 +1743,19 @@
         <div class="public-sim-modal-card">
             <button type="button" class="public-sim-close" onclick="closePublicSimModal()">×</button>
             <div id="publicSimModalContent"></div>
+        </div>
+    </div>
+
+    <div class="public-profile-modal-overlay" id="publicProfileModal" onclick="if(event.target===this) closePublicOwnerProfile()">
+        <div class="public-profile-modal-card">
+            <button type="button" class="public-profile-close" onclick="closePublicOwnerProfile()">×</button>
+            <div class="public-profile-avatar" id="publicProfileAvatar">👤</div>
+            <div class="public-profile-name" id="publicProfileName">Felhasználó</div>
+            <div class="public-profile-label">Családfa készítője</div>
+            <div class="public-profile-section">
+                <div class="public-profile-section-title">📝 Bemutatkozás</div>
+                <div class="public-profile-bio" id="publicProfileBio">Nincs bemutatkozás megadva.</div>
+            </div>
         </div>
     </div>
 
@@ -2331,6 +2358,8 @@
         let isSavingTreeChanges = false;
         let publicFamilyTrees = [];
         let publicViewerTree = null;
+        let publicOwnerProfiles = new Map();
+        let publicSelectedOwnerProfile = null;
         let publicViewerZoom = 1;
         let publicViewerPanX = 0;
         let publicViewerPanY = 0;
@@ -3921,6 +3950,20 @@ function openSimsFamily(treeId) {
 
                 if (error) throw error;
 
+                const ownerIds = [...new Set((data || []).map(tree => tree.user_id).filter(Boolean))];
+                publicOwnerProfiles = new Map();
+                if (ownerIds.length) {
+                    const { data: profileRows, error: profileError } = await supabaseClient
+                        .from('profiles')
+                        .select('id, display_name, avatar_url, bio')
+                        .in('id', ownerIds);
+                    if (!profileError) {
+                        (profileRows || []).forEach(profile => publicOwnerProfiles.set(profile.id, profile));
+                    } else {
+                        console.warn('Publikus profilok betöltési hiba:', profileError);
+                    }
+                }
+
                 const treeIds = (data || []).map(tree => tree.id);
                 let starredIds = new Set();
                 if (currentUser && treeIds.length) {
@@ -3939,6 +3982,7 @@ function openSimsFamily(treeId) {
                     sims: tree.sims || [],
                     journal: tree.journal || [],
                     userId: tree.user_id,
+                    ownerProfile: publicOwnerProfiles.get(tree.user_id) || { id: tree.user_id, display_name: 'Ismeretlen felhasználó', avatar_url: '', bio: '' },
                     updatedAt: tree.updated_at,
                     starCount: Number(tree.star_count || 0),
                     isStarred: starredIds.has(tree.id)
@@ -3949,6 +3993,7 @@ function openSimsFamily(treeId) {
                     if (freshViewerTree) {
                         publicViewerTree = freshViewerTree;
                         document.getElementById('publicViewerTitle').textContent = `🌳 ${freshViewerTree.name}`;
+                        updatePublicTreeOwnerHeader(freshViewerTree);
                         renderPublicTreeViewer(freshViewerTree);
                     } else {
                         closePublicTreeViewer();
@@ -4041,9 +4086,47 @@ function openSimsFamily(treeId) {
             publicViewerPanX = 0;
             publicViewerPanY = 0;
             document.getElementById('publicViewerTitle').textContent = `🌳 ${tree.name}`;
+            updatePublicTreeOwnerHeader(tree);
             document.getElementById('publicTreeViewer').classList.add('active');
             renderPublicTreeViewer(tree);
             requestAnimationFrame(() => fitPublicTreeToViewport(tree));
+        }
+
+        function updatePublicTreeOwnerHeader(tree) {
+            const button = document.getElementById('publicTreeOwnerLink');
+            const nameEl = document.getElementById('publicTreeOwnerName');
+            if (!button || !nameEl) return;
+            const profile = tree?.ownerProfile || publicOwnerProfiles.get(tree?.userId);
+            const name = profile?.display_name || 'Ismeretlen felhasználó';
+            nameEl.textContent = name;
+            button.style.display = tree?.userId ? 'block' : 'none';
+        }
+
+        function openPublicOwnerProfile() {
+            const tree = publicViewerTree;
+            if (!tree?.userId) return;
+            const profile = tree.ownerProfile || publicOwnerProfiles.get(tree.userId);
+            if (!profile) return;
+            publicSelectedOwnerProfile = profile;
+            const avatar = document.getElementById('publicProfileAvatar');
+            const name = document.getElementById('publicProfileName');
+            const bio = document.getElementById('publicProfileBio');
+            name.textContent = profile.display_name || 'Ismeretlen felhasználó';
+            bio.textContent = profile.bio || 'Nincs bemutatkozás megadva.';
+            if (profile.avatar_url) {
+                avatar.style.backgroundImage = `url(${JSON.stringify(profile.avatar_url)})`;
+                avatar.textContent = '';
+            } else {
+                avatar.style.backgroundImage = 'none';
+                avatar.textContent = '👤';
+            }
+            document.getElementById('publicProfileModal').classList.add('active');
+        }
+
+        function closePublicOwnerProfile() {
+            const modal = document.getElementById('publicProfileModal');
+            if (modal) modal.classList.remove('active');
+            publicSelectedOwnerProfile = null;
         }
 
         function closePublicTreeViewer() {
