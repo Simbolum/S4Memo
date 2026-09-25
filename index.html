@@ -776,7 +776,18 @@
         .public-tree-card-body { padding:14px 16px 16px; }
         .public-tree-card h3 { margin:0 0 6px; font-size:15px; }
         .public-tree-card p { margin:0 0 12px; color:var(--subtext-color); font-size:11px; line-height:1.5; }
-        .public-tree-card-actions { display:flex; gap:8px; justify-content:flex-end; }
+        .public-tree-card-actions { display:flex; gap:8px; align-items:center; justify-content:space-between; }
+        .public-tree-card-actions-right { display:flex; gap:8px; align-items:center; margin-left:auto; }
+        .public-tree-star-btn {
+            display:inline-flex; align-items:center; justify-content:center; gap:5px; min-width:58px;
+            height:38px; padding:0 11px; border:1px solid var(--border-color); border-radius:12px;
+            background:var(--card-solid); color:var(--subtext-color); cursor:pointer; font-size:14px; font-weight:900;
+            transition:transform .16s ease, border-color .16s ease, color .16s ease, background .16s ease, box-shadow .16s ease;
+        }
+        .public-tree-star-btn:hover { transform:translateY(-1px); border-color:#f5c542; color:#f5c542; box-shadow:0 6px 18px rgba(245,197,66,.16); }
+        .public-tree-star-btn.is-starred { color:#f5c542; border-color:rgba(245,197,66,.55); background:rgba(245,197,66,.10); box-shadow:0 6px 18px rgba(245,197,66,.12); }
+        .public-tree-star-icon { font-size:18px; line-height:1; }
+        .public-tree-star-count { min-width:10px; text-align:center; font-size:11px; }
 
         .public-index-image-group { display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color); }
         .public-index-image-group.visible { display:block; }
@@ -3902,12 +3913,23 @@ function openSimsFamily(treeId) {
             try {
                 const { data, error } = await supabaseClient
                     .from('family_trees')
-                    .select('id, name, background_config, sims, journal, user_id, updated_at')
+                    .select('id, name, background_config, sims, journal, user_id, updated_at, star_count')
                     .eq('is_public', true)
+                    .order('star_count', { ascending: false })
                     .order('updated_at', { ascending: false })
                     .limit(100);
 
                 if (error) throw error;
+
+                const treeIds = (data || []).map(tree => tree.id);
+                let starredIds = new Set();
+                if (currentUser && treeIds.length) {
+                    const { data: starRows, error: starReadError } = await supabaseClient
+                        .from('family_tree_stars')
+                        .select('tree_id')
+                        .in('tree_id', treeIds);
+                    if (!starReadError) starredIds = new Set((starRows || []).map(row => row.tree_id));
+                }
 
                 publicFamilyTrees = (data || []).map(tree => ({
                     id: tree.id,
@@ -3917,7 +3939,9 @@ function openSimsFamily(treeId) {
                     sims: tree.sims || [],
                     journal: tree.journal || [],
                     userId: tree.user_id,
-                    updatedAt: tree.updated_at
+                    updatedAt: tree.updated_at,
+                    starCount: Number(tree.star_count || 0),
+                    isStarred: starredIds.has(tree.id)
                 }));
 
                 if (publicViewerTree) {
@@ -3951,11 +3975,21 @@ function openSimsFamily(treeId) {
                         <div class="public-tree-card-body">
                             <p>${simsCount} Sim${simsCount === 1 ? '' : 'ek'} · Utolsó frissítés: ${escapeHtml(updated)}</p>
                             <div class="public-tree-card-actions">
-                                <button class="btn-primary" type="button">Megtekintés</button>
+                                <button class="public-tree-star-btn ${tree.isStarred ? 'is-starred' : ''}" type="button" title="${tree.isStarred ? 'Csillag visszavonása' : 'Családfa csillagozása'}">
+                                    <span class="public-tree-star-icon">${tree.isStarred ? '★' : '☆'}</span>
+                                    <span class="public-tree-star-count">${tree.starCount}</span>
+                                </button>
+                                <div class="public-tree-card-actions-right">
+                                    <button class="btn-primary" type="button">Megtekintés</button>
+                                </div>
                             </div>
                         </div>
                     `;
-                    card.querySelector('button').onclick = () => openPublicTreeViewer(tree.id);
+                    card.querySelector('.public-tree-star-btn').onclick = (event) => {
+                        event.stopPropagation();
+                        togglePublicTreeStar(tree.id);
+                    };
+                    card.querySelector('.public-tree-card-actions-right button').onclick = () => openPublicTreeViewer(tree.id);
                     grid.appendChild(card);
                 });
             } catch (error) {
@@ -3966,6 +4000,37 @@ function openSimsFamily(treeId) {
 
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+        }
+
+        async function togglePublicTreeStar(treeId) {
+            if (!supabaseClient || !treeId) return;
+            if (!currentUser) {
+                alert('A csillagozáshoz be kell jelentkezned.');
+                return;
+            }
+
+            const tree = publicFamilyTrees.find(item => item.id === treeId);
+            if (!tree) return;
+
+            try {
+                if (tree.isStarred) {
+                    const { error } = await supabaseClient
+                        .from('family_tree_stars')
+                        .delete()
+                        .eq('tree_id', treeId)
+                        .eq('user_id', currentUser.id);
+                    if (error) throw error;
+                } else {
+                    const { error } = await supabaseClient
+                        .from('family_tree_stars')
+                        .insert({ tree_id: treeId, user_id: currentUser.id });
+                    if (error && error.code !== '23505') throw error;
+                }
+                await loadPublicFamilyTrees();
+            } catch (error) {
+                console.error('Csillagozási hiba:', error);
+                alert('Nem sikerült módosítani a csillagozást.');
+            }
         }
 
         function openPublicTreeViewer(treeId) {
