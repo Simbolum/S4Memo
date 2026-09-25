@@ -5034,63 +5034,33 @@ function openSimsFamily(treeId) {
 
         // SUPABASE STORAGE KÉPFELTÖLTÉS
         async function uploadImageToStorage(dataUrl, folder = 'avatars') {
-            if (!currentUser || !supabaseClient) {
-                console.warn("Nincs bejelentkezett felhasználó, képek tárolása lokálisan");
-                return dataUrl; // Fallback: visszatérünk az eredeti dataURL-lel
-            }
-
             try {
-                // DataURL átalakítása File objektummá
+                // Átalakítjuk a képet küldhető formátumra
                 const response = await fetch(dataUrl);
                 const blob = await response.blob();
-                const file = new File([blob], 'image.webp', { type: 'image/webp' });
-
-                // Egyedi fájlnév generálása
-                const timestamp = Date.now();
-                const randomId = Math.random().toString(36).substring(2, 15);
-                const fileName = `${folder}/${currentUser.id}_${timestamp}_${randomId}.webp`;
-
-                // Fájl feltöltése a Supabase Storage-ba CORS workaround-dal
-                let uploadError = null;
-                let uploadData = null;
                 
-                try {
-                    const result = await supabaseClient
-                        .storage
-                        .from('family-tree-images')
-                        .upload(fileName, file, {
-                            cacheControl: '3600',
-                            upsert: false
-                        });
-                    uploadData = result.data;
-                    uploadError = result.error;
-                } catch (err) {
-                    uploadError = err;
-                }
+                const formData = new FormData();
+                formData.append("image", blob, "image.webp");
 
-                if (uploadError) {
-                    console.error("Hiba a kép feltöltésekor:", uploadError);
-                    // Ha CORS hiba, fallback lokális tárolás
-                    if (uploadError.message && uploadError.message.includes('CORS')) {
-                        console.warn("CORS hiba, fallback lokális tárolás");
-                        return dataUrl;
-                    }
-                    // Fallback: visszatérünk az eredeti dataURL-lel
+                const apiKey = "f9c2b2784f1224cec235ee5e7a0ab57e"; // <-- Ide tedd be az ImgBB API kulcsodat!
+
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                    method: "POST",
+                    body: formData
+                });
+                
+                const result = await res.json();
+                
+                if (result.success) {
+                    console.log("Kép sikeresen feltöltve ImgBB-re:", result.data.url);
+                    return result.data.url; // Visszaadjuk az ImgBB linkjét a Supabase helyett!
+                } else {
+                    console.error("ImgBB hiba:", result);
+                    alert("Nem sikerült feltölteni a képet az ImgBB-re.");
                     return dataUrl;
                 }
-
-                // Public URL lekérése
-                const { data: { publicUrl } } = supabaseClient
-                    .storage
-                    .from('family-tree-images')
-                    .getPublicUrl(fileName);
-
-                console.log("Kép sikeresen feltöltve:", publicUrl);
-                return publicUrl;
-
             } catch (error) {
-                console.error("Hiba a kép feltöltésekor:", error);
-                // Fallback: visszatérünk az eredeti dataURL-lel
+                console.error("Hiba az ImgBB feltöltéskor:", error);
                 return dataUrl;
             }
         }
