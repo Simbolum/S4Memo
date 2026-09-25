@@ -705,7 +705,15 @@
         .journal-btn:hover { opacity: 1; background-color: transparent; }
 
         /* SIM NAPLÓ */
-        .sim-journal-toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px; }
+        .sim-journal-toolbar {
+            display:flex; justify-content:space-between; align-items:center;
+            gap:12px; margin-bottom:14px; width:100%; box-sizing:border-box;
+        }
+        .sim-journal-toolbar > div { min-width:0; flex:1 1 auto; }
+        .sim-journal-toolbar > .btn-primary {
+            flex:0 0 auto; width:auto; max-width:100%; min-width:max-content;
+            box-sizing:border-box; white-space:nowrap; margin-left:auto;
+        }
         .sim-journal-intro { color:var(--subtext-color); font-size:12px; line-height:1.5; margin:0; }
         .sim-journal-list { display:flex; flex-direction:column; gap:10px; max-height:420px; overflow:auto; padding-right:4px; }
         .sim-journal-card { position:relative; padding:13px 14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,.025); }
@@ -921,9 +929,12 @@
 
         .zoom-controls {
             position: absolute; bottom: 16px; left: 252px; z-index: 1050;
-            display: flex; gap: 3px; background-color: var(--nav-bg);
+            display: inline-flex; width: max-content; max-width: calc(100% - 268px);
+            gap: 3px; background-color: var(--nav-bg);
             padding: 3px; border-radius: 11px; border: 1px solid var(--border-color);
             box-shadow: 0 8px 24px var(--shadow-color); align-items: center;
+            box-sizing: border-box; white-space: nowrap;
+            overflow: visible;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
         .zoom-btn {
@@ -934,14 +945,27 @@
         }
         .zoom-btn:hover { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
 
-        .zoom-percentage-text { font-size: 9px; font-weight: 800; color: var(--subtext-color); padding: 0 6px; cursor: pointer; user-select: none; }
+        .zoom-percentage-text {
+            display: inline-flex; align-items: center; justify-content: center;
+            flex: 0 0 auto; min-width: 34px; box-sizing: border-box;
+            font-size: 9px; font-weight: 800; color: var(--subtext-color);
+            padding: 0 4px; line-height: 23px; white-space: nowrap;
+            cursor: pointer; user-select: none;
+        }
 
         .tree-save-controls { position: absolute; bottom: 16px; left: 350px; z-index: 1050; display: flex; align-items: center; gap: 7px; }
         .tree-save-btn { background: var(--card-solid); color: var(--text-color); border: 1px solid var(--border-color); padding: 6px 9px; border-radius: 9px; font-weight: 800; font-size: 9px; cursor: pointer; box-shadow: 0 8px 24px var(--shadow-color); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: all .2s ease; }
         .tree-save-btn:hover:not(:disabled) { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: translateY(-1px); }
         .tree-save-btn:disabled { opacity: .45; cursor: default; }
         .tree-save-status { font-size: 8px; font-weight: 700; color: var(--subtext-color); background: var(--nav-bg); border: 1px solid var(--border-color); padding: 5px 6px; border-radius: 8px; box-shadow: 0 5px 16px var(--shadow-color); }
-        @media (max-width: 700px) { .tree-save-controls { left: 250px; bottom: 70px; } }
+        @media (max-width: 700px) {
+            .tree-save-controls { left: 250px; bottom: 70px; }
+        }
+        @media (max-width: 520px) {
+            .sim-journal-toolbar { align-items:flex-start; flex-wrap:wrap; }
+            .sim-journal-toolbar > div { flex:1 1 100%; }
+            .sim-journal-toolbar > .btn-primary { margin-left:auto; }
+        }
 
         .tree-canvas-viewport { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; overflow: hidden; cursor: grab; z-index: 5; }
         .tree-canvas-viewport:active { cursor: grabbing; }
