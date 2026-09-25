@@ -748,6 +748,51 @@
             box-shadow: 0 12px 30px var(--active-glow);
         }
 
+        .publish-tree-floating-btn {
+            position: absolute; bottom: 16px; right: 185px; z-index: 1050;
+            background: linear-gradient(135deg, #ff9a6c 0%, #ff8a5c 100%);
+            color: white; border: none; padding: 10px 15px;
+            border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255,154,108,.32); text-shadow: 0 1px 0 rgba(255,255,255,.2);
+            transition: all .3s ease;
+        }
+        .publish-tree-floating-btn:hover { transform: translateY(-2px) scale(1.03); }
+        .publish-tree-floating-btn.is-public {
+            background: linear-gradient(135deg, #2ed573 0%, #219d52 100%);
+            box-shadow: 0 8px 25px rgba(46,213,115,.28);
+        }
+        @media (max-width: 700px) {
+            .publish-tree-floating-btn { right: 16px; bottom: 70px; }
+        }
+
+        /* PUBLIKUS / CSAÁDFA MEGTEKINTŐ */
+        .public-tree-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-top:20px; }
+        .public-tree-card { border:1px solid var(--border-color); border-radius:18px; padding:16px; background:rgba(255,255,255,.035); box-shadow:0 8px 22px var(--shadow-color); }
+        .public-tree-card h3 { margin:0 0 6px; font-size:15px; }
+        .public-tree-card p { margin:0 0 12px; color:var(--subtext-color); font-size:11px; line-height:1.5; }
+        .public-tree-card-actions { display:flex; gap:8px; justify-content:flex-end; }
+        .public-viewer-overlay { position:fixed; inset:0; z-index:5000; display:none; background:rgba(0,0,0,.48); backdrop-filter:blur(8px); }
+        .public-viewer-overlay.active { display:block; }
+        .public-viewer-card { position:absolute; inset:3vh 3vw; background:var(--card-bg); border:1px solid var(--border-color); border-radius:24px; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.28); }
+        .public-viewer-header { height:58px; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid var(--border-color); background:var(--nav-bg); position:relative; z-index:5; }
+        .public-viewer-title { font-size:16px; font-weight:800; color:var(--text-color); }
+        .public-viewer-subtitle { font-size:10px; color:var(--subtext-color); margin-top:2px; }
+        .public-viewer-close { border:1px solid var(--border-color); background:var(--card-solid); color:var(--text-color); border-radius:10px; padding:7px 10px; font-weight:800; cursor:pointer; }
+        .public-tree-viewport { position:absolute; inset:58px 0 0; overflow:hidden; cursor:grab; }
+        .public-tree-viewport:active { cursor:grabbing; }
+        .public-tree-world { position:absolute; left:0; top:0; width:0; height:0; transform-origin:0 0; }
+        .public-tree-svg { position:absolute; left:-10000px; top:-10000px; width:20000px; height:20000px; pointer-events:none; }
+        .public-tree-node { position:absolute; width:88px; height:88px; z-index:2; display:flex; align-items:center; justify-content:center; }
+        .public-tree-avatar { width:88px; height:88px; border-radius:var(--sim-node-radius); clip-path:var(--sim-node-clip-path); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--card-solid); border:3px solid #fff; box-shadow:0 8px 20px var(--shadow-color); background-size:cover; background-position:center; }
+        .public-tree-label { position:absolute; bottom:-24px; white-space:nowrap; font-weight:700; font-size:11px; color:var(--text-color); background:var(--card-solid); padding:3px 10px; border-radius:12px; border:1px solid var(--border-color); box-shadow:0 4px 12px var(--shadow-color); }
+        .public-tree-special { position:absolute; top:-28px; left:50%; transform:translateX(-50%); display:flex; gap:3px; }
+        .public-tree-special span { width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--card-solid); border:1px solid var(--border-color); font-size:13px; }
+        .public-tree-animal { position:absolute; left:-30px; width:20px; height:20px; border-radius:50%; overflow:hidden; border:2px solid var(--border-color); background:var(--card-solid); display:flex; align-items:center; justify-content:center; font-size:12px; }
+        .public-tree-animal img { width:100%; height:100%; object-fit:cover; }
+        .public-tree-controls { position:absolute; left:14px; bottom:14px; z-index:4; display:flex; gap:4px; padding:4px; border:1px solid var(--border-color); border-radius:11px; background:var(--nav-bg); }
+        .public-tree-controls button { width:26px; height:26px; border:1px solid var(--border-color); border-radius:7px; background:var(--card-solid); color:var(--text-color); cursor:pointer; font-weight:800; }
+        .public-tree-empty { padding:30px; text-align:center; color:var(--subtext-color); border:1px dashed var(--border-color); border-radius:16px; margin-top:20px; }
+
         .zoom-controls {
             position: absolute; bottom: 16px; left: 252px; z-index: 1050;
             display: flex; gap: 3px; background-color: var(--nav-bg);
@@ -1369,6 +1414,7 @@
             <span class="tree-save-status" id="treeSaveStatus">Nincs mentetlen módosítás</span>
         </div>
 
+        <button class="publish-tree-floating-btn" id="publishTreeBtn" onclick="togglePublishCurrentTree()" style="display: none;">🌐 Publikálás</button>
         <button class="add-sim-floating-btn" id="addSimBtn" onclick="addNewSimDialog()" style="display: none;">+ Új Sim Hozzáadása</button>
 
         <div class="tree-canvas-viewport" id="treeViewport">
@@ -1421,11 +1467,40 @@
     <!-- 4. PUBLIKUM -->
     <div class="page-view" id="publicView">
         <main class="main-card">
-            <h1>Publikum / Közösségi Családfák</h1>
+            <div class="activity-header">
+                <div class="activity-header-left">
+                    <h1>🌐 Publikum</h1>
+                    <p>Itt csak a publikussá tett családfák tekinthetők meg. A látogatók nem tudják szerkeszteni őket.</p>
+                </div>
+                <button class="btn-secondary" onclick="loadPublicFamilyTrees()">↻ Frissítés</button>
+            </div>
+            <div id="publicTreeGrid" class="public-tree-grid"></div>
         </main>
     </div>
 
     </div> <!-- mainContent vége -->
+
+    <div class="public-viewer-overlay" id="publicTreeViewer">
+        <div class="public-viewer-card">
+            <div class="public-viewer-header">
+                <div>
+                    <div class="public-viewer-title" id="publicViewerTitle">Családfa</div>
+                    <div class="public-viewer-subtitle">Csak megtekintési mód</div>
+                </div>
+                <button class="public-viewer-close" onclick="closePublicTreeViewer()">✕ Bezárás</button>
+            </div>
+            <div class="public-tree-viewport" id="publicTreeViewport">
+                <div class="public-tree-world" id="publicTreeWorld">
+                    <svg class="public-tree-svg" id="publicTreeSvg" viewBox="-10000 -10000 20000 20000"></svg>
+                </div>
+            </div>
+            <div class="public-tree-controls">
+                <button onclick="adjustPublicTreeZoom(0.1)">+</button>
+                <button onclick="adjustPublicTreeZoom(-0.1)">−</button>
+                <button onclick="resetPublicTreeView()">100%</button>
+            </div>
+        </div>
+    </div>
 
     <!-- TESTRESZABÁSI PANEL (CSALÁDFÁK NÉZETRE) -->
     <div class="style-panel-drawer" id="styleDrawer" style="display: none;">
@@ -1982,7 +2057,8 @@
                 ],
                 journal: [
                     { id: 'j_1', title: 'Megérkezés Goth birtokra', date: '2026-01-15', content: 'A család beköltözött az új kúriába. Bella azonnal nekilátott a ház szépítésének.' }
-                ]
+                ],
+                isPublic: false
             }
         ];
 
@@ -2004,6 +2080,15 @@
         let currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
         let dirtyTreeIds = new Set();
         let isSavingTreeChanges = false;
+        let publicFamilyTrees = [];
+        let publicViewerTree = null;
+        let publicViewerZoom = 1;
+        let publicViewerPanX = 0;
+        let publicViewerPanY = 0;
+        let publicViewerDragging = false;
+        let publicViewerDragStart = null;
+        let publicViewerPanStart = null;
+        let publicRefreshTimer = null;
         let editingSimId = null;
         let editingJournalId = null;
         let editingJournalTreeId = null;
@@ -2389,19 +2474,30 @@
         }
 
         async function saveTreeChanges() {
-            if (isSavingTreeChanges || dirtyTreeIds.size === 0) return;
+            if (isSavingTreeChanges || dirtyTreeIds.size === 0) return true;
             isSavingTreeChanges = true;
             updateTreeSaveUI();
             try {
                 if (currentUser && supabaseClient) {
                     const treesToSave = familyTrees.filter(tree => dirtyTreeIds.has(tree.id));
-                    for (const tree of treesToSave) await saveFamilyTreeToSupabase(tree);
+                    for (const tree of treesToSave) {
+                        const ok = await saveFamilyTreeToSupabase(tree);
+                        if (!ok) throw new Error(`A(z) "${tree.name}" családfa mentése sikertelen.`);
+                    }
                 }
                 localStorage.setItem('s4memo_family_trees', JSON.stringify(familyTrees));
                 dirtyTreeIds.clear();
+                updateAddSimButtonVisibility();
+                if (currentView === 'public') await loadPublicFamilyTrees();
+                if (publicViewerTree) {
+                    const updated = familyTrees.find(t => t.id === publicViewerTree.id);
+                    if (updated?.isPublic) renderPublicTreeViewer(updated);
+                }
+                return true;
             } catch (e) {
                 console.error('Nem sikerült az elmentés:', e);
                 alert('Nem sikerült elmenteni a módosításokat.');
+                return false;
             } finally {
                 isSavingTreeChanges = false;
                 updateTreeSaveUI();
@@ -2442,6 +2538,8 @@
                 document.body.classList.remove('tree-view-active');
             }
 
+            if (viewName !== 'public') stopPublicRefreshTimer();
+
             if (viewName === 'home') {
                 document.getElementById('homeView').classList.add('active');
                 document.getElementById('navHome').classList.add('active');
@@ -2467,6 +2565,8 @@
                 document.getElementById('publicView').classList.add('active');
                 document.getElementById('navPublic').classList.add('active');
                 document.getElementById('menuPublic').classList.add('active');
+                loadPublicFamilyTrees();
+                startPublicRefreshTimer();
             }
 
             // Testreszabás panel csak Családfák nézetben jelenjen meg
@@ -3275,7 +3375,8 @@ function openSimsFamily(treeId) {
                 name: name.trim(),
                 bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
                 sims: [],
-                journal: []
+                journal: [],
+                isPublic: false
             };
 
             familyTrees.push(newTree);
@@ -3369,10 +3470,19 @@ function openSimsFamily(treeId) {
 
         function updateAddSimButtonVisibility() {
             const addSimBtn = document.getElementById('addSimBtn');
+            const publishBtn = document.getElementById('publishTreeBtn');
+            const tree = getCurrentTree();
             if (currentTreeId && familyTrees.length > 0) {
                 addSimBtn.style.display = 'block';
+                if (publishBtn) {
+                    publishBtn.style.display = 'block';
+                    publishBtn.classList.toggle('is-public', !!tree?.isPublic);
+                    publishBtn.textContent = tree?.isPublic ? '↩ Publikusság visszavonása' : '🌐 Publikálás';
+                    publishBtn.title = tree?.isPublic ? 'A családfa levétele a Publikum oldalról' : 'A családfa közzététele a Publikum oldalon';
+                }
             } else {
                 addSimBtn.style.display = 'none';
+                if (publishBtn) publishBtn.style.display = 'none';
             }
         }
 
@@ -3448,6 +3558,304 @@ function openSimsFamily(treeId) {
                 console.error("Váratlan hiba a profil létrehozásakor:", error);
             }
         }
+
+        async function togglePublishCurrentTree() {
+            const tree = getCurrentTree();
+            if (!tree) return;
+
+            const nextState = !tree.isPublic;
+            if (nextState) {
+                if (!confirm(`Publikálod a(z) "${tree.name}" családfát a Publikum oldalon? Más felhasználók csak megtekinteni tudják.`)) return;
+            } else {
+                if (!confirm(`Visszavonod a(z) "${tree.name}" családfa publikusságát?`)) return;
+            }
+
+            tree.isPublic = nextState;
+            markTreeDirty();
+            updateAddSimButtonVisibility();
+
+            try {
+                const saved = await saveTreeChanges();
+                if (!saved) {
+                    tree.isPublic = !nextState;
+                    updateAddSimButtonVisibility();
+                    return;
+                }
+                if (nextState) {
+                    alert('A családfa mostantól megjelenik a Publikum oldalon.');
+                } else {
+                    alert('A családfa publikussága vissza lett vonva.');
+                }
+                if (currentView === 'public') await loadPublicFamilyTrees();
+            } catch (e) {
+                tree.isPublic = !nextState;
+                updateAddSimButtonVisibility();
+            }
+        }
+
+        function startPublicRefreshTimer() {
+            stopPublicRefreshTimer();
+            publicRefreshTimer = setInterval(() => {
+                if (currentView === 'public') loadPublicFamilyTrees();
+            }, 15000);
+        }
+
+        function stopPublicRefreshTimer() {
+            if (publicRefreshTimer) {
+                clearInterval(publicRefreshTimer);
+                publicRefreshTimer = null;
+            }
+        }
+
+        async function loadPublicFamilyTrees() {
+            const grid = document.getElementById('publicTreeGrid');
+            if (!grid || !supabaseClient) return;
+
+            grid.innerHTML = '<div class="public-tree-empty">Publikus családfák betöltése…</div>';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('family_trees')
+                    .select('id, name, background_config, sims, journal, user_id, updated_at')
+                    .eq('is_public', true)
+                    .order('updated_at', { ascending: false })
+                    .limit(100);
+
+                if (error) throw error;
+
+                publicFamilyTrees = (data || []).map(tree => ({
+                    id: tree.id,
+                    name: tree.name,
+                    bgConfig: tree.background_config || {},
+                    sims: tree.sims || [],
+                    journal: tree.journal || [],
+                    userId: tree.user_id,
+                    updatedAt: tree.updated_at
+                }));
+
+                if (publicViewerTree) {
+                    const freshViewerTree = publicFamilyTrees.find(t => t.id === publicViewerTree.id);
+                    if (freshViewerTree) {
+                        publicViewerTree = freshViewerTree;
+                        document.getElementById('publicViewerTitle').textContent = `🌳 ${freshViewerTree.name}`;
+                        renderPublicTreeViewer(freshViewerTree);
+                    } else {
+                        closePublicTreeViewer();
+                    }
+                }
+
+                if (!publicFamilyTrees.length) {
+                    grid.innerHTML = '<div class="public-tree-empty">Jelenleg nincs publikált családfa.</div>';
+                    return;
+                }
+
+                grid.innerHTML = '';
+                publicFamilyTrees.forEach(tree => {
+                    const card = document.createElement('div');
+                    card.className = 'public-tree-card';
+                    const simsCount = (tree.sims || []).filter(s => !isAnimalSim(s)).length;
+                    const updated = tree.updatedAt ? new Date(tree.updatedAt).toLocaleString('hu-HU') : '';
+                    card.innerHTML = `
+                        <h3>🌳 ${escapeHtml(tree.name || 'Névtelen családfa')}</h3>
+                        <p>${simsCount} Sim${simsCount === 1 ? '' : 'ek'} · Utolsó frissítés: ${escapeHtml(updated)}</p>
+                        <div class="public-tree-card-actions">
+                            <button class="btn-primary" type="button">Megtekintés</button>
+                        </div>
+                    `;
+                    card.querySelector('button').onclick = () => openPublicTreeViewer(tree.id);
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Publikus családfák betöltési hiba:', error);
+                grid.innerHTML = `<div class="public-tree-empty">Nem sikerült betölteni a publikus családfákat.<br><small>${escapeHtml(error.message || String(error))}</small></div>`;
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+        }
+
+        function openPublicTreeViewer(treeId) {
+            const tree = publicFamilyTrees.find(t => t.id === treeId);
+            if (!tree) return;
+            publicViewerTree = tree;
+            publicViewerZoom = 1;
+            publicViewerPanX = 0;
+            publicViewerPanY = 0;
+            document.getElementById('publicViewerTitle').textContent = `🌳 ${tree.name}`;
+            document.getElementById('publicTreeViewer').classList.add('active');
+            renderPublicTreeViewer(tree);
+            requestAnimationFrame(() => fitPublicTreeToViewport(tree));
+        }
+
+        function closePublicTreeViewer() {
+            document.getElementById('publicTreeViewer').classList.remove('active');
+            publicViewerTree = null;
+        }
+
+        function adjustPublicTreeZoom(delta) {
+            publicViewerZoom = Math.max(0.35, Math.min(2.5, publicViewerZoom + delta));
+            applyPublicTreeTransform();
+        }
+
+        function resetPublicTreeView() {
+            publicViewerZoom = 1;
+            publicViewerPanX = 0;
+            publicViewerPanY = 0;
+            if (publicViewerTree) fitPublicTreeToViewport(publicViewerTree);
+        }
+
+        function applyPublicTreeTransform() {
+            const world = document.getElementById('publicTreeWorld');
+            if (!world) return;
+            world.style.transform = `translate(${publicViewerPanX}px, ${publicViewerPanY}px) scale(${publicViewerZoom})`;
+        }
+
+        function fitPublicTreeToViewport(tree) {
+            const viewport = document.getElementById('publicTreeViewport');
+            if (!viewport || !tree) return;
+            const sims = (tree.sims || []).filter(s => !isAnimalSim(s));
+            if (!sims.length) return;
+
+            const minX = Math.min(...sims.map(s => Number(s.x) || 0));
+            const minY = Math.min(...sims.map(s => Number(s.y) || 0));
+            const maxX = Math.max(...sims.map(s => (Number(s.x) || 0) + 88));
+            const maxY = Math.max(...sims.map(s => (Number(s.y) || 0) + 88));
+            const width = Math.max(88, maxX - minX);
+            const height = Math.max(88, maxY - minY);
+            const scaleX = (viewport.clientWidth - 100) / width;
+            const scaleY = (viewport.clientHeight - 120) / height;
+            publicViewerZoom = Math.max(0.35, Math.min(1.35, Math.min(scaleX, scaleY)));
+            publicViewerPanX = (viewport.clientWidth - width * publicViewerZoom) / 2 - minX * publicViewerZoom;
+            publicViewerPanY = (viewport.clientHeight - height * publicViewerZoom) / 2 - minY * publicViewerZoom;
+            applyPublicTreeTransform();
+        }
+
+        function renderPublicTreeViewer(tree) {
+            const world = document.getElementById('publicTreeWorld');
+            const svg = document.getElementById('publicTreeSvg');
+            if (!world || !svg || !tree) return;
+            world.querySelectorAll('.public-tree-node').forEach(node => node.remove());
+            svg.innerHTML = '';
+
+            const visibleSims = (tree.sims || []).filter(s => !isAnimalSim(s));
+            visibleSims.forEach(sim => {
+                normalizeSimExtraFields(sim);
+                const node = document.createElement('div');
+                node.className = 'public-tree-node';
+                node.style.left = `${Number(sim.x) || 0}px`;
+                node.style.top = `${Number(sim.y) || 0}px`;
+
+                const avatar = document.createElement('div');
+                avatar.className = 'public-tree-avatar';
+                if (sim.color) avatar.style.borderColor = sim.color;
+                if (sim.image) {
+                    avatar.style.backgroundImage = `url(${JSON.stringify(sim.image)})`;
+                    if (sim.imageTransform) {
+                        const t = sim.imageTransform;
+                        avatar.style.backgroundImage = `url(${JSON.stringify(sim.image)})`;
+                        avatar.style.transform = `rotate(${t.rotate || 0}deg) scale(${t.scale || 1})`;
+                        avatar.style.filter = t.filter || 'none';
+                    }
+                } else {
+                    avatar.textContent = '👤';
+                    if (sim.isDead) avatar.classList.add('avatar-dead');
+                }
+                if (sim.isDead) avatar.classList.add('avatar-dead');
+
+                const label = document.createElement('div');
+                label.className = 'public-tree-label';
+                label.textContent = `${sim.firstName || ''} ${sim.lastName || ''}`.trim() || 'Névtelen Sim';
+
+                const special = document.createElement('div');
+                special.className = 'public-tree-special';
+                const occultIcons = {'Idegen':'👽','Vámpír':'🧛','Sellő':'🧜','Varázsló':'🧙','Farkasember':'🐺','Szellem':'👻','NövénySim':'🌱'};
+                const titleIcons = {'Herceg':'👑','Hercegnő':'👑','Király':'👑','Királynő':'👑','Gróf':'🎩','Grófnő':'🎩','Báró':'🎖️','Bárónő':'🎖️','Úr':'🏅','Úrnő':'🏅'};
+                if (occultIcons[sim.occult]) { const el=document.createElement('span'); el.textContent=occultIcons[sim.occult]; special.appendChild(el); }
+                if (titleIcons[sim.title]) { const el=document.createElement('span'); el.textContent=titleIcons[sim.title]; special.appendChild(el); }
+
+                node.appendChild(avatar);
+                node.appendChild(label);
+                if (special.children.length) node.appendChild(special);
+
+                const animalIds = Array.isArray(sim.animalIds) ? sim.animalIds : [];
+                let animalTop = 8;
+                animalIds.forEach(animalId => {
+                    const animal = (tree.sims || []).find(s => s.id === animalId);
+                    if (!animal || !isAnimalSim(animal)) return;
+                    const a = document.createElement('div');
+                    a.className = 'public-tree-animal';
+                    a.style.top = `${animalTop}px`;
+                    if (animal.image) {
+                        const img = document.createElement('img'); img.src = animal.image; a.appendChild(img);
+                    } else {
+                        a.textContent = ({'Kutya':'🐕','Macska':'🐱','Ló':'🐴','Más állat':'🐾'})[animal.species] || '🐾';
+                    }
+                    node.appendChild(a); animalTop += 24;
+                });
+
+                world.appendChild(node);
+            });
+
+            // Szülő -> gyermek vonalak
+            visibleSims.forEach(child => {
+                const parentIds = Array.isArray(child.parentIds) ? child.parentIds.filter(Boolean) : (child.parentId ? [child.parentId] : []);
+                const parents = parentIds.map(id => (tree.sims || []).find(s => s.id === id)).filter(s => s && !isAnimalSim(s));
+                if (!parents.length) return;
+                const startX = parents.length === 2 ? ((parents[0].x + 44) + (parents[1].x + 44)) / 2 : parents[0].x + 44;
+                const startY = parents.length === 2 ? ((parents[0].y + 88) + (parents[1].y + 88)) / 2 : parents[0].y + 88;
+                const endX = child.x + 44, endY = child.y, midY = startY + (endY - startY) / 2;
+                const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+                path.setAttribute('d',`M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`);
+                path.setAttribute('class','line-child'); svg.appendChild(path);
+            });
+
+            // Partner vonalak
+            const rendered = new Set();
+            visibleSims.forEach(sim => {
+                const partnerIds = Array.isArray(sim.partnerIds) ? sim.partnerIds : (sim.partnerId ? [sim.partnerId] : []);
+                partnerIds.forEach(partnerId => {
+                    const partner = (tree.sims || []).find(s => s.id === partnerId);
+                    if (!partner || isAnimalSim(partner)) return;
+                    const key = [sim.id, partner.id].sort().join('|');
+                    if (rendered.has(key)) return;
+                    rendered.add(key);
+                    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+                    const startX=sim.x+88,startY=sim.y+44,endX=partner.x,endY=partner.y+44,midX=startX+(endX-startX)/2;
+                    path.setAttribute('d',`M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
+                    const relationType=(sim.connectionTypes&&sim.connectionTypes[partnerId])||sim.relationType;
+                    const isLove=['Házas','Jegyes','Szerelmes','Özvegy',null].includes(relationType);
+                    path.setAttribute('class',isLove?'line-love':'line-child');
+                    svg.appendChild(path);
+                });
+            });
+
+            applyPublicTreeTransform();
+        }
+
+        // A publikus nézetben nincs szerkesztő eseménykezelő: a node-ok csak vizuális elemek.
+        document.addEventListener('DOMContentLoaded', () => {
+            const viewport = document.getElementById('publicTreeViewport');
+            if (!viewport) return;
+            viewport.addEventListener('mousedown', e => {
+                if (e.button !== 0) return;
+                publicViewerDragging = true;
+                publicViewerDragStart = {x:e.clientX,y:e.clientY};
+                publicViewerPanStart = {x:publicViewerPanX,y:publicViewerPanY};
+            });
+            window.addEventListener('mousemove', e => {
+                if (!publicViewerDragging) return;
+                publicViewerPanX = publicViewerPanStart.x + (e.clientX - publicViewerDragStart.x);
+                publicViewerPanY = publicViewerPanStart.y + (e.clientY - publicViewerDragStart.y);
+                applyPublicTreeTransform();
+            });
+            window.addEventListener('mouseup', () => { publicViewerDragging = false; });
+            viewport.addEventListener('wheel', e => {
+                if (!publicViewerTree) return;
+                e.preventDefault();
+                adjustPublicTreeZoom(e.deltaY < 0 ? 0.1 : -0.1);
+            }, {passive:false});
+        });
 
         async function handleLogout() {
             await supabaseClient.auth.signOut();
@@ -3545,7 +3953,7 @@ function openSimsFamily(treeId) {
                 const timestamp = Date.now();
                 const { data, error } = await supabaseClient
                     .from('family_trees')
-                    .select('id, name, background_config, sims, journal, created_at, updated_at')
+                    .select('id, name, background_config, sims, journal, is_public, created_at, updated_at')
                     .eq('user_id', currentUser.id)
                     .order('created_at', { ascending: false })
                     .limit(100);
@@ -3562,7 +3970,8 @@ function openSimsFamily(treeId) {
                         name: tree.name,
                         bgConfig: tree.background_config || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
                         sims: tree.sims || [],
-                        journal: tree.journal || []
+                        journal: tree.journal || [],
+                        isPublic: !!tree.is_public
                     }));
 
                     if (familyTrees.length > 0) {
@@ -3585,7 +3994,7 @@ function openSimsFamily(treeId) {
         }
 
         async function saveFamilyTreeToSupabase(tree) {
-            if (!currentUser || !supabaseClient) return;
+            if (!currentUser || !supabaseClient) return true;
 
             try {
                 // Adatellenőrzés - biztosítjuk, hogy az adatok érvényesek
@@ -3596,6 +4005,7 @@ function openSimsFamily(treeId) {
                     background_config: tree.bgConfig || {},
                     sims: tree.sims || [],
                     journal: tree.journal || [],
+                    is_public: !!tree.isPublic,
                     updated_at: new Date()
                 };
 
@@ -3633,7 +4043,7 @@ function openSimsFamily(treeId) {
                             }
                         } else {
                             console.log("Családfa sikeresen mentve:", tree.name);
-                            return; // Sikeres mentés, kilépünk
+                            return true; // Sikeres mentés, kilépünk
                         }
                     } catch (timeoutError) {
                         lastError = timeoutError;
@@ -3662,13 +4072,16 @@ function openSimsFamily(treeId) {
                     }
                     
                     alert("Hiba a családfa mentésekor: " + errorMsg);
+                    return false;
                 }
+                return false;
             } catch (error) {
                 console.error("Váratlan hiba a családfa mentésekor:", error);
                 const errorMsg = typeof error === 'object' 
                     ? JSON.stringify(error) 
                     : error.message || error;
                 alert("Váratlan hiba a családfa mentésekor: " + errorMsg);
+                return false;
             }
         }
 
