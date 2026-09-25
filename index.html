@@ -874,6 +874,61 @@
         .avatar-crop-view:hover .avatar-crop-overlay { opacity: 1; }
         .inline-controls-grid { width: 100%; display: flex; flex-direction: column; gap: 8px; }
 
+
+        /* FELHASZNÁLÓI PROFIL MODAL */
+        .user-profile-modal-card {
+            width: 460px;
+            max-width: 92%;
+        }
+        .user-profile-avatar-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0 20px;
+        }
+        .user-profile-avatar {
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            background: var(--card-solid);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            box-shadow: 0 8px 24px var(--shadow-color);
+        }
+        .user-profile-avatar-placeholder { font-size: 42px; }
+        .profile-avatar-actions { display: flex; gap: 7px; }
+        .profile-avatar-btn {
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-color);
+            padding: 7px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .profile-avatar-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .profile-email-note {
+            margin-top: 4px;
+            font-size: 9px;
+            line-height: 1.4;
+            color: var(--subtext-color);
+        }
+        .profile-save-status {
+            min-height: 16px;
+            margin-top: 8px;
+            text-align: center;
+            color: var(--accent-color);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
         /* MODALOK ÉS MENÜK */
         .context-menu {
             position: fixed; display: none; background-color: var(--nav-bg);
@@ -1437,6 +1492,54 @@
         <div class="context-menu-item" onclick="contextAction('disconnect')">✂️ Kapcsolatok törlése</div>
         <div class="context-menu-item" onclick="contextAction('lock')" id="contextLockLabel">🔒 Zárolás</div>
         <div class="context-menu-item" style="color: #ff5e7e;" onclick="contextAction('delete')">🗑️ Karakter törlése</div>
+    </div>
+
+
+    <!-- FELHASZNÁLÓI PROFIL MODAL -->
+    <div class="modal-overlay" id="userProfileModal">
+        <div class="modal-card user-profile-modal-card">
+            <button type="button" class="close-btn" onclick="closeUserProfile()">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title">👤 Profilom</h3>
+            </div>
+
+            <div class="user-profile-avatar-wrap">
+                <div class="user-profile-avatar" id="userProfileAvatarPreview">
+                    <span class="user-profile-avatar-placeholder" id="userProfileAvatarPlaceholder">👤</span>
+                </div>
+                <div class="profile-avatar-actions">
+                    <button type="button" class="profile-avatar-btn" onclick="triggerUserProfileAvatarInput()">📷 Kép módosítása</button>
+                    <button type="button" class="profile-avatar-btn" onclick="removeUserProfileAvatar()">🗑️ Törlés</button>
+                </div>
+                <input type="file" id="userProfileAvatarInput" accept="image/*" style="display:none;" onchange="handleUserProfileAvatarUpload(event)">
+            </div>
+
+            <form id="userProfileForm" onsubmit="saveUserProfile(event)">
+                <div class="form-group">
+                    <label for="userProfileName">Megjelenő név</label>
+                    <input type="text" id="userProfileName" maxlength="40" placeholder="A neved">
+                </div>
+
+                <div class="form-group">
+                    <label for="userProfileEmail">Email cím</label>
+                    <input type="email" id="userProfileEmail" required placeholder="pelda@email.com">
+                    <div class="profile-email-note">Az email cím módosítása után a Supabase beállításaitól függően megerősítő email érkezhet az új címre.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="userProfileBio">Bemutatkozás</label>
+                    <textarea id="userProfileBio" rows="3" maxlength="300" placeholder="Pár szó magadról..."></textarea>
+                </div>
+
+                <div class="profile-save-status" id="profileSaveStatus"></div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-danger" onclick="handleLogout()">Kilépés</button>
+                    <button type="button" class="btn-secondary" onclick="closeUserProfile()">Mégse</button>
+                    <button type="submit" class="btn-primary solid">💾 Mentés</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- SIM CARD & SZERKESZTŐ MODAL -->
@@ -2365,14 +2468,123 @@
         }
 
         function openProfile() {
-            if (currentUser) {
-                if (confirm('Szeretnéd kijelentkezni?')) {
-                    handleLogout();
-                }
+            if (!currentUser) return;
+
+            document.getElementById('userProfileName').value = userProfile.name || currentUser.email.split('@')[0];
+            document.getElementById('userProfileEmail').value = currentUser.email || '';
+            document.getElementById('userProfileBio').value = userProfile.bio || '';
+            document.getElementById('profileSaveStatus').textContent = '';
+            updateUserProfileAvatarPreview();
+            document.getElementById('userProfileModal').classList.add('active');
+        }
+
+        function closeUserProfile() {
+            document.getElementById('userProfileModal').classList.remove('active');
+        }
+
+        function triggerUserProfileAvatarInput() {
+            document.getElementById('userProfileAvatarInput').click();
+        }
+
+        function updateUserProfileAvatarPreview() {
+            const preview = document.getElementById('userProfileAvatarPreview');
+            const placeholder = document.getElementById('userProfileAvatarPlaceholder');
+            if (!preview || !placeholder) return;
+
+            if (userProfile.avatar) {
+                preview.style.backgroundImage = `url("${userProfile.avatar}")`;
+                placeholder.style.display = 'none';
             } else {
-                alert('Profilom megnyitása!');
+                preview.style.backgroundImage = 'none';
+                placeholder.style.display = 'block';
             }
         }
+
+        async function handleUserProfileAvatarUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const status = document.getElementById('profileSaveStatus');
+            status.textContent = 'Kép feltöltése...';
+
+            try {
+                const compressedImage = await compressImage(file, 500, 500, 0.78);
+                const uploadedUrl = await uploadImageToStorage(compressedImage, 'profile-avatars');
+                if (uploadedUrl) {
+                    userProfile.avatar = uploadedUrl;
+                    updateUserProfileAvatarPreview();
+                    status.textContent = 'Profilkép feltöltve. A mentéshez kattints a Mentés gombra.';
+                }
+            } catch (error) {
+                console.error('Profilkép feltöltési hiba:', error);
+                status.textContent = 'Nem sikerült feltölteni a profilképet.';
+            } finally {
+                event.target.value = '';
+            }
+        }
+
+        function removeUserProfileAvatar() {
+            userProfile.avatar = '';
+            updateUserProfileAvatarPreview();
+            document.getElementById('profileSaveStatus').textContent = 'Profilkép törlésre jelölve. A Mentés gombbal véglegesítheted.';
+        }
+
+        async function saveUserProfile(event) {
+            event.preventDefault();
+            if (!currentUser || !supabaseClient) return;
+
+            const name = document.getElementById('userProfileName').value.trim();
+            const email = document.getElementById('userProfileEmail').value.trim();
+            const bio = document.getElementById('userProfileBio').value.trim();
+            const status = document.getElementById('profileSaveStatus');
+
+            if (!name) {
+                status.textContent = 'Adj meg egy nevet!';
+                return;
+            }
+            if (!email) {
+                status.textContent = 'Adj meg egy email címet!';
+                return;
+            }
+
+            status.textContent = 'Mentés...';
+
+            try {
+                const { error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .upsert({
+                        id: currentUser.id,
+                        display_name: name,
+                        avatar_url: userProfile.avatar || '',
+                        bio: bio
+                    }, { onConflict: 'id' });
+
+                if (profileError) throw profileError;
+
+                let emailChanged = false;
+                if (email !== currentUser.email) {
+                    const { error: emailError } = await supabaseClient.auth.updateUser({ email });
+                    if (emailError) throw emailError;
+                    emailChanged = true;
+                }
+
+                userProfile.name = name;
+                userProfile.bio = bio;
+                updateProfileButton();
+
+                status.textContent = emailChanged
+                    ? 'Profil mentve! Az új email cím megerősítést kérhet.'
+                    : 'Profil sikeresen mentve!';
+            } catch (error) {
+                console.error('Profil mentési hiba:', error);
+                status.textContent = 'Nem sikerült menteni: ' + (error.message || 'ismeretlen hiba');
+            }
+        }
+
+
+        document.getElementById('userProfileModal').addEventListener('click', function(event) {
+            if (event.target === this) closeUserProfile();
+        });
 
         toggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('open');
@@ -3234,7 +3446,11 @@ function openSimsFamily(treeId) {
         function updateProfileButton() {
             const profileBtn = document.getElementById('profileBtn');
             if (currentUser) {
-                profileBtn.innerHTML = `👤 <span>${userProfile.name || currentUser.email.split('@')[0]}</span>`;
+                const name = userProfile.name || currentUser.email.split('@')[0];
+                const avatar = userProfile.avatar;
+                profileBtn.innerHTML = avatar
+                    ? `<span style="width:22px;height:22px;border-radius:50%;background-image:url("${avatar}");background-size:cover;background-position:center;display:inline-block;"></span><span>${name}</span>`
+                    : `👤 <span>${name}</span>`;
             } else {
                 profileBtn.innerHTML = `👤 <span>Profilom</span>`;
             }
