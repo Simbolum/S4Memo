@@ -704,6 +704,27 @@
         .journal-btn { background: none; border: none; font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 4px; opacity: 0.7; }
         .journal-btn:hover { opacity: 1; background-color: transparent; }
 
+        /* SIM NAPLÓ */
+        .sim-journal-toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px; }
+        .sim-journal-intro { color:var(--subtext-color); font-size:12px; line-height:1.5; margin:0; }
+        .sim-journal-list { display:flex; flex-direction:column; gap:10px; max-height:420px; overflow:auto; padding-right:4px; }
+        .sim-journal-card { position:relative; padding:13px 14px; border:1px solid var(--border-color); border-radius:14px; background:rgba(255,255,255,.025); }
+        .sim-journal-card:hover { border-color:var(--accent-color); background:rgba(46,213,115,.045); }
+        .sim-journal-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+        .sim-journal-title { font-size:13px; font-weight:800; color:var(--text-color); }
+        .sim-journal-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; }
+        .sim-journal-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 7px; border-radius:999px; background:rgba(46,213,115,.10); color:var(--accent-color); font-size:9px; font-weight:800; }
+        .sim-journal-date { color:var(--subtext-color); font-size:9px; font-weight:700; }
+        .sim-journal-content { margin-top:9px; color:var(--subtext-color); font-size:11px; line-height:1.55; white-space:pre-wrap; word-break:break-word; }
+        .sim-journal-image { width:100%; max-height:180px; object-fit:cover; border-radius:10px; margin-top:10px; cursor:pointer; border:1px solid var(--border-color); }
+        .sim-journal-actions { display:flex; justify-content:flex-end; gap:5px; margin-top:8px; }
+        .sim-journal-action { border:0; background:transparent; color:var(--subtext-color); cursor:pointer; font-size:10px; padding:4px 7px; border-radius:7px; }
+        .sim-journal-action:hover { color:var(--text-color); background:rgba(255,255,255,.06); }
+        .sim-journal-empty { text-align:center; padding:30px 12px; border:1px dashed var(--border-color); border-radius:14px; color:var(--subtext-color); font-size:11px; }
+        .sim-journal-modal-image-preview { width:100%; max-height:180px; object-fit:cover; border-radius:12px; border:1px solid var(--border-color); margin-top:8px; display:none; }
+        .public-sim-journal-card { padding:12px 13px; border:1px solid var(--border-color); border-radius:13px; background:rgba(255,255,255,.025); margin-bottom:9px; }
+        .public-sim-journal-card .sim-journal-content { color:var(--subtext-color); }
+
         /* AKTIVITÁS STÍLUSOK */
         .activity-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
         .activity-header-left h1 { margin: 0 0 6px 0; font-size: 28px; font-weight: 800; }
@@ -2121,14 +2142,77 @@
                 </form>
             </div>
 
-            <!-- FÜL 2: Történet/Napló -->
+            <!-- FÜL 2: Személyes Napló -->
             <div class="tab-content" id="tabContentDiary">
                 <div style="padding: 10px 0;">
-                    <h4 style="margin-top:0;">Személyes Történet</h4>
-                    <p id="modalDiaryText" style="font-size: 13px; color: var(--subtext-color); line-height: 1.5;">Nincs még ehhez a Simhez kapcsolódó bejegyzés.</p>
+                    <div class="sim-journal-toolbar">
+                        <div>
+                            <h4 style="margin:0 0 4px 0;">📖 Személyes napló</h4>
+                            <p class="sim-journal-intro">Itt rögzítheted a Sim fontosabb életeseményeit, emlékeit és történeteit időrendben.</p>
+                        </div>
+                        <button type="button" class="btn-primary" onclick="openSimJournalEntryModal()">+ Bejegyzés</button>
+                    </div>
+                    <div id="simJournalEntriesList" class="sim-journal-list"></div>
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- SIM SZEMÉLYES NAPLÓ MODAL -->
+    <div class="modal-overlay" id="simJournalEntryModal">
+        <div class="modal-card">
+            <button type="button" class="close-btn" onclick="closeSimJournalEntryModal()">&times;</button>
+            <h2 id="simJournalEntryModalTitle">Új naplóbejegyzés</h2>
+            <form id="simJournalEntryForm" onsubmit="saveSimJournalEntry(event)">
+                <div class="form-group">
+                    <label>Esemény típusa</label>
+                    <select id="simJournalTypeInput">
+                        <option value="Egyéb">✨ Egyéb</option>
+                        <option value="Születés">👶 Születés</option>
+                        <option value="Születésnap">🎂 Születésnap</option>
+                        <option value="Kapcsolat">❤️ Új kapcsolat</option>
+                        <option value="Házasság">💍 Házasság</option>
+                        <option value="Szakítás">💔 Szakítás</option>
+                        <option value="Gyermek">🍼 Gyermek születése</option>
+                        <option value="Költözés">🏠 Költözés</option>
+                        <option value="Karrier">💼 Karrier</option>
+                        <option value="Tanulás">🎓 Tanulás</option>
+                        <option value="Eredmény">🏆 Eredmény</option>
+                        <option value="Halál">⚰️ Halál</option>
+                        <option value="Családi esemény">👨‍👩‍👧 Családi esemény</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cím</label>
+                    <input type="text" id="simJournalTitleInput" placeholder="Pl.: Taylor és Aurora esküvője" required>
+                </div>
+                <div class="form-group">
+                    <label>Dátum</label>
+                    <input type="date" id="simJournalDateInput" required>
+                </div>
+                <div class="form-group">
+                    <label>Helyszín <span style="color:var(--subtext-color);font-weight:400;">(opcionális)</span></label>
+                    <input type="text" id="simJournalLocationInput" placeholder="Pl.: Willow Creek, családi ház">
+                </div>
+                <div class="form-group">
+                    <label>Kapcsolódó Sim <span style="color:var(--subtext-color);font-weight:400;">(opcionális)</span></label>
+                    <select id="simJournalRelatedSimInput"><option value="">Nincs</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Történet</label>
+                    <textarea id="simJournalContentInput" rows="6" placeholder="Írd le, mi történt..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Kép <span style="color:var(--subtext-color);font-weight:400;">(opcionális)</span></label>
+                    <input type="file" id="simJournalImageInput" accept="image/*" onchange="previewSimJournalImage(event)">
+                    <img id="simJournalImagePreview" class="sim-journal-modal-image-preview" alt="Napló kép előnézet">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeSimJournalEntryModal()">Mégse</button>
+                    <button type="submit" class="btn-primary">Mentés</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -2371,6 +2455,8 @@
         let editingSimId = null;
         let editingJournalId = null;
         let editingJournalTreeId = null;
+        let editingSimJournalId = null;
+        let tempSimJournalImage = '';
         let contextSimId = null;
         let selectedSimId = null;
         let selectedConnectionTargetId = null;
@@ -3764,6 +3850,7 @@ function openSimsFamily(treeId) {
             if (!sim.title) sim.title = 'Nincs';
             if (!sim.species) sim.species = sim.faj || 'Ember';
             if (!sim.gender) sim.gender = sim.nem || 'Egyéb';
+            if (!Array.isArray(sim.journal)) sim.journal = [];
 
             // Régi családfa-adatokból is létrehozzuk a több szülőt támogató tömböt.
             if (!Array.isArray(sim.parentIds)) {
@@ -4434,6 +4521,10 @@ function openSimsFamily(treeId) {
                     <h4>🔗 Kapcsolatok</h4>
                     <div class="public-sim-relations" id="publicSimRelations"></div>
                 </div>
+                <div class="public-sim-section" id="publicSimJournalSection">
+                    <h4>📖 Napló</h4>
+                    <div id="publicSimJournal"></div>
+                </div>
             `;
 
             const infoGrid = document.getElementById('publicSimInfoGrid');
@@ -4515,6 +4606,20 @@ function openSimsFamily(treeId) {
                     }
                     card.onclick = () => openPublicGalleryLightbox(src, caption);
                     galleryGrid.appendChild(card);
+                });
+            }
+
+            const publicJournal = document.getElementById('publicSimJournal');
+            const journalEntries = [...(sim.journal || [])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+            if (!journalEntries.length) {
+                publicJournal.innerHTML = '<div class="public-sim-empty">Nincs még nyilvános naplóbejegyzés.</div>';
+            } else {
+                journalEntries.forEach(entry => {
+                    const card=document.createElement('div'); card.className='public-sim-journal-card';
+                    const related=entry.relatedSimId ? (tree.sims||[]).find(s=>s.id===entry.relatedSimId) : null;
+                    const relatedName=related ? publicSimDisplayName(related) : '';
+                    card.innerHTML=`<div class="sim-journal-title">${simJournalTypeIcon(entry.type)} ${escapeHtml(entry.title||'')}</div><div class="sim-journal-meta"><span class="sim-journal-pill">${escapeHtml(entry.type||'Egyéb')}</span>${entry.date?`<span class="sim-journal-date">📅 ${escapeHtml(entry.date)}</span>`:''}${entry.location?`<span class="sim-journal-date">📍 ${escapeHtml(entry.location)}</span>`:''}${relatedName?`<span class="sim-journal-date">👤 ${escapeHtml(relatedName)}</span>`:''}</div><div class="sim-journal-content">${escapeHtml(entry.content||'')}</div>${entry.image?`<img class="sim-journal-image" src="${escapeHtml(entry.image)}" alt="Napló kép">`:''}`;
+                    const img=card.querySelector('.sim-journal-image'); if(img) img.onclick=()=>openPublicGalleryLightbox(entry.image,entry.title||'Napló kép'); publicJournal.appendChild(card);
                 });
             }
 
@@ -5046,6 +5151,88 @@ function openSimsFamily(treeId) {
                 document.querySelectorAll('#simModal .tab-btn')[1].classList.add('active');
                 document.getElementById('tabContentDiary').classList.add('active');
             }
+        }
+
+        function simJournalTypeIcon(type) {
+            const icons = { 'Születés':'👶','Születésnap':'🎂','Kapcsolat':'❤️','Házasság':'💍','Szakítás':'💔','Gyermek':'🍼','Költözés':'🏠','Karrier':'💼','Tanulás':'🎓','Eredmény':'🏆','Halál':'⚰️','Családi esemény':'👨‍👩‍👧','Egyéb':'✨' };
+            return icons[type] || '✨';
+        }
+
+        function renderSimJournalEntries(sim) {
+            const list = document.getElementById('simJournalEntriesList');
+            if (!list || !sim) return;
+            normalizeSimExtraFields(sim);
+            const entries = [...(sim.journal || [])].sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
+            list.innerHTML = '';
+            if (!entries.length) {
+                list.innerHTML = '<div class="sim-journal-empty">📖 Még nincs naplóbejegyzés ehhez a Simhez.<br><span style="opacity:.75;">Adj hozzá egy fontos eseményt, emléket vagy történetet.</span></div>';
+                return;
+            }
+            const tree = getCurrentTree();
+            entries.forEach(entry => {
+                const card = document.createElement('div'); card.className='sim-journal-card';
+                const related = entry.relatedSimId && tree ? tree.sims.find(s=>s.id===entry.relatedSimId) : null;
+                const relatedName = related ? `${related.firstName||''} ${related.lastName||''}`.trim() : '';
+                card.innerHTML = `
+                    <div class="sim-journal-top">
+                        <div>
+                            <div class="sim-journal-title">${escapeHtml(entry.title || 'Névtelen esemény')}</div>
+                            <div class="sim-journal-meta"><span class="sim-journal-pill">${simJournalTypeIcon(entry.type)} ${escapeHtml(entry.type || 'Egyéb')}</span>${entry.date ? `<span class="sim-journal-date">📅 ${escapeHtml(entry.date)}</span>` : ''}${entry.location ? `<span class="sim-journal-date">📍 ${escapeHtml(entry.location)}</span>` : ''}${relatedName ? `<span class="sim-journal-date">👤 ${escapeHtml(relatedName)}</span>` : ''}</div>
+                        </div>
+                    </div>
+                    <div class="sim-journal-content">${escapeHtml(entry.content || '')}</div>
+                    ${entry.image ? `<img class="sim-journal-image" src="${escapeHtml(entry.image)}" alt="Napló kép">` : ''}
+                    <div class="sim-journal-actions">
+                        <button type="button" class="sim-journal-action" data-edit="${escapeHtml(entry.id)}">✏️ Szerkesztés</button>
+                        <button type="button" class="sim-journal-action" data-delete="${escapeHtml(entry.id)}">🗑️ Törlés</button>
+                    </div>`;
+                const image = card.querySelector('.sim-journal-image'); if (image) image.onclick=()=>openPublicGalleryLightbox(entry.image, entry.title||'Napló kép');
+                card.querySelector('[data-edit]').onclick=()=>openSimJournalEntryModal(entry.id);
+                card.querySelector('[data-delete]').onclick=()=>deleteSimJournalEntry(entry.id);
+                list.appendChild(card);
+            });
+        }
+
+        function openSimJournalEntryModal(entryId=null) {
+            const tree=getCurrentTree(); const sim=tree && tree.sims.find(s=>s.id===editingSimId); if(!sim) return;
+            normalizeSimExtraFields(sim); editingSimJournalId=entryId; tempSimJournalImage='';
+            const modal=document.getElementById('simJournalEntryModal');
+            const title=document.getElementById('simJournalEntryModalTitle');
+            const related=document.getElementById('simJournalRelatedSimInput');
+            related.innerHTML='<option value="">Nincs</option>';
+            tree.sims.filter(s=>s.id!==sim.id).forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.firstName||''} ${s.lastName||''}`.trim(); related.appendChild(o); });
+            const entry=entryId ? (sim.journal||[]).find(e=>e.id===entryId) : null;
+            title.textContent=entry?'Naplóbejegyzés szerkesztése':'Új naplóbejegyzés';
+            document.getElementById('simJournalTypeInput').value=entry?.type||'Egyéb';
+            document.getElementById('simJournalTitleInput').value=entry?.title||'';
+            document.getElementById('simJournalDateInput').value=entry?.date||new Date().toISOString().split('T')[0];
+            document.getElementById('simJournalLocationInput').value=entry?.location||'';
+            document.getElementById('simJournalRelatedSimInput').value=entry?.relatedSimId||'';
+            document.getElementById('simJournalContentInput').value=entry?.content||'';
+            tempSimJournalImage=entry?.image||'';
+            const preview=document.getElementById('simJournalImagePreview'); preview.src=tempSimJournalImage||''; preview.style.display=tempSimJournalImage?'block':'none';
+            modal.classList.add('active');
+        }
+
+        function closeSimJournalEntryModal(){ const modal=document.getElementById('simJournalEntryModal'); if(modal) modal.classList.remove('active'); editingSimJournalId=null; tempSimJournalImage=''; }
+
+        function previewSimJournalImage(event){ const file=event.target.files?.[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ tempSimJournalImage=e.target.result; const p=document.getElementById('simJournalImagePreview'); p.src=tempSimJournalImage; p.style.display='block'; }; reader.readAsDataURL(file); }
+
+        async function saveSimJournalEntry(event){
+            event.preventDefault(); const tree=getCurrentTree(); const sim=tree&&tree.sims.find(s=>s.id===editingSimId); if(!sim) return;
+            normalizeSimExtraFields(sim); const type=document.getElementById('simJournalTypeInput').value, title=document.getElementById('simJournalTitleInput').value.trim(), date=document.getElementById('simJournalDateInput').value, location=document.getElementById('simJournalLocationInput').value.trim(), relatedSimId=document.getElementById('simJournalRelatedSimInput').value, content=document.getElementById('simJournalContentInput').value.trim();
+            if(!title||!content){ alert('A cím és a történet megadása kötelező.'); return; }
+            let image=tempSimJournalImage;
+            const file=document.getElementById('simJournalImageInput').files?.[0];
+            if(file && image){ try { image=await uploadImageToStorage(image,'journal'); } catch(e){ console.warn(e); } }
+            const payload={id:editingSimJournalId||('sj_'+Date.now()), type,title,date,location,relatedSimId:relatedSimId||null,content,image:image||''};
+            if(editingSimJournalId) sim.journal=(sim.journal||[]).map(e=>e.id===editingSimJournalId?payload:e); else sim.journal.push(payload);
+            markTreeDirty(); renderSimJournalEntries(sim); closeSimJournalEntryModal();
+        }
+
+        function deleteSimJournalEntry(entryId){
+            const tree=getCurrentTree(); const sim=tree&&tree.sims.find(s=>s.id===editingSimId); if(!sim) return;
+            if(confirm('Biztosan törölni szeretnéd ezt a naplóbejegyzést?')){ sim.journal=(sim.journal||[]).filter(e=>e.id!==entryId); markTreeDirty(); renderSimJournalEntries(sim); }
         }
 
         function startInlineNameEdit() {
@@ -5643,8 +5830,8 @@ function openSimsFamily(treeId) {
             renderSimConnectionsInEditor(simId);
             document.getElementById('editTraits').value = sim.traits || '';
 
-            document.getElementById('modalDiaryText').innerText = sim.traits ? sim.traits : 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
             normalizeSimGallery(sim);
+            renderSimJournalEntries(sim);
             
             renderSimLifeGallery(sim);
 
