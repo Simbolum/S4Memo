@@ -336,6 +336,118 @@
     padding: 12px 0;
 }
 
+
+/* SZÉP, KATTINTHATÓ SIM GOMBOK A "SIMEK" NÉZETBEN */
+.sim-library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+    width: 100%;
+}
+
+.sim-library-card {
+    position: relative;
+    width: 100%;
+    min-height: 92px;
+    padding: 12px 42px 12px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    appearance: none;
+    -webkit-appearance: none;
+    background: linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.018));
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    box-shadow: 0 6px 18px var(--shadow-color);
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.sim-library-card::after {
+    content: '✎';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 27px;
+    height: 27px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: var(--card-solid);
+    border: 1px solid var(--border-color);
+    color: var(--subtext-color);
+    font-size: 12px;
+    box-shadow: 0 3px 8px var(--shadow-color);
+    transition: all .2s ease;
+}
+
+.sim-library-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-color);
+    background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.025));
+    box-shadow: 0 10px 24px var(--active-glow);
+}
+
+.sim-library-card:hover::after {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+    transform: translateY(-50%) scale(1.08);
+}
+
+.sim-library-card:active {
+    transform: translateY(-1px) scale(.99);
+}
+
+.sim-library-avatar {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--card-solid);
+    background-size: cover;
+    background-position: center;
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    font-size: 25px;
+}
+
+.sim-library-name {
+    min-width: 0;
+    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sim-library-meta {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--subtext-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 560px) {
+    .sim-library-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
         /* Sötét lenyíló opciók – a natív fehér lista helyett */
         select option {
             background: #241c19 !important;
@@ -2829,19 +2941,16 @@ function openSimsFamily(treeId) {
     // Simek rácsa
     const simsGrid = document.createElement('div');
 
-    simsGrid.style.cssText = `
-        display:grid;
-        grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
-        gap:16px;
-    `;
+    simsGrid.className = 'sim-library-grid';
 
     sims.forEach(sim => {
         normalizeSimExtraFields(sim);
 
-        const card = document.createElement('div');
+        const card = document.createElement('button');
 
+        card.type = 'button';
         card.className = 'sim-library-card';
-        card.title = 'Megnyitás a családfában';
+        card.title = 'Kattints a Sim szerkesztéséhez';
 
         card.onclick = () => {
             currentTreeId = tree.id;
@@ -2875,6 +2984,11 @@ function openSimsFamily(treeId) {
         name.innerText =
             `${sim.firstName || ''} ${sim.lastName || ''}`.trim()
             || 'Névtelen Sim';
+
+        card.setAttribute(
+            'aria-label',
+            `Sim szerkesztése: ${name.innerText}`
+        );
 
 
         const meta = document.createElement('div');
