@@ -891,6 +891,7 @@
         .public-sim-close { position:absolute; right:14px; top:14px; z-index:3; border:1px solid var(--border-color); background:var(--card-solid); color:var(--text-color); width:34px; height:34px; border-radius:10px; cursor:pointer; font-size:18px; font-weight:800; }
         .public-sim-hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding:4px 35px 18px; }
         .public-sim-avatar { width:150px; height:150px; border-radius:50%; overflow:hidden; border:4px solid var(--accent-color); background:var(--card-solid); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-size:54px; box-shadow:0 10px 30px var(--shadow-color); }
+        .public-sim-avatar-img { width:100%; height:100%; display:block; object-fit:cover; object-position:center; }
         .public-sim-name { margin:12px 0 4px; font-size:24px; font-weight:900; color:var(--text-color); }
         .public-sim-status { font-size:11px; color:var(--subtext-color); }
         .public-sim-section { margin-top:14px; padding:15px; border:1px solid var(--border-color); border-radius:16px; background:rgba(255,255,255,.025); }
@@ -4494,14 +4495,23 @@ function openSimsFamily(treeId) {
             const name = publicSimDisplayName(sim);
             const fullName = name;
             const statusText = sim.isDead ? '💀 Halott' : '💚 Élő';
-            const avatarStyle = sim.image ? `background-image:url(${JSON.stringify(sim.image)});` : '';
+
+            // Publikus nézetben régebbi/publikált adatoknál előfordulhat, hogy a
+            // profilkép (sim.image) hiányzik, miközben a galéria első képe megvan.
+            // Ilyenkor használjuk a galéria első képét profilképként is, hogy ne
+            // jelenjen meg üres/fehér avatar.
+            // A publikus modalban ugyanazt a profilképet használjuk, amit a Sim
+            // szerkesztője is a sim.image mezőben tárol. A korábbi background-image
+            // megoldás helyett valódi <img> elemet használunk, így az ImgBB-ről
+            // érkező közvetlen kép URL biztosan képként töltődik be.
+            const profileImage = sim.image || '';
             const transform = sim.imageTransform || {};
             const avatarFilter = transform.filter && transform.filter !== 'none' ? `filter:${transform.filter};` : '';
-            const avatarTransform = transform.rotate || transform.scale ? `transform:rotate(${Number(transform.rotate)||0}deg) scale(${Number(transform.scale)||1});` : '';
+            const avatarTransform = `translate(${Number(transform.offsetX)||0}px, ${Number(transform.offsetY)||0}px) rotate(${Number(transform.rotate)||0}deg) scale(${Number(transform.scale)||1})`;
 
             content.innerHTML = `
                 <div class="public-sim-hero">
-                    <div class="public-sim-avatar ${sim.isDead ? 'avatar-dead' : ''}" style="${avatarStyle}${avatarFilter}${avatarTransform}">${sim.image ? '' : '👤'}</div>
+                    <div class="public-sim-avatar ${sim.isDead ? 'avatar-dead' : ''}">${profileImage ? `<img class="public-sim-avatar-img" src="${escapeHtml(profileImage)}" alt="Sim profilképe" referrerpolicy="no-referrer" style="filter:${avatarFilter ? transform.filter : 'none'};transform:${avatarTransform};">` : '👤'}</div>
                     <div class="public-sim-name">${escapeHtml(fullName)}</div>
                     <div class="public-sim-status">${statusText}</div>
                 </div>
