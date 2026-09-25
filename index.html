@@ -161,22 +161,22 @@
 
         /* TESTRESZABÁSI PANEL */
         .style-panel-drawer {
-            position: fixed; bottom: 24px; left: 24px; z-index: 1060;
+            position: fixed; bottom: 16px; left: 16px; z-index: 1060;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
-            border-radius: 20px; box-shadow: 0 12px 32px var(--shadow-color);
-            width: 240px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 16px; box-shadow: 0 10px 26px var(--shadow-color);
+            width: 200px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
 
         .style-panel-header {
-            padding: 10px 16px; font-weight: 800; font-size: 12px;
+            padding: 7px 12px; font-weight: 800; font-size: 10px;
             display: flex; justify-content: space-between; align-items: center;
             cursor: pointer; background: rgba(255, 255, 255, 0.05); border-bottom: 1px solid var(--border-color);
             user-select: none; letter-spacing: 0.5px;
         }
 
         .style-panel-content {
-            padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;
+            padding: 9px 10px; display: flex; flex-direction: column; gap: 8px;
             max-height: 0; opacity: 0; transition: all 0.25s ease; pointer-events: none;
         }
 
@@ -643,48 +643,48 @@
 
         /* ÚJ MODERN CSALÁDFÁK FLOATING BAR */
         .tree-left-sidebar {
-            position: absolute; top: 20px; left: 24px; width: 310px;
+            position: absolute; top: 16px; left: 16px; width: 245px;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
-            border-radius: 24px; padding: 16px; box-shadow: 0 12px 32px var(--shadow-color);
+            border-radius: 18px; padding: 10px; box-shadow: 0 10px 26px var(--shadow-color);
             z-index: 1050; display: flex; flex-direction: column; gap: 10px;
             max-height: calc(100vh - 120px); overflow-y: auto;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
 
-        .accordion-group { border-radius: 14px; transition: all 0.2s ease; }
+        .accordion-group { border-radius: 10px; transition: all 0.2s ease; }
         .accordion-header {
             width: 100%; background: none; border: none; color: var(--text-color);
             display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 4px; cursor: pointer; font-weight: 800; font-size: 11px;
+            padding: 5px 3px; cursor: pointer; font-weight: 800; font-size: 9px;
             text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;
         }
         .accordion-header:hover { opacity: 1; }
-        .accordion-header .header-title { display: flex; align-items: center; gap: 8px; }
-        .accordion-header .chevron { font-size: 9px; transition: transform 0.25s ease; color: var(--subtext-color); }
-        .accordion-content { display: none; padding-top: 6px; flex-direction: column; gap: 6px; }
+        .accordion-header .header-title { display: flex; align-items: center; gap: 6px; }
+        .accordion-header .chevron { font-size: 7px; transition: transform 0.25s ease; color: var(--subtext-color); }
+        .accordion-content { display: none; padding-top: 4px; flex-direction: column; gap: 4px; }
         .accordion-group.open .accordion-content { display: flex; }
         .accordion-group:not(.open) .chevron { transform: rotate(180deg); }
 
         .tree-tab-item {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 6px 10px; border-radius: 12px; transition: background-color 0.2s ease;
+            padding: 4px 7px; border-radius: 9px; transition: background-color 0.2s ease;
         }
         .tree-tab-item:hover { background-color: transparent; }
         .tree-tab-item.active { background-color: transparent; box-shadow: none; border: 1px solid var(--accent-color); }
         .tree-tab-btn {
             background: none; border: none; font-weight: 700; color: var(--text-color);
-            cursor: pointer; font-size: 13px; text-align: left; flex: 1; outline: none;
+            cursor: pointer; font-size: 11px; text-align: left; flex: 1; outline: none;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .tree-delete-btn {
-            background: none; border: none; cursor: pointer; font-size: 12px;
-            opacity: 0.4; padding: 2px 4px; border-radius: 6px; transition: all 0.2s ease;
+            background: none; border: none; cursor: pointer; font-size: 10px;
+            opacity: 0.4; padding: 1px 3px; border-radius: 6px; transition: all 0.2s ease;
         }
         .tree-delete-btn:hover { opacity: 1; background-color: rgba(217, 83, 79, 0.15); }
 
         .add-tree-btn {
             background-color: rgba(46, 213, 115, 0.1); color: var(--accent-color); border: 1px dashed var(--accent-color);
-            padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer; text-align: center;
+            padding: 6px 9px; border-radius: 9px; font-weight: 700; font-size: 10px; cursor: pointer; text-align: center;
             width: 100%; margin-top: 4px;
         }
         .add-tree-btn:hover { background-color: var(--accent-color); color: #ffffff; }
@@ -736,10 +736,10 @@
         .timeline-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--border-color); }
 
         .add-sim-floating-btn {
-            position: absolute; bottom: 24px; right: 24px; z-index: 1050;
+            position: absolute; bottom: 16px; right: 16px; z-index: 1050;
             background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
-            color: white; border: none; padding: 14px 24px;
-            border-radius: 20px; font-weight: 800; font-size: 14px; cursor: pointer;
+            color: white; border: none; padding: 10px 16px;
+            border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer;
             box-shadow: 0 8px 25px var(--active-glow); text-shadow: 0 1px 0 rgba(255,255,255,0.2);
             transition: all 0.3s ease;
         }
@@ -749,27 +749,27 @@
         }
 
         .zoom-controls {
-            position: absolute; bottom: 24px; left: 280px; z-index: 1050;
-            display: flex; gap: 4px; background-color: var(--nav-bg);
-            padding: 4px; border-radius: 14px; border: 1px solid var(--border-color);
+            position: absolute; bottom: 16px; left: 252px; z-index: 1050;
+            display: flex; gap: 3px; background-color: var(--nav-bg);
+            padding: 3px; border-radius: 11px; border: 1px solid var(--border-color);
             box-shadow: 0 8px 24px var(--shadow-color); align-items: center;
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
         .zoom-btn {
             background-color: var(--card-solid); color: var(--text-color);
-            border: 1px solid var(--border-color); width: 28px; height: 28px;
-            border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer;
+            border: 1px solid var(--border-color); width: 23px; height: 23px;
+            border-radius: 7px; font-weight: 800; font-size: 11px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; padding: 0;
         }
         .zoom-btn:hover { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
 
-        .zoom-percentage-text { font-size: 11px; font-weight: 800; color: var(--subtext-color); padding: 0 8px; cursor: pointer; user-select: none; }
+        .zoom-percentage-text { font-size: 9px; font-weight: 800; color: var(--subtext-color); padding: 0 6px; cursor: pointer; user-select: none; }
 
-        .tree-save-controls { position: absolute; bottom: 24px; left: 392px; z-index: 1050; display: flex; align-items: center; gap: 7px; }
-        .tree-save-btn { background: var(--card-solid); color: var(--text-color); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 12px; font-weight: 800; font-size: 11px; cursor: pointer; box-shadow: 0 8px 24px var(--shadow-color); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: all .2s ease; }
+        .tree-save-controls { position: absolute; bottom: 16px; left: 350px; z-index: 1050; display: flex; align-items: center; gap: 7px; }
+        .tree-save-btn { background: var(--card-solid); color: var(--text-color); border: 1px solid var(--border-color); padding: 6px 9px; border-radius: 9px; font-weight: 800; font-size: 9px; cursor: pointer; box-shadow: 0 8px 24px var(--shadow-color); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: all .2s ease; }
         .tree-save-btn:hover:not(:disabled) { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: translateY(-1px); }
         .tree-save-btn:disabled { opacity: .45; cursor: default; }
-        .tree-save-status { font-size: 9px; font-weight: 700; color: var(--subtext-color); background: var(--nav-bg); border: 1px solid var(--border-color); padding: 6px 8px; border-radius: 10px; box-shadow: 0 5px 16px var(--shadow-color); }
+        .tree-save-status { font-size: 8px; font-weight: 700; color: var(--subtext-color); background: var(--nav-bg); border: 1px solid var(--border-color); padding: 5px 6px; border-radius: 8px; box-shadow: 0 5px 16px var(--shadow-color); }
         @media (max-width: 700px) { .tree-save-controls { left: 250px; bottom: 70px; } }
 
         .tree-canvas-viewport { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; overflow: hidden; cursor: grab; z-index: 5; }
