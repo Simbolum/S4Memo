@@ -767,10 +767,31 @@
 
         /* PUBLIKUS / CSAÁDFA MEGTEKINTŐ */
         .public-tree-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-top:20px; }
-        .public-tree-card { border:1px solid var(--border-color); border-radius:18px; padding:16px; background:rgba(255,255,255,.035); box-shadow:0 8px 22px var(--shadow-color); }
+        .public-tree-card { border:1px solid var(--border-color); border-radius:18px; padding:0; overflow:hidden; background:rgba(255,255,255,.035); box-shadow:0 8px 22px var(--shadow-color); }
+        .public-tree-card-cover { height:150px; position:relative; background:var(--card-solid); background-size:cover; background-position:center; overflow:hidden; }
+        .public-tree-card-cover::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.52)); pointer-events:none; }
+        .public-tree-card-cover-title { position:absolute; left:14px; right:14px; bottom:12px; z-index:1; color:#fff; font-size:16px; font-weight:900; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+        .public-tree-card-body { padding:14px 16px 16px; }
         .public-tree-card h3 { margin:0 0 6px; font-size:15px; }
         .public-tree-card p { margin:0 0 12px; color:var(--subtext-color); font-size:11px; line-height:1.5; }
         .public-tree-card-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+        .public-index-image-group { display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color); }
+        .public-index-image-group.visible { display:block; }
+        .public-index-image-preview { width:100%; height:90px; border-radius:12px; border:1px solid var(--border-color); background:var(--card-solid); background-size:cover; background-position:center; margin-top:7px; display:none; }
+        .public-index-image-preview.visible { display:block; }
+        .public-index-image-actions { display:flex; gap:7px; margin-top:7px; }
+        .public-index-image-actions button { flex:1; }
+
+        .public-sim-gallery-first { margin-top:14px; padding:14px; border:1px solid var(--border-color); border-radius:16px; background:rgba(255,255,255,.025); }
+        .public-sim-gallery-first h4 { margin:0 0 10px; font-size:12px; font-weight:900; color:var(--text-color); }
+        .public-sim-info-list { display:flex; flex-direction:column; gap:8px; }
+        .public-sim-info-item { display:grid; grid-template-columns:36px minmax(90px,120px) 1fr; align-items:center; gap:10px; padding:10px 12px; border-radius:13px; background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.025)); border:1px solid var(--border-color); }
+        .public-sim-info-icon { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:9px; background:rgba(46,213,115,.10); font-size:15px; }
+        .public-sim-info-item small { display:block; font-size:9px; color:var(--subtext-color); font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+        .public-sim-info-item strong { display:block; font-size:11px; color:var(--text-color); word-break:break-word; }
+        .public-sim-info-item:hover { border-color:var(--accent-color); transform:translateY(-1px); transition:.15s ease; }
+        .public-sim-avatar { cursor:default; }
         .public-viewer-overlay { position:fixed; inset:0; z-index:5000; display:none; background:rgba(0,0,0,.48); backdrop-filter:blur(8px); }
         .public-viewer-overlay.active { display:block; }
         .public-viewer-card { position:absolute; inset:3vh 3vw; background:var(--card-bg); border:1px solid var(--border-color); border-radius:24px; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.28); }
@@ -842,6 +863,10 @@
         .public-sim-gallery-item img { width:100%; height:105px; display:block; object-fit:cover; }
         .public-sim-gallery-caption { padding:6px 8px; font-size:9px; color:var(--subtext-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .public-sim-empty { font-size:11px; color:var(--subtext-color); }
+        .public-sim-info-list .public-sim-info-item { display:grid; grid-template-columns:36px minmax(90px,120px) 1fr; align-items:center; gap:10px; padding:10px 12px; }
+        .public-sim-info-list .public-sim-info-item small { margin:0; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+        .public-sim-info-list .public-sim-info-item strong { font-size:11px; }
+        .public-sim-info-icon { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:9px; background:rgba(46,213,115,.10); font-size:15px; }
         .public-tree-avatar { cursor:pointer; }
         .public-tree-avatar:hover { filter:brightness(1.08); box-shadow:0 10px 26px var(--shadow-color), 0 0 0 3px rgba(46,213,115,.16); }
 
@@ -1599,6 +1624,17 @@
                 </div>
             </div>
 
+            <div class="public-index-image-group" id="publicIndexImageGroup">
+                <label>Publikum indexkép</label>
+                <div style="font-size:9px;color:var(--subtext-color);line-height:1.45;">Ez a kép jelenik meg a Publikum oldalon, mielőtt valaki megnyitná ezt a családfát.</div>
+                <input type="file" id="publicIndexImageInput" class="custom-file-upload" accept="image/*" onchange="handlePublicIndexImageUpload(event)">
+                <label for="publicIndexImageInput" class="custom-file-btn" style="display:block;margin-top:7px;text-align:center;">📁 Indexkép kiválasztása</label>
+                <div id="publicIndexImagePreview" class="public-index-image-preview"></div>
+                <div class="public-index-image-actions">
+                    <button type="button" class="btn-secondary" onclick="removePublicIndexImage()">🗑️ Törlés</button>
+                </div>
+            </div>
+
             <div class="style-group" style="margin-top: 4px;">
                 <label>
                     <span>Háttér Homályosítás</span>
@@ -2099,16 +2135,16 @@
         let currentView = 'home';
         
         let pageBackgrounds = {
-            home: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
-            activity: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
-            public: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 }
+            home: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' },
+            activity: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' },
+            public: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' }
         };
 
         const defaultTrees = [
             {
                 id: 'tree_1',
                 name: 'Goth család',
-                bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
+                bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' },
                 sims: [
                     { id: 'sim_1', firstName: 'Bella', lastName: 'Goth', age: 'Fiatal felnőtt', occult: 'Nincs', title: 'Nincs', traits: 'Romantikus', color: '#ff5e7e', image: '', imageTransform: null, x: 450, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
                     { id: 'sim_2', firstName: 'Mortimer', lastName: 'Goth', age: 'Felnőtt', occult: 'Nincs', title: 'Nincs', traits: 'Könyvmoly', color: '#2ed573', image: '', imageTransform: null, x: 650, y: 200, parentId: null, partnerId: null, relationType: null, locked: false, isDead: false, gallery: [] },
@@ -2416,12 +2452,12 @@
                 const tree = getCurrentTree();
                 if (tree) {
                     if (!tree.bgConfig) {
-                        tree.bgConfig = { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 };
+                        tree.bgConfig = { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' };
                     }
                     return tree.bgConfig;
                 }
             }
-            return pageBackgrounds[currentView] || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 };
+            return pageBackgrounds[currentView] || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' };
         }
 
         function applyPageBackground() {
@@ -2451,6 +2487,14 @@
             const isTree = currentView === 'tree';
             document.getElementById('lineStyleGroup').style.display = isTree ? 'flex' : 'none';
             document.getElementById('simShapeGroup').style.display = isTree ? 'flex' : 'none';
+            const indexGroup = document.getElementById('publicIndexImageGroup');
+            const indexPreview = document.getElementById('publicIndexImagePreview');
+            if (indexGroup) indexGroup.classList.toggle('visible', isTree);
+            if (indexPreview) {
+                const indexUrl = isTree ? (bgConfig.publicIndexImage || '') : '';
+                indexPreview.style.backgroundImage = indexUrl ? `url("${String(indexUrl).replace(/"/g, '\\"')}")` : 'none';
+                indexPreview.classList.toggle('visible', !!indexUrl);
+            }
         }
 
         function changeBgStyle(style) {
@@ -2480,6 +2524,37 @@
                         applyPageBackground();
                     });
                 });
+            }
+        }
+
+        async function handlePublicIndexImageUpload(event) {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            const tree = getCurrentTree();
+            if (!file || !tree || !file.type.startsWith('image/')) return;
+            try {
+                const compressed = await compressImage(file, 1200, 700, 0.72);
+                const finalImage = await uploadImageToStorage(compressed, 'public-index');
+                if (!finalImage) return;
+                if (!tree.bgConfig) tree.bgConfig = {};
+                tree.bgConfig.publicIndexImage = finalImage;
+                markTreeDirty();
+                applyPageBackground();
+            } catch (error) {
+                console.error('Publikum indexkép feltöltési hiba:', error);
+                alert('Az indexkép feltöltése nem sikerült.');
+            }
+        }
+
+        function removePublicIndexImage() {
+            const tree = getCurrentTree();
+            if (!tree || !tree.bgConfig?.publicIndexImage) return;
+            const oldImage = tree.bgConfig.publicIndexImage;
+            if (confirm('Eltávolítod a családfa Publikum indexképét?')) {
+                tree.bgConfig.publicIndexImage = '';
+                markTreeDirty();
+                applyPageBackground();
+                if (oldImage) deleteImageFromStorage(oldImage);
             }
         }
 
@@ -3439,7 +3514,7 @@ function openSimsFamily(treeId) {
             const newTree = {
                 id: 'tree_' + Date.now(),
                 name: name.trim(),
-                bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
+                bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' },
                 lineStyle: 'style-glow',
                 sims: [],
                 journal: [],
@@ -3693,7 +3768,7 @@ function openSimsFamily(treeId) {
                 publicFamilyTrees = (data || []).map(tree => ({
                     id: tree.id,
                     name: tree.name,
-                    bgConfig: tree.background_config || {},
+                    bgConfig: { ...(tree.background_config || {}), publicIndexImage: (tree.background_config && tree.background_config.publicIndexImage) || '' },
                     lineStyle: (tree.background_config && tree.background_config.lineStyle) || 'style-glow',
                     sims: tree.sims || [],
                     journal: tree.journal || [],
@@ -3723,11 +3798,17 @@ function openSimsFamily(treeId) {
                     card.className = 'public-tree-card';
                     const simsCount = (tree.sims || []).filter(s => !isAnimalSim(s)).length;
                     const updated = tree.updatedAt ? new Date(tree.updatedAt).toLocaleString('hu-HU') : '';
+                    const indexImage = tree.bgConfig?.publicIndexImage || '';
+                    const coverStyle = indexImage ? `background-image:url("${String(indexImage).replace(/"/g, '\\"')}")` : '';
                     card.innerHTML = `
-                        <h3>🌳 ${escapeHtml(tree.name || 'Névtelen családfa')}</h3>
-                        <p>${simsCount} Sim${simsCount === 1 ? '' : 'ek'} · Utolsó frissítés: ${escapeHtml(updated)}</p>
-                        <div class="public-tree-card-actions">
-                            <button class="btn-primary" type="button">Megtekintés</button>
+                        <div class="public-tree-card-cover" style="${coverStyle}">
+                            <div class="public-tree-card-cover-title">🌳 ${escapeHtml(tree.name || 'Névtelen családfa')}</div>
+                        </div>
+                        <div class="public-tree-card-body">
+                            <p>${simsCount} Sim${simsCount === 1 ? '' : 'ek'} · Utolsó frissítés: ${escapeHtml(updated)}</p>
+                            <div class="public-tree-card-actions">
+                                <button class="btn-primary" type="button">Megtekintés</button>
+                            </div>
                         </div>
                     `;
                     card.querySelector('button').onclick = () => openPublicTreeViewer(tree.id);
@@ -4035,9 +4116,13 @@ function openSimsFamily(treeId) {
                     <div class="public-sim-name">${escapeHtml(fullName)}</div>
                     <div class="public-sim-status">${statusText}</div>
                 </div>
+                <div class="public-sim-gallery-first">
+                    <h4>🖼️ Galéria</h4>
+                    <div class="public-sim-gallery" id="publicSimGallery"></div>
+                </div>
                 <div class="public-sim-section">
                     <h4>📋 Sim adatai</h4>
-                    <div class="public-sim-info-grid" id="publicSimInfoGrid"></div>
+                    <div class="public-sim-info-list" id="publicSimInfoGrid"></div>
                 </div>
                 <div class="public-sim-section" id="publicSimDescriptionSection">
                     <h4>📝 Személyiség / Leírás</h4>
@@ -4047,28 +4132,28 @@ function openSimsFamily(treeId) {
                     <h4>🔗 Kapcsolatok</h4>
                     <div class="public-sim-relations" id="publicSimRelations"></div>
                 </div>
-                <div class="public-sim-section">
-                    <h4>🖼️ Galéria</h4>
-                    <div class="public-sim-gallery" id="publicSimGallery"></div>
-                </div>
             `;
 
             const infoGrid = document.getElementById('publicSimInfoGrid');
-            const addInfo = (label, value) => {
+            const addInfo = (icon, label, value) => {
+                if (value === undefined || value === null || String(value).trim() === '') return;
                 const item = document.createElement('div');
                 item.className = 'public-sim-info-item';
+                const iconEl = document.createElement('span'); iconEl.className = 'public-sim-info-icon'; iconEl.textContent = icon;
                 const small = document.createElement('small'); small.textContent = label;
-                const strong = document.createElement('strong'); strong.textContent = value || 'Nincs megadva';
-                item.appendChild(small); item.appendChild(strong); infoGrid.appendChild(item);
+                const strong = document.createElement('strong'); strong.textContent = value;
+                item.appendChild(iconEl);
+                item.appendChild(small);
+                item.appendChild(strong);
+                infoGrid.appendChild(item);
             };
-            addInfo('Keresztnév', sim.firstName);
-            addInfo('Vezetéknév', sim.lastName);
-            addInfo('Életkor', sim.age);
-            addInfo('Faj', sim.species);
-            addInfo('Okkult', sim.occult);
-            addInfo('Cím', sim.title);
-            addInfo('Státusz', sim.isDead ? 'Halott' : 'Élő');
-            addInfo('Keretszín', sim.color || 'Alapértelmezett');
+            addInfo('👤', 'Keresztnév', sim.firstName);
+            addInfo('🏷️', 'Vezetéknév', sim.lastName);
+            addInfo('🎂', 'Életkor', sim.age);
+            addInfo('🧬', 'Faj', sim.species);
+            if (sim.occult && sim.occult !== 'Nincs') addInfo('✨', 'Okkult', sim.occult);
+            if (sim.title && sim.title !== 'Nincs') addInfo('👑', 'Cím', sim.title);
+            addInfo(sim.isDead ? '💀' : '💚', 'Státusz', sim.isDead ? 'Halott' : 'Élő');
 
             const description = document.getElementById('publicSimDescription');
             description.textContent = sim.traits || 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
@@ -4270,7 +4355,7 @@ function openSimsFamily(treeId) {
                     familyTrees = data.map(tree => ({
                         id: tree.id,
                         name: tree.name,
-                        bgConfig: tree.background_config || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0 },
+                        bgConfig: tree.background_config || { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' },
                         sims: tree.sims || [],
                         journal: tree.journal || [],
                         lineStyle: (tree.background_config && tree.background_config.lineStyle) || 'style-glow',
