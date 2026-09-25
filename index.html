@@ -1389,6 +1389,139 @@
 
 
 </style>
+
+<style id="sleek-scrollbars">
+/* FINOM, EGYSÉGES GÖRGETŐSÁVOK */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.28) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+    border: 0;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.24);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    min-height: 38px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,.42);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-corner {
+    display: none;
+    width: 0;
+    height: 0;
+    background: transparent;
+}
+
+/* A profilablak fő görgetősávja: keskeny, lekerekített, nyilak nélkül */
+.public-sim-modal-card,
+.modal-card {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.30) transparent;
+}
+
+.public-sim-modal-card::-webkit-scrollbar,
+.modal-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.public-sim-modal-card::-webkit-scrollbar-track,
+.modal-card::-webkit-scrollbar-track {
+    margin: 12px 3px;
+    background: transparent;
+}
+
+.public-sim-modal-card::-webkit-scrollbar-thumb,
+.modal-card::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.30);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.public-sim-modal-card::-webkit-scrollbar-thumb:hover,
+.modal-card::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,.46);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+
+/* Galéria vízszintes görgetése: ne legyen hosszú, szögletes sáv */
+.sim-life-gallery-grid,
+.gallery-grid {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.24) transparent;
+}
+
+.sim-life-gallery-grid::-webkit-scrollbar,
+.gallery-grid::-webkit-scrollbar {
+    height: 6px;
+}
+
+.sim-life-gallery-grid::-webkit-scrollbar-track,
+.gallery-grid::-webkit-scrollbar-track {
+    margin: 0 8px;
+    background: transparent;
+}
+
+.sim-life-gallery-grid::-webkit-scrollbar-thumb,
+.gallery-grid::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.22);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+
+/* Kapcsolatlisták: keskeny belső görgetősáv */
+#deleteConnectionPickerList,
+#partnerPickerForChildList,
+#editConnectionsList,
+#familyMemberPickerList {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.24) transparent;
+}
+
+#deleteConnectionPickerList::-webkit-scrollbar,
+#partnerPickerForChildList::-webkit-scrollbar,
+#editConnectionsList::-webkit-scrollbar,
+#familyMemberPickerList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#deleteConnectionPickerList::-webkit-scrollbar-track,
+#partnerPickerForChildList::-webkit-scrollbar-track,
+#editConnectionsList::-webkit-scrollbar-track,
+#familyMemberPickerList::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+}
+
+#deleteConnectionPickerList::-webkit-scrollbar-thumb,
+#partnerPickerForChildList::-webkit-scrollbar-thumb,
+#editConnectionsList::-webkit-scrollbar-thumb,
+#familyMemberPickerList::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.24);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+</style>
 </head>
 <body class="bg-dots">
 
