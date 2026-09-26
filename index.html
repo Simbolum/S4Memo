@@ -914,8 +914,10 @@
         .public-sim-relation-avatar { width:34px; height:34px; flex:0 0 34px; border-radius:50%; background-size:cover; background-position:center; background-color:var(--border-color); display:flex; align-items:center; justify-content:center; font-size:16px; overflow:hidden; }
         .public-sim-relation-name { font-size:11px; font-weight:800; color:var(--text-color); }
         .public-sim-relation-type { font-size:9px; color:var(--subtext-color); margin-top:2px; }
-        .public-sim-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(125px,1fr)); gap:9px; }
-        .public-sim-gallery-item { border:1px solid var(--border-color); border-radius:12px; overflow:hidden; background:var(--card-solid); cursor:pointer; transition:transform .16s ease,border-color .16s ease; }
+        .public-sim-gallery { display:flex; flex-wrap:nowrap; gap:9px; width:100%; overflow-x:auto; overflow-y:hidden; padding:2px 2px 8px; scroll-behavior:smooth; scrollbar-width:thin; }
+        .public-sim-gallery::-webkit-scrollbar { height:6px; }
+        .public-sim-gallery::-webkit-scrollbar-thumb { background:var(--border-color); border-radius:999px; }
+        .public-sim-gallery-item { flex:0 0 125px; width:125px; border:1px solid var(--border-color); border-radius:12px; overflow:hidden; background:var(--card-solid); cursor:pointer; transition:transform .16s ease,border-color .16s ease; }
         .public-sim-gallery-item:hover { transform:translateY(-2px); border-color:var(--accent-color); }
         .public-sim-gallery-item img { width:100%; height:105px; display:block; object-fit:cover; }
         .public-sim-gallery-caption { padding:6px 8px; font-size:9px; color:var(--subtext-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -4485,45 +4487,98 @@ function openSimsFamily(treeId) {
             return row;
         }
 
-        function openPublicGalleryLightbox(src, caption = '') {
+        function openPublicGalleryLightbox(src, caption = '', gallery = null, galleryIndex = 0) {
             const old = document.getElementById('publicGalleryLightbox');
             if (old) old.remove();
+
+            const items = Array.isArray(gallery) ? gallery.map(item => ({
+                src: typeof item === 'string' ? item : item?.src,
+                caption: typeof item === 'string' ? '' : (item?.caption || '')
+            })).filter(item => item.src) : [{ src, caption }];
+
+            let currentIndex = Math.max(0, Math.min(Number(galleryIndex) || 0, items.length - 1));
 
             const overlay = document.createElement('div');
             overlay.id = 'publicGalleryLightbox';
             overlay.style.cssText = 'position:fixed;inset:0;z-index:7200;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:30px;cursor:zoom-out;';
-            overlay.onclick = () => overlay.remove();
+            overlay.onclick = () => closeLightbox();
 
             const wrap = document.createElement('div');
             wrap.style.cssText = 'max-width:92vw;max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:default;';
             wrap.onclick = e => e.stopPropagation();
 
             const img = document.createElement('img');
-            img.src = src;
-            img.alt = caption || 'Galéria kép';
             img.decoding = 'async';
             img.referrerPolicy = 'no-referrer';
             img.style.cssText = 'max-width:92vw;max-height:82vh;width:auto;height:auto;object-fit:contain;border-radius:14px;box-shadow:0 20px 70px rgba(0,0,0,.55);image-rendering:auto;';
+
+            const cap = document.createElement('div');
+            cap.style.cssText = 'color:#fff;font-size:12px;font-weight:700;text-align:center;max-width:80vw;min-height:18px;';
+
+            const counter = document.createElement('div');
+            counter.style.cssText = 'color:rgba(255,255,255,.72);font-size:10px;font-weight:700;';
 
             const close = document.createElement('button');
             close.type = 'button';
             close.textContent = '✕ Bezárás';
             close.style.cssText = 'border:1px solid rgba(255,255,255,.28);background:rgba(20,20,20,.72);color:#fff;border-radius:10px;padding:8px 13px;font-weight:800;cursor:pointer;';
-            close.onclick = () => overlay.remove();
+            close.onclick = () => closeLightbox();
+
+            function showCurrent() {
+                const item = items[currentIndex];
+                img.src = item.src;
+                img.alt = item.caption || 'Galéria kép';
+                cap.textContent = item.caption || '';
+                counter.textContent = items.length > 1 ? `${currentIndex + 1} / ${items.length}` : '';
+            }
+
+            function go(delta) {
+                if (items.length < 2) return;
+                currentIndex = (currentIndex + delta + items.length) % items.length;
+                showCurrent();
+            }
+
+            function closeLightbox() {
+                overlay.remove();
+                document.removeEventListener('keydown', onKeyDown);
+            }
+
+            function onKeyDown(e) {
+                if (e.key === 'Escape') closeLightbox();
+                else if (e.key === 'ArrowLeft') go(-1);
+                else if (e.key === 'ArrowRight') go(1);
+            }
+
+            if (items.length > 1) {
+                const makeArrow = (side, symbol, title, delta) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = symbol;
+                    btn.title = title;
+                    btn.style.cssText = `position:fixed;top:50%;${side}:22px;transform:translateY(-50%);width:48px;height:48px;border:1px solid rgba(255,255,255,.3);border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:30px;line-height:44px;cursor:pointer;z-index:7202;`;
+                    btn.onclick = e => { e.stopPropagation(); go(delta); };
+                    overlay.appendChild(btn);
+                };
+                makeArrow('left', '‹', 'Előző kép', -1);
+                makeArrow('right', '›', 'Következő kép', 1);
+            }
+
+            const closeTop = document.createElement('button');
+            closeTop.type = 'button';
+            closeTop.textContent = '×';
+            closeTop.title = 'Bezárás';
+            closeTop.style.cssText = 'position:fixed;top:18px;right:24px;width:38px;height:38px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:26px;cursor:pointer;z-index:7202;';
+            closeTop.onclick = e => { e.stopPropagation(); closeLightbox(); };
+            overlay.appendChild(closeTop);
 
             wrap.appendChild(img);
-            if (caption) {
-                const cap = document.createElement('div');
-                cap.textContent = caption;
-                cap.style.cssText = 'color:#fff;font-size:12px;font-weight:700;text-align:center;max-width:80vw;';
-                wrap.appendChild(cap);
-            }
+            wrap.appendChild(cap);
+            wrap.appendChild(counter);
             wrap.appendChild(close);
             overlay.appendChild(wrap);
             document.body.appendChild(overlay);
-            document.addEventListener('keydown', function esc(e) {
-                if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); }
-            });
+            showCurrent();
+            document.addEventListener('keydown', onKeyDown);
         }
 
         function openPublicSimModal(tree, simId) {
@@ -4639,7 +4694,7 @@ function openSimsFamily(treeId) {
             if (!gallery.length) {
                 galleryGrid.innerHTML = '<div class="public-sim-empty">Nincsenek feltöltött képek.</div>';
             } else {
-                gallery.forEach(item => {
+                gallery.forEach((item, galleryIndex) => {
                     const src = typeof item === 'string' ? item : item.src;
                     const caption = typeof item === 'string' ? '' : (item.caption || '');
                     if (!src) return;
@@ -4658,7 +4713,7 @@ function openSimsFamily(treeId) {
                         cap.textContent = caption;
                         card.appendChild(cap);
                     }
-                    card.onclick = () => openPublicGalleryLightbox(src, caption);
+                    card.onclick = () => openPublicGalleryLightbox(src, caption, gallery, galleryIndex);
                     galleryGrid.appendChild(card);
                 });
             }
