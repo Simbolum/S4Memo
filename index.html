@@ -1281,8 +1281,12 @@
         }
         .sim-gallery-item img {
             width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 10px;
-            border: 1px solid var(--border-color); cursor: grab;
-            pointer-events: none;
+            border: 1px solid var(--border-color); cursor: pointer;
+            pointer-events: auto;
+        }
+        .sim-gallery-item img:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px var(--active-glow);
         }
         .sim-gallery-item.dragging {
             opacity: .45;
@@ -5495,9 +5499,16 @@ function openSimsFamily(treeId) {
                 galleryItem.className = 'sim-gallery-item';
                 galleryItem.draggable = true;
                 galleryItem.dataset.galleryIndex = String(index);
-                galleryItem.title = 'Húzd a rendezd át a képeket';
+                galleryItem.title = 'Húzd a rendezd át a képeket • Kattints a képhez a nagy nézethez';
+                let didDrag = false;
+
+                galleryItem.addEventListener('click', (e) => {
+                    if (didDrag || e.target.closest('.sim-gallery-remove')) return;
+                    openSimGalleryPreview(item.src, Number(galleryItem.dataset.galleryIndex));
+                });
 
                 galleryItem.addEventListener('dragstart', (e) => {
+                    didDrag = true;
                     draggedIndex = index;
                     galleryItem.classList.add('dragging');
                     if (e.dataTransfer) {
@@ -5510,6 +5521,8 @@ function openSimsFamily(treeId) {
                     draggedIndex = null;
                     galleryItem.classList.remove('dragging');
                     grid.querySelectorAll('.sim-gallery-item').forEach(el => el.classList.remove('drag-over'));
+                    // A drag után ne nyíljon meg véletlenül a nagy nézet.
+                    setTimeout(() => { didDrag = false; }, 0);
                 });
 
                 galleryItem.addEventListener('dragover', (e) => {
@@ -5551,7 +5564,10 @@ function openSimsFamily(treeId) {
                 img.src = item.src;
                 img.alt = item.caption || ('Pillanat ' + (index + 1));
                 img.title = 'Kattints a kép megtekintéséhez és a felirat szerkesztéséhez';
-                img.onclick = () => openSimGalleryPreview(item.src, index);
+                img.onclick = (e) => {
+                    e.stopPropagation();
+                    if (!didDrag) openSimGalleryPreview(item.src, Number(galleryItem.dataset.galleryIndex));
+                };
 
                 if (item.caption) {
                     const caption = document.createElement('div');
