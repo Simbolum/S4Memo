@@ -868,26 +868,7 @@
         .public-tree-world { position:absolute; left:0; top:0; width:0; height:0; transform-origin:0 0; z-index:1; }
         .public-tree-svg { position:absolute; left:-10000px; top:-10000px; width:20000px; height:20000px; pointer-events:none; z-index:1; }
         .public-tree-node { position:absolute; width:88px; height:88px; z-index:2; display:flex; align-items:center; justify-content:center; }
-        .public-tree-avatar { width:88px; height:88px; border-radius:var(--sim-node-radius); clip-path:var(--sim-node-clip-path); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--card-solid); border:3px solid #fff; box-shadow:0 8px 20px var(--shadow-color); background-size:cover; background-position:center; position:relative; }
-        /* A publikus családfában a kör mérete mindig fix marad.
-           Az imageTransform csak a fotót nagyítja/forgatja, nem magát a kört. */
-        .public-tree-avatar.has-public-image {
-            background-image:none !important;
-        }
-        .public-tree-avatar.has-public-image::before {
-            content:"";
-            position:absolute;
-            inset:0;
-            background-image:var(--public-avatar-image);
-            background-size:cover;
-            background-position:center;
-            background-repeat:no-repeat;
-            border-radius:inherit;
-            clip-path:inherit;
-            transform:var(--public-avatar-transform, none);
-            filter:var(--public-avatar-filter, none);
-            pointer-events:none;
-        }
+        .public-tree-avatar { width:88px; height:88px; border-radius:var(--sim-node-radius); clip-path:var(--sim-node-clip-path); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--card-solid); border:3px solid #fff; box-shadow:0 8px 20px var(--shadow-color); background-size:cover; background-position:center; }
         .public-tree-label { position:absolute; bottom:-24px; white-space:nowrap; font-weight:700; font-size:11px; color:var(--text-color); background:var(--card-solid); padding:3px 10px; border-radius:12px; border:1px solid var(--border-color); box-shadow:0 4px 12px var(--shadow-color); }
         .public-tree-special { position:absolute; top:-28px; left:50%; transform:translateX(-50%); display:flex; gap:3px; }
         .public-tree-special span { width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--card-solid); border:1px solid var(--border-color); font-size:13px; }
@@ -1710,20 +1691,6 @@
                 <div class="accordion-content">
                     <div id="treeTabsList"></div>
                     <button class="add-tree-btn" onclick="createNewTree()">+ Családfa hozzáadása</button>
-                </div>
-            </div>
-
-            <div class="accordion-group" id="journalAccordion">
-                <button class="accordion-header" onclick="toggleAccordion('journalAccordion')">
-                    <div class="header-title">
-                        <span>📖</span>
-                        <span>Naplóm</span>
-                    </div>
-                    <span class="chevron">▲</span>
-                </button>
-                <div class="accordion-content">
-                    <div id="journalEntriesList"></div>
-                    <button class="add-tree-btn" onclick="openJournalModal()">+ Új Bejegyzés</button>
                 </div>
             </div>
         </div>
@@ -4381,15 +4348,12 @@ function openSimsFamily(treeId) {
                 avatar.className = 'public-tree-avatar';
                 if (sim.color) avatar.style.borderColor = sim.color;
                 if (sim.image) {
-                    avatar.classList.add('has-public-image');
-                    avatar.style.setProperty('--public-avatar-image', `url(${JSON.stringify(sim.image)})`);
+                    avatar.style.backgroundImage = `url(${JSON.stringify(sim.image)})`;
                     if (sim.imageTransform) {
                         const t = sim.imageTransform;
-                        avatar.style.setProperty(
-                            '--public-avatar-transform',
-                            `rotate(${t.rotate || 0}deg) scale(${t.scale || 1})`
-                        );
-                        avatar.style.setProperty('--public-avatar-filter', t.filter || 'none');
+                        avatar.style.backgroundImage = `url(${JSON.stringify(sim.image)})`;
+                        avatar.style.transform = `rotate(${t.rotate || 0}deg) scale(${t.scale || 1})`;
+                        avatar.style.filter = t.filter || 'none';
                     }
                 } else {
                     avatar.textContent = '👤';
