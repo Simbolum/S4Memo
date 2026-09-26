@@ -1670,6 +1670,20 @@
                     <button class="add-tree-btn" onclick="createNewTree()">+ Családfa hozzáadása</button>
                 </div>
             </div>
+
+            <div class="accordion-group" id="journalAccordion">
+                <button class="accordion-header" onclick="toggleAccordion('journalAccordion')">
+                    <div class="header-title">
+                        <span>📖</span>
+                        <span>Naplóm</span>
+                    </div>
+                    <span class="chevron">▲</span>
+                </button>
+                <div class="accordion-content">
+                    <div id="journalEntriesList"></div>
+                    <button class="add-tree-btn" onclick="openJournalModal()">+ Új Bejegyzés</button>
+                </div>
+            </div>
         </div>
 
         <div class="zoom-controls">
