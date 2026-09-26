@@ -1273,10 +1273,27 @@
             border: 1px dashed var(--border-color); border-radius: 10px; color: var(--subtext-color);
             font-size: 10px;
         }
-        .sim-gallery-item { position: relative; flex: 0 0 92px; width: 92px; height: 72px; }
+        .sim-gallery-item {
+            position: relative; flex: 0 0 92px; width: 92px; height: 72px;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
         .sim-gallery-item img {
             width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 10px;
-            border: 1px solid var(--border-color); cursor: zoom-in;
+            border: 1px solid var(--border-color); cursor: grab;
+            pointer-events: none;
+        }
+        .sim-gallery-item.dragging {
+            opacity: .45;
+            transform: scale(.96);
+        }
+        .sim-gallery-item.drag-over {
+            transform: scale(1.04);
+        }
+        .sim-gallery-item.drag-over img {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px var(--active-glow);
         }
         .sim-gallery-caption-preview {
   display: none !important;
@@ -5471,9 +5488,64 @@ function openSimsFamily(treeId) {
                 return;
             }
 
+            let draggedIndex = null;
+
             gallery.forEach((item, index) => {
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'sim-gallery-item';
+                galleryItem.draggable = true;
+                galleryItem.dataset.galleryIndex = String(index);
+                galleryItem.title = 'Húzd a rendezd át a képeket';
+
+                galleryItem.addEventListener('dragstart', (e) => {
+                    draggedIndex = index;
+                    galleryItem.classList.add('dragging');
+                    if (e.dataTransfer) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', String(index));
+                    }
+                });
+
+                galleryItem.addEventListener('dragend', () => {
+                    draggedIndex = null;
+                    galleryItem.classList.remove('dragging');
+                    grid.querySelectorAll('.sim-gallery-item').forEach(el => el.classList.remove('drag-over'));
+                });
+
+                galleryItem.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (draggedIndex === null || draggedIndex === index) return;
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                    grid.querySelectorAll('.sim-gallery-item').forEach(el => el.classList.remove('drag-over'));
+                    galleryItem.classList.add('drag-over');
+                });
+
+                galleryItem.addEventListener('dragleave', (e) => {
+                    if (!galleryItem.contains(e.relatedTarget)) {
+                        galleryItem.classList.remove('drag-over');
+                    }
+                });
+
+                galleryItem.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    galleryItem.classList.remove('drag-over');
+
+                    const fromIndex = draggedIndex !== null
+                        ? draggedIndex
+                        : Number(e.dataTransfer?.getData('text/plain'));
+                    const toIndex = index;
+
+                    if (!Number.isInteger(fromIndex) || fromIndex < 0 || fromIndex >= gallery.length || fromIndex === toIndex) {
+                        return;
+                    }
+
+                    const [movedItem] = gallery.splice(fromIndex, 1);
+                    gallery.splice(toIndex, 0, movedItem);
+                    draggedIndex = null;
+                    markTreeDirty();
+                    renderSimLifeGallery(sim);
+                });
 
                 const img = document.createElement('img');
                 img.src = item.src;
