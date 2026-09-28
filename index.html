@@ -783,7 +783,7 @@
         }
 
         .publish-tree-floating-btn {
-            position: absolute; bottom: 16px; right: 185px; z-index: 1050;
+            position: absolute; bottom: 62px; right: 185px; z-index: 1050;
             background: linear-gradient(135deg, #ff9a6c 0%, #ff8a5c 100%);
             color: white; border: none; padding: 10px 15px;
             border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer;
@@ -795,8 +795,22 @@
             background: linear-gradient(135deg, #2ed573 0%, #219d52 100%);
             box-shadow: 0 8px 25px rgba(46,213,115,.28);
         }
+        .view-public-tree-floating-btn {
+            position: absolute; bottom: 16px; right: 185px; z-index: 1050;
+            background: var(--card-solid); color: var(--text-color);
+            border: 1px solid var(--border-color); padding: 10px 15px;
+            border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer;
+            box-shadow: 0 8px 25px var(--shadow-color);
+            transition: all .3s ease;
+        }
+        .view-public-tree-floating-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            border-color: var(--accent-color); color: var(--accent-color);
+            box-shadow: 0 10px 28px var(--active-glow);
+        }
         @media (max-width: 700px) {
-            .publish-tree-floating-btn { right: 16px; bottom: 70px; }
+            .publish-tree-floating-btn { right: 16px; bottom: 118px; }
+            .view-public-tree-floating-btn { right: 16px; bottom: 70px; }
         }
 
         /* PUBLIKUS / CSAÁDFA MEGTEKINTŐ */
@@ -1744,6 +1758,7 @@
         </div>
 
         <button class="publish-tree-floating-btn" id="publishTreeBtn" onclick="togglePublishCurrentTree()" style="display: none;">🌐 Publikálás</button>
+        <button class="view-public-tree-floating-btn" id="viewPublicTreeBtn" onclick="viewCurrentTreeOnPublic()" style="display: none;">👁️ Megtekintés</button>
         <button class="add-sim-floating-btn" id="addSimBtn" onclick="addNewSimDialog()" style="display: none;">+ Új Sim Hozzáadása</button>
 
         <div class="tree-canvas-viewport" id="treeViewport">
@@ -3956,6 +3971,7 @@ function openSimsFamily(treeId) {
         function updateAddSimButtonVisibility() {
             const addSimBtn = document.getElementById('addSimBtn');
             const publishBtn = document.getElementById('publishTreeBtn');
+            const viewPublicBtn = document.getElementById('viewPublicTreeBtn');
             const tree = getCurrentTree();
             if (currentTreeId && familyTrees.length > 0) {
                 addSimBtn.style.display = 'block';
@@ -3965,10 +3981,31 @@ function openSimsFamily(treeId) {
                     publishBtn.textContent = tree?.isPublic ? '↩ Publikusság visszavonása' : '🌐 Publikálás';
                     publishBtn.title = tree?.isPublic ? 'A családfa levétele a Publikum oldalról' : 'A családfa közzététele a Publikum oldalon';
                 }
+                if (viewPublicBtn) {
+                    viewPublicBtn.style.display = tree?.isPublic ? 'block' : 'none';
+                    viewPublicBtn.title = tree?.isPublic ? 'A jelenlegi családfa megnyitása a Publikum oldalon' : '';
+                }
             } else {
                 addSimBtn.style.display = 'none';
                 if (publishBtn) publishBtn.style.display = 'none';
+                if (viewPublicBtn) viewPublicBtn.style.display = 'none';
             }
+        }
+
+        async function viewCurrentTreeOnPublic() {
+            const tree = getCurrentTree();
+            if (!tree || !tree.isPublic) return;
+
+            switchView('public');
+            await loadPublicFamilyTrees();
+
+            const publicTree = publicFamilyTrees.find(t => t.id === tree.id);
+            if (!publicTree) {
+                alert('A családfa jelenleg nem található a Publikum oldalon.');
+                return;
+            }
+
+            openPublicTreeViewer(publicTree.id);
         }
 
         document.addEventListener('DOMContentLoaded', updateTreeSaveUI);
