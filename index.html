@@ -4827,24 +4827,29 @@ function openSimsFamily(treeId) {
                 'Dédszülő',
                 'Ükszülő',
                 'Szépszülő',
-                'Ősszülő',
-                'Felmenő'
+                'Ősszülő'
             ];
             let currentAncestorIds = [...new Set(parentIds)];
             const visitedAncestorIds = new Set([sim.id]);
+            let ancestorLevel = 0;
 
-            for (let level = 0; level < ancestorLevels.length && currentAncestorIds.length; level++) {
+            // Az Ősszülő felett már minden további felmenő „Felmenő” kategóriába kerül.
+            // A lánc addig folytatódik, amíg a családfában ténylegesen vannak további szülők.
+            while (currentAncestorIds.length) {
                 const validIds = [...new Set(currentAncestorIds)].filter(id => id && !visitedAncestorIds.has(id));
                 if (!validIds.length) break;
+
+                const relationType = ancestorLevel < ancestorLevels.length
+                    ? ancestorLevels[ancestorLevel]
+                    : 'Felmenő';
 
                 validIds.forEach(id => {
                     const ancestor = (tree.sims || []).find(s => s.id === id);
                     if (!ancestor) return;
                     visitedAncestorIds.add(id);
-                    addRelation(id, ancestorLevels[level]);
+                    addRelation(id, relationType);
                 });
 
-                // A következő szint az aktuális generáció szüleiből áll.
                 const nextIds = [];
                 validIds.forEach(id => {
                     const ancestor = (tree.sims || []).find(s => s.id === id);
@@ -4857,6 +4862,7 @@ function openSimsFamily(treeId) {
                     });
                 });
                 currentAncestorIds = [...new Set(nextIds)];
+                ancestorLevel++;
             }
 
             // Gyermekek
@@ -6238,16 +6244,23 @@ function openSimsFamily(treeId) {
             ];
             let currentAncestorIds = [...new Set(parentIds)];
             const visitedAncestorIds = new Set([sim.id]);
+            let ancestorLevel = 0;
 
-            for (let level = 0; level < ancestorLevels.length && currentAncestorIds.length; level++) {
+            // Az Ősszülő feletti összes további felmenőt is végigjárjuk.
+            // Ezek mind a „Felmenő” kategóriába kerülnek.
+            while (currentAncestorIds.length) {
                 const validIds = [...new Set(currentAncestorIds)].filter(id => id && !visitedAncestorIds.has(id));
                 if (!validIds.length) break;
+
+                const relationType = ancestorLevel < ancestorLevels.length
+                    ? ancestorLevels[ancestorLevel]
+                    : 'Felmenő';
 
                 validIds.forEach(id => {
                     const ancestor = (tree.sims || []).find(s => s.id === id);
                     if (!ancestor || isAnimalSim(ancestor)) return;
                     visitedAncestorIds.add(id);
-                    addRelation(id, ancestorLevels[level]);
+                    addRelation(id, relationType);
                 });
 
                 const nextIds = [];
@@ -6262,6 +6275,7 @@ function openSimsFamily(treeId) {
                     });
                 });
                 currentAncestorIds = [...new Set(nextIds)];
+                ancestorLevel++;
             }
 
             // Gyermekek
