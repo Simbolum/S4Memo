@@ -6222,7 +6222,45 @@ function openSimsFamily(treeId) {
             const parentIds = Array.isArray(sim.parentIds)
                 ? sim.parentIds.filter(Boolean)
                 : (sim.parentId ? [sim.parentId] : []);
-            parentIds.forEach(id => addRelation(id, 'Szülő'));
+            // Felmenők automatikus hozzárendelése a kapcsolatlistához:
+            // Szülő → Nagyszülő → Dédszülő → Ükszülő → Szépszülő → Ősszülő.
+            // Ezeket nem tesszük be a parentIds-ba, mert nem közvetlen szülők;
+            // a meglévő szülői láncból automatikusan számoljuk ki őket.
+            const ancestorLevels = [
+                'Szülő',
+                'Nagyszülő',
+                'Dédszülő',
+                'Ükszülő',
+                'Szépszülő',
+                'Ősszülő'
+            ];
+            let currentAncestorIds = [...new Set(parentIds)];
+            const visitedAncestorIds = new Set([sim.id]);
+
+            for (let level = 0; level < ancestorLevels.length && currentAncestorIds.length; level++) {
+                const validIds = [...new Set(currentAncestorIds)].filter(id => id && !visitedAncestorIds.has(id));
+                if (!validIds.length) break;
+
+                validIds.forEach(id => {
+                    const ancestor = (tree.sims || []).find(s => s.id === id);
+                    if (!ancestor || isAnimalSim(ancestor)) return;
+                    visitedAncestorIds.add(id);
+                    addRelation(id, ancestorLevels[level]);
+                });
+
+                const nextIds = [];
+                validIds.forEach(id => {
+                    const ancestor = (tree.sims || []).find(s => s.id === id);
+                    if (!ancestor) return;
+                    const ids = Array.isArray(ancestor.parentIds)
+                        ? ancestor.parentIds.filter(Boolean)
+                        : (ancestor.parentId ? [ancestor.parentId] : []);
+                    ids.forEach(parentId => {
+                        if (parentId && !visitedAncestorIds.has(parentId)) nextIds.push(parentId);
+                    });
+                });
+                currentAncestorIds = [...new Set(nextIds)];
+            }
 
             // Gyermekek
             (tree.sims || []).forEach(other => {
@@ -6278,6 +6316,11 @@ function openSimsFamily(treeId) {
 
             const groups = [
                 { key:'Szülő', title:'👪 Szülő' },
+                { key:'Nagyszülő', title:'👴 Nagyszülő' },
+                { key:'Dédszülő', title:'👵 Dédszülő' },
+                { key:'Ükszülő', title:'🧓 Ükszülő' },
+                { key:'Szépszülő', title:'👴 Szépszülő' },
+                { key:'Ősszülő', title:'👵 Ősszülő' },
                 { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
                 { key:'Gyermek', title:'🧒 Gyermek' },
                 { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
