@@ -4827,7 +4827,8 @@ function openSimsFamily(treeId) {
                 'Dédszülő',
                 'Ükszülő',
                 'Szépszülő',
-                'Ősszülő'
+                'Ősszülő',
+                'Felmenő'
             ];
             let currentAncestorIds = [...new Set(parentIds)];
             const visitedAncestorIds = new Set([sim.id]);
@@ -4904,6 +4905,7 @@ function openSimsFamily(treeId) {
                     { key:'Ükszülő', title:'🧓 Ükszülő' },
                     { key:'Szépszülő', title:'👴 Szépszülő' },
                     { key:'Ősszülő', title:'👵 Ősszülő' },
+                    { key:'Felmenő', title:'👨‍👩‍👧 Felmenő' },
                     { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
                     { key:'Gyermek', title:'🧒 Gyermek' },
                     { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
