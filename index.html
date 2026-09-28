@@ -32,6 +32,7 @@
 
             --sim-node-clip-path: none;
             --sim-node-radius: 50%;
+            --sim-node-size: 100px;
             --line-stroke-width: 3.5px;
             
             --custom-bg-size: cover;
@@ -887,11 +888,11 @@
         }
         .public-tree-world { position:absolute; left:0; top:0; width:0; height:0; transform-origin:0 0; z-index:1; }
         .public-tree-svg { position:absolute; left:-10000px; top:-10000px; width:20000px; height:20000px; pointer-events:none; z-index:1; }
-        .public-tree-node { position:absolute; width:88px; height:88px; z-index:2; display:flex; align-items:center; justify-content:center; transition:opacity .16s ease, filter .16s ease; }
+        .public-tree-node { position:absolute; width:var(--sim-node-size); height:var(--sim-node-size); z-index:2; display:flex; align-items:center; justify-content:center; transition:opacity .16s ease, filter .16s ease; }
         .public-tree-world.public-tree-focus-mode .public-tree-node:not(.public-tree-focus):not(.public-tree-focus-parent) { opacity:.18; filter:grayscale(.65); }
         .public-tree-world.public-tree-focus-mode .public-tree-node.public-tree-focus,
         .public-tree-world.public-tree-focus-mode .public-tree-node.public-tree-focus-parent { opacity:1; filter:none; z-index:6; }
-        .public-tree-avatar { width:88px; height:88px; border-radius:var(--sim-node-radius); clip-path:var(--sim-node-clip-path); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--card-solid); border:3px solid #fff; box-shadow:0 8px 20px var(--shadow-color); background-size:cover; background-position:center; position:relative; }
+        .public-tree-avatar { width:var(--sim-node-size); height:var(--sim-node-size); border-radius:var(--sim-node-radius); clip-path:var(--sim-node-clip-path); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--card-solid); border:3px solid #fff; box-shadow:0 8px 20px var(--shadow-color); background-size:cover; background-position:center; position:relative; }
         /* A publikus családfában a kör mérete mindig fix marad.
            Az imageTransform csak a fotót nagyítja/forgatja, nem magát a kört. */
         .public-tree-avatar.has-public-image {
@@ -913,8 +914,8 @@
         }
         .public-tree-label { position:absolute; bottom:-24px; white-space:nowrap; font-weight:700; font-size:11px; color:var(--text-color); background:var(--card-solid); padding:3px 10px; border-radius:12px; border:1px solid var(--border-color); box-shadow:0 4px 12px var(--shadow-color); }
         .public-tree-special { position:absolute; top:-28px; left:50%; transform:translateX(-50%); display:flex; gap:3px; }
-        .public-tree-special span { width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--card-solid); border:1px solid var(--border-color); font-size:13px; }
-        .public-tree-animal { position:absolute; left:-30px; width:20px; height:20px; border-radius:50%; overflow:hidden; border:2px solid var(--border-color); background:var(--card-solid); display:flex; align-items:center; justify-content:center; font-size:12px; }
+        .public-tree-special span { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--card-solid); border:1px solid var(--border-color); font-size:21px; box-shadow:0 4px 10px var(--shadow-color); }
+        .public-tree-animal { position:absolute; left:-38px; width:34px; height:34px; border-radius:50%; overflow:hidden; border:2px solid var(--border-color); background:var(--card-solid); display:flex; align-items:center; justify-content:center; font-size:21px; box-shadow:0 4px 10px var(--shadow-color); }
         .public-tree-animal img { width:100%; height:100%; object-fit:cover; }
         .public-tree-controls { position:absolute; left:14px; bottom:14px; z-index:4; display:flex; gap:4px; padding:4px; border:1px solid var(--border-color); border-radius:11px; background:var(--nav-bg); }
         .public-tree-controls button { width:26px; height:26px; min-width:26px; flex:0 0 26px; border:1px solid var(--border-color); border-radius:7px; background:var(--card-solid); color:var(--text-color); cursor:pointer; font-weight:800; padding:0; line-height:24px; }
@@ -1026,7 +1027,7 @@
         }
 
         .sim-node {
-            position: absolute; width: 88px; height: 88px; cursor: pointer;
+            position: absolute; width: var(--sim-node-size); height: var(--sim-node-size); cursor: pointer;
             overflow: visible; 
             z-index: 2; user-select: none; display: flex; align-items: center; 
             justify-content: center; background: transparent;
@@ -1052,12 +1053,12 @@
             white-space: nowrap;
         }
         .sim-special-icon {
-            width: 24px;
-            height: 24px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
+            font-size: 21px;
             line-height: 1;
             border-radius: 50%;
             background: var(--card-solid);
@@ -4504,7 +4505,7 @@ function openSimsFamily(treeId) {
                 if (special.children.length) node.appendChild(special);
 
                 const animalIds = Array.isArray(sim.animalIds) ? sim.animalIds : [];
-                let animalTop = 8;
+                let animalTop = 4;
                 animalIds.forEach(animalId => {
                     const animal = (tree.sims || []).find(s => s.id === animalId);
                     if (!animal || !isAnimalSim(animal)) return;
@@ -4516,7 +4517,7 @@ function openSimsFamily(treeId) {
                     } else {
                         a.textContent = ({'Kutya':'🐕','Macska':'🐱','Ló':'🐴','Más állat':'🐾'})[animal.species] || '🐾';
                     }
-                    node.appendChild(a); animalTop += 24;
+                    node.appendChild(a); animalTop += 38;
                 });
 
                 world.appendChild(node);
@@ -4527,9 +4528,9 @@ function openSimsFamily(treeId) {
                 const parentIds = Array.isArray(child.parentIds) ? child.parentIds.filter(Boolean) : (child.parentId ? [child.parentId] : []);
                 const parents = parentIds.map(id => (tree.sims || []).find(s => s.id === id)).filter(s => s && !isAnimalSim(s));
                 if (!parents.length) return;
-                const startX = parents.length === 2 ? ((parents[0].x + 44) + (parents[1].x + 44)) / 2 : parents[0].x + 44;
+                const startX = parents.length === 2 ? ((parents[0].x + 50) + (parents[1].x + 50)) / 2 : parents[0].x + 50;
                 const startY = parents.length === 2 ? ((parents[0].y + 88) + (parents[1].y + 88)) / 2 : parents[0].y + 88;
-                const endX = child.x + 44, endY = child.y, midY = startY + (endY - startY) / 2;
+                const endX = child.x + 50, endY = child.y, midY = startY + (endY - startY) / 2;
                 const path = document.createElementNS('http://www.w3.org/2000/svg','path');
                 path.setAttribute('d',`M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`);
                 path.setAttribute('class','line-child'); svg.appendChild(path);
@@ -4546,7 +4547,7 @@ function openSimsFamily(treeId) {
                     if (rendered.has(key)) return;
                     rendered.add(key);
                     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-                    const startX=sim.x+88,startY=sim.y+44,endX=partner.x,endY=partner.y+44,midX=startX+(endX-startX)/2;
+                    const startX=sim.x+100,startY=sim.y+50,endX=partner.x,endY=partner.y+50,midX=startX+(endX-startX)/2;
                     path.setAttribute('d',`M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
                     const relationType=(sim.connectionTypes&&sim.connectionTypes[partnerId])||sim.relationType;
                     const isLove=['Házas','Jegyes','Szerelmes','Özvegy',null].includes(relationType);
@@ -5187,9 +5188,9 @@ function openSimsFamily(treeId) {
                 if (sim.imageTransform) {
                     const { scale, rotate, offsetX, offsetY, filter } = sim.imageTransform;
                     // A mentett értékek a crop modal (200px) méretéhez viszonyulnak
-                    // A jelenlegi node mérete 88px, így arányosítani kell
+                    // A jelenlegi node mérete 100px, így arányosítani kell
                     const cropModalSize = 200;
-                    const currentNodeSize = 88;
+                    const currentNodeSize = 100;
                     const sizeRatio = currentNodeSize / cropModalSize;
                     
                     // A transzformáció sorrendje fontos: először eltoljuk, majd forgatjuk, majd skálázunk
@@ -5270,10 +5271,10 @@ function openSimsFamily(treeId) {
                     if (animal && isAnimalSim(animal)) {
                         const animalIcon = document.createElement('div');
                         animalIcon.style.position = 'absolute';
-                        animalIcon.style.left = '-32px'; // Fix bal pozíció a node-on kívül
+                        animalIcon.style.left = '-40px'; // Fix bal pozíció a node-on kívül
                         animalIcon.style.top = topOffset + 'px';
-                        animalIcon.style.width = '20px';
-                        animalIcon.style.height = '20px';
+                        animalIcon.style.width = '34px';
+                        animalIcon.style.height = '34px';
                         animalIcon.style.borderRadius = '50%';
                         animalIcon.style.overflow = 'hidden';
                         animalIcon.style.border = '2px solid var(--border-color)';
@@ -5301,7 +5302,7 @@ function openSimsFamily(treeId) {
                             animalIcon.style.display = 'flex';
                             animalIcon.style.alignItems = 'center';
                             animalIcon.style.justifyContent = 'center';
-                            animalIcon.style.fontSize = '12px';
+                            animalIcon.style.fontSize = '21px';
                         }
 
                         node.appendChild(animalIcon); // Közvetlenül a node-ra tesszük, nem a specialIcons konténerbe
@@ -6174,9 +6175,9 @@ function openSimsFamily(treeId) {
                     const p2 = parents[1];
 
                     // A két szülő node-jának alsó középpontja.
-                    const p1x = p1.x + 44;
+                    const p1x = p1.x + 50;
                     const p1y = p1.y + 88;
-                    const p2x = p2.x + 44;
+                    const p2x = p2.x + 50;
                     const p2y = p2.y + 88;
 
                     // A közös szülői pont pontosan a két szülő alsó
@@ -6185,7 +6186,7 @@ function openSimsFamily(treeId) {
                     const startY = (p1y + p2y) / 2;
 
                     // A gyermek felső középpontja.
-                    const endX = child.x + 44;
+                    const endX = child.x + 50;
                     const endY = child.y;
 
                     const path = document.createElementNS(
@@ -6205,9 +6206,9 @@ function openSimsFamily(treeId) {
                     // Egy szülő esetén marad a régi működés.
                     const parent = parents[0];
 
-                    const startX = parent.x + 44;
+                    const startX = parent.x + 50;
                     const startY = parent.y + 88;
-                    const endX = child.x + 44;
+                    const endX = child.x + 50;
                     const endY = child.y;
 
                     const path = document.createElementNS(
@@ -6244,9 +6245,9 @@ function openSimsFamily(treeId) {
                     renderedPartnerPairs.add(pairKey);
 
                     const startX = sim.x + 88;
-                    const startY = sim.y + 44;
+                    const startY = sim.y + 50;
                     const endX = partner.x;
-                    const endY = partner.y + 44;
+                    const endY = partner.y + 50;
 
                     const hasSharedChild = tree.sims.some(child => {
                         const childParentIds = Array.isArray(child.parentIds)
@@ -6614,12 +6615,12 @@ function openSimsFamily(treeId) {
                 const partnerSim = tree.sims.find(s => s.id === selectedPartnerId);
                 if (partnerSim) {
                     // A gyereket a két szülő közötti vonal közepére helyezzük
-                    const midX = (parentSim.x + partnerSim.x) / 2 + 44; // +44 a node szélességének fele
-                    const midY = (parentSim.y + partnerSim.y) / 2 + 44; // +44 a node magasságának fele
+                    const midX = (parentSim.x + partnerSim.x) / 2 + 50; // +50 a node szélességének fele
+                    const midY = (parentSim.y + partnerSim.y) / 2 + 50; // +50 a node magasságának fele
                     const childY = midY + 120; // 120px lejjebb a vonal közepétől
                     const childLastName = parentSim.lastName || partnerSim.lastName || 'Sim';
 
-                    const newChild = addNewSim("Gyermek", childLastName, midX - 44, childY - 44, parentSim.id, null, 'Gyerek');
+                    const newChild = addNewSim("Gyermek", childLastName, midX - 50, childY - 50, parentSim.id, null, 'Gyerek');
                     normalizeSimExtraFields(newChild);
                     if (!newChild.parentIds.includes(selectedPartnerId)) {
                         newChild.parentIds.push(selectedPartnerId);
