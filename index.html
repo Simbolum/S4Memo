@@ -953,7 +953,18 @@
         .public-sim-info-item small { display:block; font-size:9px; color:var(--subtext-color); margin-bottom:3px; }
         .public-sim-info-item strong { display:block; font-size:11px; color:var(--text-color); word-break:break-word; }
         .public-sim-text { font-size:12px; line-height:1.6; color:var(--text-color); white-space:pre-wrap; word-break:break-word; }
-        .public-sim-relations { display:flex; flex-direction:column; gap:7px; }
+        .public-sim-relations { display:flex; flex-direction:column; gap:10px; }
+        .public-sim-relation-group {
+            padding:10px; border:1px solid var(--border-color); border-radius:14px;
+            background:rgba(255,255,255,.02);
+        }
+        .public-sim-relation-group-title {
+            display:flex; align-items:center; gap:6px; margin:0 0 7px;
+            font-size:10px; font-weight:900; color:var(--text-color);
+            text-transform:uppercase; letter-spacing:.05em;
+        }
+        .public-sim-relation-group-list { display:flex; flex-direction:column; gap:7px; }
+        .public-sim-relations > .public-sim-empty { margin-top:2px; }
         .public-sim-relation { display:flex; align-items:center; gap:9px; padding:7px; border-radius:11px; border:1px solid var(--border-color); background:var(--card-solid); }
         .public-sim-relation-avatar { width:34px; height:34px; flex:0 0 34px; border-radius:50%; background-size:cover; background-position:center; background-color:var(--border-color); display:flex; align-items:center; justify-content:center; font-size:16px; overflow:hidden; }
         .public-sim-relation-name { font-size:11px; font-weight:800; color:var(--text-color); }
@@ -1452,12 +1463,34 @@
             margin-bottom: 6px;
         }
         .sim-connections-editor-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-            gap: 5px;
-            max-height: 112px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 220px;
             overflow-y: auto;
             padding-right: 2px;
+        }
+        .sim-connection-editor-group {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+        }
+        .sim-connection-editor-group-title {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 0 0 6px;
+            font-size: 9px;
+            font-weight: 900;
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .sim-connection-editor-group-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
         .sim-connection-editor-item {
             min-width: 0;
@@ -2365,6 +2398,9 @@
                     <option value="Özvegy">Özvegy (Rózsaszín kötél)</option>
                     <option value="Gyerek">Gyerek (Zöld kötél)</option>
                     <option value="Szülő">Szülő (Zöld kötél)</option>
+                    <option value="Testvér">Testvér (Zöld kötél)</option>
+                    <option value="Rokon">Rokon (Zöld kötél)</option>
+                    <option value="Barátok">Barátok (Zöld kötél)</option>
                 </select>
             </div>
 
@@ -4550,7 +4586,7 @@ function openSimsFamily(treeId) {
                     const startX=sim.x+100,startY=sim.y+50,endX=partner.x,endY=partner.y+50,midX=startX+(endX-startX)/2;
                     path.setAttribute('d',`M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
                     const relationType=(sim.connectionTypes&&sim.connectionTypes[partnerId])||sim.relationType;
-                    const isLove=['Házas','Jegyes','Szerelmes','Özvegy',null].includes(relationType);
+                    const isLove=['Házas','Jegyes','Szerelmes','Özvegy',null,'Partner'].includes(relationType);
                     path.setAttribute('class',isLove?'line-love':'line-child');
                     svg.appendChild(path);
                 });
@@ -4775,27 +4811,103 @@ function openSimsFamily(treeId) {
                 if (!id || id === sim.id) return;
                 const target = (tree.sims || []).find(s => s.id === id);
                 if (!target) return;
-                const key = `${target.id}|${type}`;
+                const normalizedType = type || 'Kapcsolat';
+                const key = `${target.id}|${normalizedType}`;
                 if (relationEntries.some(x => x.key === key)) return;
-                relationEntries.push({key, target, type});
+                relationEntries.push({key, target, type: normalizedType});
             };
 
-            (sim.parentIds || []).forEach(id => addRelation(id, 'Szülő'));
-            const partnerIds = Array.isArray(sim.partnerIds) ? sim.partnerIds : (sim.partnerId ? [sim.partnerId] : []);
-            partnerIds.forEach(id => addRelation(id, (sim.connectionTypes && sim.connectionTypes[id]) || sim.relationType || 'Partner'));
-            (sim.animalIds || []).forEach(id => addRelation(id, 'Állat'));
+            const parentIds = Array.isArray(sim.parentIds) ? sim.parentIds.filter(Boolean) : (sim.parentId ? [sim.parentId] : []);
+            parentIds.forEach(id => addRelation(id, 'Szülő'));
+
+            // Gyermekek
             (tree.sims || []).forEach(other => {
-                if (isAnimalSim(other)) return;
+                if (!other || other.id === sim.id || isAnimalSim(other)) return;
                 const parents = Array.isArray(other.parentIds) ? other.parentIds : (other.parentId ? [other.parentId] : []);
                 if (parents.includes(sim.id)) addRelation(other.id, 'Gyermek');
-                const othersPartners = Array.isArray(other.partnerIds) ? other.partnerIds : (other.partnerId ? [other.partnerId] : []);
-                if (othersPartners.includes(sim.id)) addRelation(other.id, (other.connectionTypes && other.connectionTypes[sim.id]) || other.relationType || 'Partner');
             });
+
+            // Testvérek: legalább egy közös szülő alapján automatikusan felismerjük.
+            const siblingParentSet = new Set(parentIds);
+            if (siblingParentSet.size) {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds : (other.parentId ? [other.parentId] : []);
+                    if (otherParents.some(pid => siblingParentSet.has(pid))) addRelation(other.id, 'Testvér');
+                });
+            }
+
+            // Egyedi kapcsolatok (Párkapcsolat / Rokon / Barátok / régebbi egyedi típusok)
+            const partnerIds = Array.isArray(sim.partnerIds) ? sim.partnerIds : (sim.partnerId ? [sim.partnerId] : []);
+            partnerIds.forEach(id => {
+                const target = (tree.sims || []).find(s => s.id === id);
+                if (!target || isAnimalSim(target)) return;
+                addRelation(id, (sim.connectionTypes && sim.connectionTypes[id]) || sim.relationType || 'Partner');
+            });
+            (tree.sims || []).forEach(other => {
+                if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                const othersPartners = Array.isArray(other.partnerIds) ? other.partnerIds : (other.partnerId ? [other.partnerId] : []);
+                if (othersPartners.includes(sim.id)) {
+                    addRelation(other.id, (other.connectionTypes && other.connectionTypes[sim.id]) || other.relationType || 'Partner');
+                }
+            });
+
+            // Állatok külön csoportban maradnak, hogy ne vesszenek el a kapcsolatokból.
+            (sim.animalIds || []).forEach(id => addRelation(id, 'Állat'));
 
             if (!relationEntries.length) {
                 relationList.innerHTML = '<div class="public-sim-empty">Nincsenek rögzített kapcsolatok.</div>';
             } else {
-                relationEntries.forEach(entry => relationList.appendChild(createPublicRelationRow(entry.target, entry.type)));
+                relationList.innerHTML = '';
+                const groups = [
+                    { key:'Szülő', title:'👪 Szülő' },
+                    { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
+                    { key:'Gyermek', title:'🧒 Gyermek' },
+                    { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
+                    { key:'Barátok', title:'🤝 Barátok' },
+                    { key:'partner', title:'💞 Párkapcsolat', match:type => ['Házas','Jegyes','Szerelmes','Özvegy','Partner'].includes(type) },
+                    { key:'állat', title:'🐾 Állatok', match:type => type === 'Állat' },
+                ];
+
+                const used = new Set();
+                groups.forEach(group => {
+                    const items = relationEntries.filter(entry => {
+                        const matches = group.match ? group.match(entry.type) : entry.type === group.key;
+                        return matches && !used.has(entry.key);
+                    });
+                    if (!items.length) return;
+
+                    const section = document.createElement('div');
+                    section.className = 'public-sim-relation-group';
+                    const title = document.createElement('div');
+                    title.className = 'public-sim-relation-group-title';
+                    title.textContent = group.title;
+                    const list = document.createElement('div');
+                    list.className = 'public-sim-relation-group-list';
+                    items.forEach(entry => {
+                        used.add(entry.key);
+                        list.appendChild(createPublicRelationRow(entry.target, entry.type));
+                    });
+                    section.appendChild(title);
+                    section.appendChild(list);
+                    relationList.appendChild(section);
+                });
+
+                // Ismeretlen / régebbi egyedi típusok se vesszenek el.
+                const remaining = relationEntries.filter(entry => !used.has(entry.key));
+                if (remaining.length) {
+                    const section = document.createElement('div');
+                    section.className = 'public-sim-relation-group';
+                    const title = document.createElement('div');
+                    title.className = 'public-sim-relation-group-title';
+                    title.textContent = '🔗 Egyéb kapcsolatok';
+                    const list = document.createElement('div');
+                    list.className = 'public-sim-relation-group-list';
+                    remaining.forEach(entry => list.appendChild(createPublicRelationRow(entry.target, entry.type)));
+                    section.appendChild(title);
+                    section.appendChild(list);
+                    relationList.appendChild(section);
+                }
             }
 
             const galleryGrid = document.getElementById('publicSimGallery');
@@ -6045,43 +6157,187 @@ function openSimsFamily(treeId) {
                 return;
             }
 
-            const connections = getSimConnections(simId);
+            const sim = tree.sims.find(s => s.id === simId);
+            if (!sim) {
+                list.innerHTML = '<div class="sim-connections-empty">Nincs kapcsolat.</div>';
+                return;
+            }
+
+            // Ugyanazokat a kapcsolatokat gyűjtjük össze, mint a Megtekintés nézetben,
+            // hogy a Szerkesztés és a Megtekintés pontosan ugyanúgy csoportosítsa őket.
+            const relationEntries = [];
+            const addRelation = (id, type) => {
+                if (!id || id === sim.id) return;
+                const target = (tree.sims || []).find(s => s.id === id);
+                if (!target) return;
+                const normalizedType = type || 'Kapcsolat';
+                const key = `${target.id}|${normalizedType}`;
+                if (relationEntries.some(x => x.key === key)) return;
+                relationEntries.push({ key, target, type: normalizedType });
+            };
+
+            const parentIds = Array.isArray(sim.parentIds)
+                ? sim.parentIds.filter(Boolean)
+                : (sim.parentId ? [sim.parentId] : []);
+            parentIds.forEach(id => addRelation(id, 'Szülő'));
+
+            // Gyermekek
+            (tree.sims || []).forEach(other => {
+                if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                const parents = Array.isArray(other.parentIds)
+                    ? other.parentIds
+                    : (other.parentId ? [other.parentId] : []);
+                if (parents.includes(sim.id)) addRelation(other.id, 'Gyermek');
+            });
+
+            // Testvérek: legalább egy közös szülő alapján.
+            const siblingParentSet = new Set(parentIds);
+            if (siblingParentSet.size) {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds)
+                        ? other.parentIds
+                        : (other.parentId ? [other.parentId] : []);
+                    if (otherParents.some(pid => siblingParentSet.has(pid))) {
+                        addRelation(other.id, 'Testvér');
+                    }
+                });
+            }
+
+            // Egyedi kapcsolatok / párkapcsolatok.
+            const partnerIds = Array.isArray(sim.partnerIds)
+                ? sim.partnerIds
+                : (sim.partnerId ? [sim.partnerId] : []);
+            partnerIds.forEach(id => {
+                const target = (tree.sims || []).find(s => s.id === id);
+                if (!target || isAnimalSim(target)) return;
+                addRelation(id, (sim.connectionTypes && sim.connectionTypes[id]) || sim.relationType || 'Partner');
+            });
+            (tree.sims || []).forEach(other => {
+                if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                const othersPartners = Array.isArray(other.partnerIds)
+                    ? other.partnerIds
+                    : (other.partnerId ? [other.partnerId] : []);
+                if (othersPartners.includes(sim.id)) {
+                    addRelation(other.id, (other.connectionTypes && other.connectionTypes[sim.id]) || other.relationType || 'Partner');
+                }
+            });
+
+            // Állatok külön csoportban.
+            (sim.animalIds || []).forEach(id => addRelation(id, 'Állat'));
+
             list.innerHTML = '';
 
-            if (!connections.length) {
+            if (!relationEntries.length) {
                 list.innerHTML = '<div class="sim-connections-empty">Nincs még rögzített kapcsolat.</div>';
                 return;
             }
 
-            connections.forEach(connection => {
-                const target = tree.sims.find(s => s.id === connection.targetId);
-                if (!target) return;
+            const groups = [
+                { key:'Szülő', title:'👪 Szülő' },
+                { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
+                { key:'Gyermek', title:'🧒 Gyermek' },
+                { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
+                { key:'Barátok', title:'🤝 Barátok' },
+                { key:'partner', title:'💞 Párkapcsolat', match:type => ['Házas','Jegyes','Szerelmes','Özvegy','Partner'].includes(type) },
+                { key:'állat', title:'🐾 Állatok', match:type => type === 'Állat' }
+            ];
 
-                const item = document.createElement('div');
-                item.className = 'sim-connection-editor-item';
+            const used = new Set();
+            groups.forEach(group => {
+                const items = relationEntries.filter(entry => {
+                    const matches = group.match ? group.match(entry.type) : entry.type === group.key;
+                    return matches && !used.has(entry.key);
+                });
+                if (!items.length) return;
 
-                const avatar = document.createElement('div');
-                avatar.className = 'sim-connection-editor-avatar';
-                if (target.image) {
-                    avatar.style.backgroundImage = `url(${target.image})`;
-                    avatar.innerText = '';
-                } else {
-                    avatar.innerText = isAnimalSim(target) ? '🐾' : '👤';
-                }
+                const section = document.createElement('div');
+                section.className = 'sim-connection-editor-group';
 
-                const name = document.createElement('div');
-                name.className = 'sim-connection-editor-name';
-                name.textContent = `${target.firstName || ''} ${target.lastName || ''}`.trim() || 'Névtelen Sim';
+                const title = document.createElement('div');
+                title.className = 'sim-connection-editor-group-title';
+                title.textContent = group.title;
 
-                const type = document.createElement('div');
-                type.className = 'sim-connection-editor-type';
-                type.textContent = connection.type || 'Kapcsolat';
+                const groupList = document.createElement('div');
+                groupList.className = 'sim-connection-editor-group-list';
 
-                item.appendChild(avatar);
-                item.appendChild(name);
-                item.appendChild(type);
-                list.appendChild(item);
+                items.forEach(connection => {
+                    used.add(connection.key);
+                    const target = connection.target;
+
+                    const item = document.createElement('div');
+                    item.className = 'sim-connection-editor-item';
+
+                    const avatar = document.createElement('div');
+                    avatar.className = 'sim-connection-editor-avatar';
+                    if (target.image) {
+                        avatar.style.backgroundImage = `url(${target.image})`;
+                        avatar.innerText = '';
+                    } else {
+                        avatar.innerText = isAnimalSim(target) ? '🐾' : '👤';
+                    }
+
+                    const name = document.createElement('div');
+                    name.className = 'sim-connection-editor-name';
+                    name.textContent = `${target.firstName || ''} ${target.lastName || ''}`.trim() || 'Névtelen Sim';
+
+                    const type = document.createElement('div');
+                    type.className = 'sim-connection-editor-type';
+                    type.textContent = connection.type || 'Kapcsolat';
+
+                    item.appendChild(avatar);
+                    item.appendChild(name);
+                    item.appendChild(type);
+                    groupList.appendChild(item);
+                });
+
+                section.appendChild(title);
+                section.appendChild(groupList);
+                list.appendChild(section);
             });
+
+            // Régi / egyedi típusok maradjanak láthatók.
+            const remaining = relationEntries.filter(entry => !used.has(entry.key));
+            if (remaining.length) {
+                const section = document.createElement('div');
+                section.className = 'sim-connection-editor-group';
+                const title = document.createElement('div');
+                title.className = 'sim-connection-editor-group-title';
+                title.textContent = '🔗 Egyéb kapcsolatok';
+                const groupList = document.createElement('div');
+                groupList.className = 'sim-connection-editor-group-list';
+
+                remaining.forEach(connection => {
+                    const target = connection.target;
+                    const item = document.createElement('div');
+                    item.className = 'sim-connection-editor-item';
+
+                    const avatar = document.createElement('div');
+                    avatar.className = 'sim-connection-editor-avatar';
+                    if (target.image) {
+                        avatar.style.backgroundImage = `url(${target.image})`;
+                    } else {
+                        avatar.innerText = isAnimalSim(target) ? '🐾' : '👤';
+                    }
+
+                    const name = document.createElement('div');
+                    name.className = 'sim-connection-editor-name';
+                    name.textContent = `${target.firstName || ''} ${target.lastName || ''}`.trim() || 'Névtelen Sim';
+
+                    const type = document.createElement('div');
+                    type.className = 'sim-connection-editor-type';
+                    type.textContent = connection.type || 'Kapcsolat';
+
+                    item.appendChild(avatar);
+                    item.appendChild(name);
+                    item.appendChild(type);
+                    groupList.appendChild(item);
+                });
+
+                section.appendChild(title);
+                section.appendChild(groupList);
+                list.appendChild(section);
+            }
         }
 
         function openSimModal(simId) {
@@ -6455,8 +6711,8 @@ function openSimsFamily(treeId) {
                 list.innerHTML = '<div style="color:var(--subtext-color); font-size:12px; padding:10px;">Ennek a Simnek nincs szerkeszthető kapcsolata.</div>';
             } else {
                 connections.forEach(connection => {
-                    // Csak a partner kapcsolatokat engedjük szerkeszteni
-                    if (connection.type === 'Partner' || ['Házas', 'Jegyes', 'Szerelmes', 'Özvegy'].includes(connection.type)) {
+                    // Párkapcsolatok és egyedi kapcsolattípusok szerkeszthetők.
+                    if (['Partner', 'Házas', 'Jegyes', 'Szerelmes', 'Özvegy', 'Testvér', 'Rokon', 'Barátok', 'Barát'].includes(connection.type)) {
                         const target = tree.sims.find(s => s.id === connection.targetId);
                         if (!target) return;
 
@@ -6473,6 +6729,9 @@ function openSimsFamily(treeId) {
                                 <option value="Jegyes" ${connection.type === 'Jegyes' ? 'selected' : ''}>Jegyes</option>
                                 <option value="Szerelmes" ${connection.type === 'Szerelmes' ? 'selected' : ''}>Szerelmes</option>
                                 <option value="Özvegy" ${connection.type === 'Özvegy' ? 'selected' : ''}>Özvegy</option>
+                                <option value="Testvér" ${connection.type === 'Testvér' ? 'selected' : ''}>Testvér</option>
+                                <option value="Rokon" ${connection.type === 'Rokon' ? 'selected' : ''}>Rokon</option>
+                                <option value="Barátok" ${(connection.type === 'Barátok' || connection.type === 'Barát') ? 'selected' : ''}>Barátok</option>
                             </select>
                         `;
 
