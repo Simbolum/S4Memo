@@ -821,6 +821,7 @@
         .public-tree-card-cover-placeholder { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:46px; opacity:.8; z-index:0; }
         .public-tree-card-cover::after { content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.52)); pointer-events:none; }
         .public-tree-card-cover-title { position:absolute; left:14px; right:14px; bottom:12px; z-index:2; color:#fff; font-size:16px; font-weight:900; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+        .public-tree-rank-badge { position:absolute; top:10px; left:10px; z-index:3; min-width:40px; height:32px; padding:0 10px; display:flex; align-items:center; justify-content:center; border-radius:10px; background:rgba(0,0,0,.72); color:#fff; font-size:15px; font-weight:900; letter-spacing:.2px; text-shadow:0 1px 5px rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.3); box-shadow:0 4px 14px rgba(0,0,0,.25); backdrop-filter:blur(5px); }
         .public-tree-card-body { padding:14px 16px 16px; }
         .public-tree-card h3 { margin:0 0 6px; font-size:15px; }
         .public-tree-card p { margin:0 0 12px; color:var(--subtext-color); font-size:11px; line-height:1.5; }
@@ -4184,6 +4185,16 @@ function openSimsFamily(treeId) {
                     isStarred: starredIds.has(tree.id)
                 }));
 
+                // Ranglista: először a több csillaggal rendelkező családfák,
+                // azonos csillagszámnál pedig a legutóbb szerkesztett kerül előrébb.
+                publicFamilyTrees.sort((a, b) => {
+                    const starDiff = Number(b.starCount || 0) - Number(a.starCount || 0);
+                    if (starDiff !== 0) return starDiff;
+                    const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                    const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                    return timeB - timeA;
+                });
+
                 if (publicViewerTree) {
                     const freshViewerTree = publicFamilyTrees.find(t => t.id === publicViewerTree.id);
                     if (freshViewerTree) {
@@ -4210,6 +4221,7 @@ function openSimsFamily(treeId) {
                     const indexImage = tree.bgConfig?.publicIndexImage || '';
                     card.innerHTML = `
                         <div class="public-tree-card-cover">
+                            <div class="public-tree-rank-badge">#${publicFamilyTrees.indexOf(tree) + 1}</div>
                             ${indexImage ? `<img class="public-tree-card-cover-image" src="${escapeHtml(indexImage)}" alt="${escapeHtml(tree.name || 'Családfa indexkép')}" loading="lazy">` : '<div class="public-tree-card-cover-placeholder">🌳</div>'}
                             <div class="public-tree-card-cover-title">🌳 ${escapeHtml(tree.name || 'Névtelen családfa')}</div>
                         </div>
