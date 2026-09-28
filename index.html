@@ -794,8 +794,23 @@
         .blog-post-author { min-width:0; flex:1; }
         .blog-post-author strong { display:block; font-size:11px; font-weight:900; color:var(--text-color); }
         .blog-post-author span { display:block; margin-top:2px; font-size:8px; color:var(--subtext-color); font-weight:700; }
-         .blog-post-menu-wrap{position:relative;margin-left:auto}.blog-post-menu{border:0;background:transparent;color:var(--subtext-color);cursor:pointer;font-size:15px;padding:2px 4px;line-height:1}.blog-post-menu-dropdown{display:none;position:absolute;right:0;top:100%;min-width:125px;padding:5px;background:var(--card-solid);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);z-index:30}.blog-post-menu-wrap.open .blog-post-menu-dropdown{display:block}.blog-post-menu-item{width:100%;border:0;background:transparent;color:var(--text-color);text-align:left;padding:7px 8px;border-radius:7px;font-size:10px;font-weight:800;cursor:pointer}.blog-post-menu-item:hover{background:rgba(255,255,255,.06)}.blog-post-menu-item.danger{color:#ff6b7f}.blog-post-social{display:flex;align-items:center;gap:10px;padding:8px 13px 10px;border-top:1px solid var(--border-color)}.blog-post-reaction{border:0;background:transparent;color:var(--subtext-color);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:3px 4px;border-radius:7px}.blog-post-reaction:hover{background:rgba(255,255,255,.05)}.blog-post-reaction.liked{color:#49d889} .blog-plumbob{display:inline-block;width:14px;height:18px;position:relative;background:linear-gradient(145deg,#8fffc0 0%,#35d879 38%,#19a85a 100%);clip-path:polygon(50% 0%,100% 28%,72% 100%,28% 100%,0% 28%);filter:drop-shadow(0 0 4px rgba(57,216,121,.45));vertical-align:middle}.blog-plumbob:after{content:'';position:absolute;left:4px;top:3px;width:3px;height:7px;background:rgba(255,255,255,.55);border-radius:50%;transform:rotate(28deg)}
+         .blog-post-menu-wrap{position:relative;margin-left:auto}.blog-post-menu{border:0;background:transparent;color:var(--subtext-color);cursor:pointer;font-size:15px;padding:2px 4px;line-height:1}.blog-post-menu-dropdown{display:none;position:absolute;right:0;top:100%;min-width:125px;padding:5px;background:var(--card-solid);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);z-index:30}.blog-post-menu-wrap.open .blog-post-menu-dropdown{display:block}.blog-post-menu-item{width:100%;border:0;background:transparent;color:var(--text-color);text-align:left;padding:7px 8px;border-radius:7px;font-size:10px;font-weight:800;cursor:pointer}.blog-post-menu-item:hover{background:rgba(255,255,255,.06)}.blog-post-menu-item.danger{color:#ff6b7f}.blog-post-social{display:flex;align-items:center;gap:10px;padding:8px 13px 10px;border-top:1px solid var(--border-color)}.blog-post-reaction{border:0;background:transparent;color:var(--subtext-color);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:3px 4px;border-radius:7px}.blog-post-reaction:hover{background:rgba(255,255,255,.05)}.blog-post-reaction.liked{color:#49d889}
+        .blog-plumbob{display:inline-block;width:15px;height:22px;vertical-align:middle;filter:drop-shadow(0 0 3px rgba(57,216,121,.42));flex:0 0 auto}
+        .blog-plumbob svg{display:block;width:100%;height:100%}
+        .blog-emoji-wrap{position:relative;display:inline-flex;align-items:center;flex:0 0 auto}
+        .blog-emoji-btn{border:1px solid var(--border-color);background:var(--card-solid);color:var(--text-color);border-radius:7px;padding:4px 6px;line-height:1;cursor:pointer;font-size:13px}
+        .blog-emoji-btn:hover{border-color:var(--accent-color)}
+        .blog-emoji-picker{display:none;position:absolute;left:0;bottom:calc(100% + 5px);z-index:60;width:205px;padding:7px;background:var(--card-solid);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.25);grid-template-columns:repeat(7,1fr);gap:3px}
+        .blog-emoji-wrap.open .blog-emoji-picker{display:grid}
+        .blog-emoji-choice{border:0;background:transparent;border-radius:6px;padding:5px 2px;font-size:16px;line-height:1;cursor:pointer}
+        .blog-emoji-choice:hover{background:rgba(255,255,255,.08)}
+        .blog-text-editor-row{display:flex;align-items:flex-end;gap:6px}
+        .blog-text-editor-row textarea{flex:1;min-width:0}
+        .blog-comment-form,.blog-reply-form{align-items:center}
+
         .blog-comment-actions{display:flex;align-items:center;gap:8px;margin-top:5px}.blog-comment-action{border:0;background:transparent;color:var(--subtext-color);font-size:8px;font-weight:800;cursor:pointer;padding:2px 3px}.blog-comment-action:hover{color:#49d889}.blog-comment-replies{margin:6px 0 0 16px;display:flex;flex-direction:column;gap:5px}.blog-comment-reply{padding:5px 7px;border-left:2px solid #49d889;background:rgba(73,216,137,.045);border-radius:7px;font-size:8px}.blog-reply-form{display:flex;gap:5px;margin-top:5px}.blog-reply-form input{flex:1;min-width:0;border:1px solid var(--border-color);border-radius:7px;background:var(--card-solid);color:var(--text-color);padding:5px 7px;font-size:8px}.blog-reply-form button{border:1px solid var(--border-color);background:var(--card-solid);color:var(--text-color);border-radius:7px;padding:0 7px;font-size:8px;font-weight:800;cursor:pointer}.blog-cover{height:150px;position:relative;background:var(--card-solid);overflow:hidden}.blog-cover-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}.blog-cover-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--subtext-color);font-size:11px;font-weight:800}.blog-comments{padding:0 13px 12px}.blog-comments-list{display:flex;flex-direction:column;gap:6px;margin-bottom:7px}.blog-comment{padding:7px 8px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid var(--border-color);font-size:9px;line-height:1.45}.blog-comment strong{font-weight:900;margin-right:4px}.blog-comment-form{display:flex;gap:6px}.blog-comment-input{flex:1;min-width:0;border:1px solid var(--border-color);border-radius:9px;background:var(--card-solid);color:var(--text-color);padding:7px 8px;font-size:9px;outline:none}.blog-comment-submit{border:1px solid var(--border-color);background:var(--card-solid);color:var(--text-color);border-radius:9px;padding:0 9px;cursor:pointer;font-weight:800;font-size:9px}
+        .blog-comment-form .blog-emoji-wrap,.blog-reply-form .blog-emoji-wrap{height:100%}
+
         .blog-post-body { padding:0 13px 12px; }
         .blog-post-title { margin:2px 0 6px; font-size:15px; font-weight:900; color:var(--text-color); }
         .blog-post-text { color:var(--text-color); font-size:11px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
@@ -2002,7 +2017,7 @@
                 </div>
                 <div class="form-group">
                     <label>Blog neve</label>
-                    <input id="simBlogNameInput" required placeholder="Pl. Amanda mindennapjai">
+                    <input id="simBlogNameInput" placeholder="Pl. Amanda mindennapjai (nem kötelező)">
                 </div>
                 <div class="form-row">
                     <div class="form-group" style="flex:1;">
@@ -2050,12 +2065,9 @@
                 <div class="form-row">
                     <div class="form-group" style="flex:1;">
                         <label>Cím</label>
-                        <input id="simBlogPostTitleInput" placeholder="Pl. A mai napom">
+                        <div class="blog-text-editor-row"><input id="simBlogPostTitleInput" placeholder="Pl. A mai napom"><div class="blog-emoji-wrap"><button type="button" class="blog-emoji-btn" title="Emoji beszúrása" onclick="toggleBlogEmojiPicker(this)">😊</button><div class="blog-emoji-picker"></div></div></div>
                     </div>
-                    <div class="form-group" style="flex:0 0 190px;">
-                        <label>Dátum</label>
-                        <input type="date" id="simBlogPostDateInput">
-                    </div>
+
                 </div>
                 <div class="form-group">
                     <label>Bejegyzés tartalma</label>
@@ -2098,7 +2110,7 @@
             <div class="public-tree-controls">
                 <button onclick="adjustPublicTreeZoom(0.1)">+</button>
                 <button onclick="adjustPublicTreeZoom(-0.1)">−</button>
-                <button onclick="resetPublicTreeView()">100%</button>
+                
             </div>
         </div>
     </div>
@@ -3908,7 +3920,7 @@
                 const tree=item._tree || familyTrees.find(t=>t.id===item._treeId);
                 const row=document.createElement('div'); row.className='blog-right-card';
                 const img=blogImage(item,tree);
-                row.innerHTML=`<div class="blog-right-avatar">${img?`<img src="${escapeHtml(img)}" alt="">`:'✦'}</div><div><div class="blog-right-name">${escapeHtml(item.name||blogSimName(tree,item))}</div><div class="blog-right-sub">${escapeHtml(blogSimName(tree,item))}</div></div>`;
+                row.innerHTML=`<div class="blog-right-avatar">${img?`<img src="${escapeHtml(img)}" alt="">`:'✦'}</div><div><div class="blog-right-name">${escapeHtml(item.name||'')}</div><div class="blog-right-sub">${escapeHtml(blogSimName(tree,item))}</div></div>`;
                 row.onclick=()=>openBlogReader(item.id, item._treeId);
                 box.appendChild(row);
             });
@@ -3959,7 +3971,7 @@
                 <div class="blog-profile-body">
                     <div class="blog-profile-row">
                         <div class="blog-profile-avatar">${img?`<img src="${escapeHtml(img)}" alt="" style="${avatarStyle}">`:'👤'}</div>
-                        <div style="min-width:0;"><div class="blog-profile-name">${escapeHtml(blog.name||blogSimName(tree,blog))}</div><div class="blog-profile-handle">${escapeHtml(blogHandle(blog,tree))} · ${escapeHtml(blogSimName(tree,blog))}</div></div>
+                        <div style="min-width:0;"><div class="blog-profile-name">${escapeHtml(blog.name||'')}</div><div class="blog-profile-handle">${escapeHtml(blogHandle(blog,tree))} · ${escapeHtml(blogSimName(tree,blog))}</div></div>
                         ${editable ? `<div class="blog-profile-actions"><button class="blog-mini-btn" onclick="event.stopPropagation();openBlogEditModal('${escapeHtml(blog.id)}')">✎ Szerkesztés</button><button class="blog-mini-btn" onclick="event.stopPropagation();openBlogPostModal('${escapeHtml(blog.id)}')">＋ Bejegyzés</button>${blog.isPublic ? `<button class="blog-mini-btn" onclick="event.stopPropagation();setSimBlogPublic('${escapeHtml(blog.id)}',false)">🔒 Visszavonás</button>` : `<button class="blog-mini-btn" onclick="event.stopPropagation();setSimBlogPublic('${escapeHtml(blog.id)}',true)">🌐 Nyilvánossá tétel</button>`}</div>` : `<div class="blog-profile-actions"><span class="blog-public-badge">🌐 Nyilvános</span></div>`}
                     </div>
                     <div class="blog-profile-bio">${escapeHtml(blog.bio||'Nincs még bemutatkozás.')}</div>
@@ -3980,9 +3992,47 @@ function replyToBlogComment(blogId,postId,commentId){const input=document.queryS
 function submitBlogCommentReply(blogId,postId,commentId,input){if(!currentUser){alert('A válaszoláshoz jelentkezz be.');return;}const t=input.value.trim();if(!t)return;const d=getBlogInteractions(blogId,postId),c=(d.comments||[]).find(x=>x.id===commentId);if(!c)return;c.replies=Array.isArray(c.replies)?c.replies:[];c.replies.push({id:'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),userId:currentUser.id,name:getBlogCurrentUserName(),text:t,createdAt:new Date().toISOString(),likes:[]});saveBlogInteractions(blogId,postId,d);renderActivityCurrentContext();}
 function addBlogPostComment(blogId,postId,input){if(!currentUser){alert('A kommenteléshez jelentkezz be.');return;}const t=input.value.trim();if(!t)return;const d=getBlogInteractions(blogId,postId);(d.comments||(d.comments=[])).push({id:'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),userId:currentUser.id,name:getBlogCurrentUserName(),text:t,createdAt:new Date().toISOString(),likes:[],replies:[]});saveBlogInteractions(blogId,postId,d);renderActivityCurrentContext();}
 function renderActivityCurrentContext(){if(activeSimBlogId&&findOwnBlog(activeSimBlogId))renderOwnBlogDetail(activeSimBlogId);else if(activityMode==='own')showMySimBlogs();else renderActivityDashboard();}
-function renderCommentMarkup(blogId,postId,c){const likes=Array.isArray(c.likes)?c.likes:[],liked=currentUser&&likes.includes(currentUser.id),replies=Array.isArray(c.replies)?c.replies:[];const rm=replies.map(r=>{const rl=Array.isArray(r.likes)?r.likes:[],rliked=currentUser&&rl.includes(currentUser.id);return `<div class="blog-comment-reply"><strong>${escapeHtml(r.name||'Felhasználó')}</strong> ${escapeHtml(r.text||'')} <div class="blog-comment-actions"><button class="blog-comment-action" type="button" onclick="toggleBlogCommentReplyLike('${escapeHtml(blogId)}','${escapeHtml(postId)}','${escapeHtml(c.id)}','${escapeHtml(r.id)}')"><span class="blog-plumbob"></span> ${rl.length}</button></div></div>`;}).join('');return `<div class="blog-comment"><strong>${escapeHtml(c.name||'Felhasználó')}</strong>${escapeHtml(c.text||'')}<div class="blog-comment-actions"><button class="blog-comment-action" type="button" onclick="toggleBlogCommentLike('${escapeHtml(blogId)}','${escapeHtml(postId)}','${escapeHtml(c.id)}')"><span class="blog-plumbob"></span> ${likes.length}</button><button class="blog-comment-action" type="button" onclick="replyToBlogComment('${escapeHtml(blogId)}','${escapeHtml(postId)}','${escapeHtml(c.id)}')">↩ Válasz</button></div><div class="blog-reply-form" style="display:none"><input data-reply-input="${escapeHtml(c.id)}" placeholder="Írj választ..." maxlength="500"><button type="button" onclick="submitBlogCommentReply('${escapeHtml(blogId)}','${escapeHtml(postId)}','${escapeHtml(c.id)}',this.previousElementSibling)">Küldés</button></div>${rm?`<div class="blog-comment-replies">${rm}</div>`:''}</div>`;}
-function toggleBlogCommentReplyLike(blogId,postId,commentId,replyId){if(!currentUser){alert('A szívezéshez jelentkezz be.');return;}const d=getBlogInteractions(blogId,postId),c=(d.comments||[]).find(x=>x.id===commentId),r=c?.replies?.find(x=>x.id===replyId);if(!r)return;r.likes=Array.isArray(r.likes)?r.likes:[];const i=r.likes.indexOf(currentUser.id);if(i>=0)r.likes.splice(i,1);else r.likes.push(currentUser.id);saveBlogInteractions(blogId,postId,d);renderActivityCurrentContext();}
-function createBlogPostCard(blog,tree,post,compact=false,sourceLabel=''){const card=document.createElement('article');card.className='blog-panel blog-post';const img=blogImage(blog,tree),images=Array.isArray(post.images)&&post.images.length?post.images:(post.image?[post.image]:[]),title=post.title||'A mai napom',date=getBlogPostDateLabel(post),source=sourceLabel?` · ${sourceLabel}`:'',titleLink=compact?' style="cursor:pointer"':'',own=!!findOwnBlog(blog.id),d=getBlogInteractions(blog.id,post.id),liked=!!currentUser&&(d.likes||[]).includes(currentUser.id),likeCount=(d.likes||[]).length,comments=d.comments||[];const ch=comments.map(c=>renderCommentMarkup(blog.id,post.id,c)).join('');card.innerHTML=`<div class="blog-post-head"><div class="blog-post-avatar">${img?`<img src="${escapeHtml(img)}" alt="">`:'👤'}</div><div class="blog-post-author"><strong>${escapeHtml(blog.name||blogSimName(tree,blog))}</strong><span>${escapeHtml(blogHandle(blog,tree))} · ${escapeHtml(date)}${escapeHtml(source)}</span></div>${own?`<div class="blog-post-menu-wrap"><button class="blog-post-menu" type="button" aria-label="Bejegyzés menü" onclick="event.stopPropagation();toggleBlogPostMenu(this)">•••</button><div class="blog-post-menu-dropdown"><button class="blog-post-menu-item" type="button" onclick="event.stopPropagation();openBlogPostModal('${escapeHtml(blog.id)}','${escapeHtml(post.id)}')">✎ Szerkesztés</button><button class="blog-post-menu-item danger" type="button" onclick="event.stopPropagation();deleteBlogPost('${escapeHtml(blog.id)}','${escapeHtml(post.id)}')">🗑 Törlés</button></div></div>`:''}</div><div class="blog-post-body"><div class="blog-post-title"${titleLink}>${escapeHtml(title)}</div>${Array.isArray(post.blocks)&&post.blocks.length?post.blocks.map(b=>b.type==='image'?`<img class="blog-post-image" src="${escapeHtml(b.src||'')}" alt="Blog kép" loading="lazy">`:(b.content?`<div class="blog-post-text">${escapeHtml(b.content)}</div>`:'')).join(''):(post.content?`<div class="blog-post-text">${escapeHtml(post.content)}</div>`:'')}</div><div class="blog-post-foot"><span>📅 ${escapeHtml(date)}</span>${post.location?`<span>📍 ${escapeHtml(post.location)}</span>`:''}${compact?`<button type="button" class="blog-post-action" data-open-post="1">Megnyitás</button>`:''}</div><div class="blog-post-social"><button type="button" class="blog-post-reaction${liked?' liked':''}" data-like="1"><span class="blog-plumbob"></span><span>${likeCount}</span></button><span style="font-size:9px;color:var(--subtext-color);font-weight:800;">💬 ${comments.length}</span></div><div class="blog-comments"><div class="blog-comments-list">${ch}</div><div class="blog-comment-form"><input class="blog-comment-input" placeholder="Írj egy kommentet..." maxlength="500"><button type="button" class="blog-comment-submit">Küldés</button></div></div>`;if(compact)card.querySelector('[data-open-post]')?.addEventListener('click',()=>openOwnBlog(blog.id));card.querySelector('[data-like]')?.addEventListener('click',()=>toggleBlogPostLike(blog.id,post.id));const inp=card.querySelector('.blog-comment-input');card.querySelector('.blog-comment-submit')?.addEventListener('click',()=>addBlogPostComment(blog.id,post.id,inp));inp?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addBlogPostComment(blog.id,post.id,inp);}});card.querySelectorAll('.blog-post-image').forEach((im,i)=>im.addEventListener('click',()=>openPublicGalleryLightbox(images[i],title,images,i)));return card;}
+function findBlogInteractionNode(comments,nodeId){
+    for(const node of (comments||[])){
+        if(node.id===nodeId) return node;
+        const nested=findBlogInteractionNode(node.replies,nodeId);
+        if(nested) return nested;
+    }
+    return null;
+}
+function blogPlumbobSvg(){return `<svg viewBox="0 0 100 160" aria-hidden="true" focusable="false">
+    <polygon points="50,0 72,80 40,80" fill="#c7ffbd"/><polygon points="50,0 40,80 0,80" fill="#2fbe28"/>
+    <polygon points="50,0 100,80 72,80" fill="#63f47b"/><polygon points="72,80 100,80 86,54" fill="#42e900"/>
+    <polygon points="0,80 40,80 50,160" fill="#4b7f1c"/><polygon points="40,80 72,80 50,160" fill="#39df00"/>
+    <polygon points="72,80 100,80 50,160" fill="#70ff4d"/><polygon points="40,80 50,160 32,119" fill="#29b92b"/>
+    <polygon points="72,80 50,160 68,119" fill="#168c00"/><polygon points="0,80 18,107 40,80" fill="#1e5300"/>
+    <polygon points="50,0 58,30 40,80" fill="#a7ff99" opacity=".7"/><polygon points="40,80 72,80 58,30" fill="#f5fff2" opacity=".82"/><polygon points="72,80 88,57 100,80" fill="#567f24"/>
+    <polygon points="40,80 50,160 50,105" fill="#0f5700" opacity=".65"/>
+</svg>`;}
+function renderCommentMarkup(blogId,postId,c,depth=0){
+    const likes=Array.isArray(c.likes)?c.likes:[], replies=Array.isArray(c.replies)?c.replies:[];
+    const rm=replies.map(r=>renderCommentMarkup(blogId,postId,r,depth+1)).join('');
+    const inputId=String(c.id).replace(/[^a-zA-Z0-9_-]/g,'_');
+    return `<div class="blog-comment ${depth?'blog-comment-nested':''}">
+        <div><strong>${escapeHtml(c.name||'Felhasználó')}</strong> ${escapeHtml(c.text||'')}</div>
+        <div class="blog-comment-actions">
+            <button class="blog-comment-action" type="button" onclick="toggleBlogCommentLike('${escapeHtml(blogId)}','${escapeHtml(postId)}','${escapeHtml(c.id)}')"><span class="blog-plumbob">${blogPlumbobSvg()}</span> ${likes.length}</button>
+            <button class="blog-comment-action" type="button" onclick="replyToBlogComment('${escapeHtml(blogId)}','${escapeHtml(postId)}','${escapeHtml(c.id)}')">↩ Válasz</button>
+        </div>
+        <div class="blog-reply-form" data-reply-form="${inputId}" style="display:none">
+            <input data-reply-input="${inputId}" placeholder="Írj választ..." maxlength="500">
+            ${blogEmojiPickerMarkup()}
+            <button type="button" onclick="submitBlogCommentReply('${escapeHtml(blogId)}','${escapeHtml(postId)}','${escapeHtml(c.id)}',this.parentElement.querySelector('[data-reply-input]'))">Küldés</button>
+        </div>
+        ${rm?`<div class="blog-comment-replies">${rm}</div>`:''}
+    </div>`;
+}
+function toggleBlogCommentLike(blogId,postId,commentId){if(!currentUser){alert('A szívezéshez jelentkezz be.');return;}const d=getBlogInteractions(blogId,postId),c=findBlogInteractionNode(d.comments,commentId);if(!c)return;c.likes=Array.isArray(c.likes)?c.likes:[];const i=c.likes.indexOf(currentUser.id);if(i>=0)c.likes.splice(i,1);else c.likes.push(currentUser.id);saveBlogInteractions(blogId,postId,d);renderActivityCurrentContext();}
+function replyToBlogComment(blogId,postId,commentId){const key=String(commentId).replace(/[^a-zA-Z0-9_-]/g,'_'),input=document.querySelector(`[data-reply-input="${key}"]`),form=document.querySelector(`[data-reply-form="${key}"]`);if(!input||!form)return;form.style.display=form.style.display==='none'?'flex':'none';if(form.style.display==='flex')input.focus();}
+function submitBlogCommentReply(blogId,postId,commentId,input){if(!currentUser){alert('A válaszoláshoz jelentkezz be.');return;}const t=input.value.trim();if(!t)return;const d=getBlogInteractions(blogId,postId),c=findBlogInteractionNode(d.comments,commentId);if(!c)return;c.replies=Array.isArray(c.replies)?c.replies:[];c.replies.push({id:'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),userId:currentUser.id,name:getBlogCurrentUserName(),text:t,createdAt:new Date().toISOString(),likes:[],replies:[]});saveBlogInteractions(blogId,postId,d);renderActivityCurrentContext();}
+function toggleBlogCommentReplyLike(blogId,postId,commentId,replyId){if(!currentUser){alert('A szívezéshez jelentkezz be.');return;}const d=getBlogInteractions(blogId,postId),parent=findBlogInteractionNode(d.comments,commentId),r=parent?findBlogInteractionNode(parent.replies,replyId):null;if(!r)return;r.likes=Array.isArray(r.likes)?r.likes:[];const i=r.likes.indexOf(currentUser.id);if(i>=0)r.likes.splice(i,1);else r.likes.push(currentUser.id);saveBlogInteractions(blogId,postId,d);renderActivityCurrentContext();}
+
+function createBlogPostCard(blog,tree,post,compact=false,sourceLabel=''){const card=document.createElement('article');card.className='blog-panel blog-post';const img=blogImage(blog,tree),images=Array.isArray(post.images)&&post.images.length?post.images:(post.image?[post.image]:[]),title=post.title||'A mai napom',date=getBlogPostDateLabel(post),source=sourceLabel?` · ${sourceLabel}`:'',titleLink=compact?' style="cursor:pointer"':'',own=!!findOwnBlog(blog.id),d=getBlogInteractions(blog.id,post.id),liked=!!currentUser&&(d.likes||[]).includes(currentUser.id),likeCount=(d.likes||[]).length,comments=d.comments||[];const ch=comments.map(c=>renderCommentMarkup(blog.id,post.id,c)).join('');card.innerHTML=`<div class="blog-post-head"><div class="blog-post-avatar">${img?`<img src="${escapeHtml(img)}" alt="">`:'👤'}</div><div class="blog-post-author"><strong>${escapeHtml(blog.name||'')}</strong><span>${escapeHtml(blogHandle(blog,tree))}${escapeHtml(source)}</span></div>${own?`<div class="blog-post-menu-wrap"><button class="blog-post-menu" type="button" aria-label="Bejegyzés menü" onclick="event.stopPropagation();toggleBlogPostMenu(this)">•••</button><div class="blog-post-menu-dropdown"><button class="blog-post-menu-item" type="button" onclick="event.stopPropagation();openBlogPostModal('${escapeHtml(blog.id)}','${escapeHtml(post.id)}')">✎ Szerkesztés</button><button class="blog-post-menu-item danger" type="button" onclick="event.stopPropagation();deleteBlogPost('${escapeHtml(blog.id)}','${escapeHtml(post.id)}')">🗑 Törlés</button></div></div>`:''}</div><div class="blog-post-body"><div class="blog-post-title"${titleLink}>${escapeHtml(title)}</div>${Array.isArray(post.blocks)&&post.blocks.length?post.blocks.map(b=>b.type==='image'?`<img class="blog-post-image" src="${escapeHtml(b.src||'')}" alt="Blog kép" loading="lazy">`:(b.content?`<div class="blog-post-text">${escapeHtml(b.content)}</div>`:'')).join(''):(post.content?`<div class="blog-post-text">${escapeHtml(post.content)}</div>`:'')}</div><div class="blog-post-foot">${post.location?`<span>📍 ${escapeHtml(post.location)}</span>`:''}${compact?`<button type="button" class="blog-post-action" data-open-post="1">Megnyitás</button>`:''}</div><div class="blog-post-social"><button type="button" class="blog-post-reaction${liked?' liked':''}" data-like="1"><span class="blog-plumbob">${blogPlumbobSvg()}</span><span>${likeCount}</span></button><span style="font-size:9px;color:var(--subtext-color);font-weight:800;">💬 ${comments.length}</span></div><div class="blog-comments"><div class="blog-comments-list">${ch}</div><div class="blog-comment-form"><input class="blog-comment-input" placeholder="Írj egy kommentet..." maxlength="500">${blogEmojiPickerMarkup()}<button type="button" class="blog-comment-submit">Küldés</button></div></div>`;if(compact)card.querySelector('[data-open-post]')?.addEventListener('click',()=>openOwnBlog(blog.id));card.querySelector('[data-like]')?.addEventListener('click',()=>toggleBlogPostLike(blog.id,post.id));const inp=card.querySelector('.blog-comment-input');card.querySelector('.blog-comment-submit')?.addEventListener('click',()=>addBlogPostComment(blog.id,post.id,inp));inp?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addBlogPostComment(blog.id,post.id,inp);}});card.querySelectorAll('.blog-post-image').forEach((im,i)=>im.addEventListener('click',()=>openPublicGalleryLightbox(images[i],title,images,i)));return card;}
 
 function renderOwnBlogDetail(blogId) {
             const found=findOwnBlog(blogId); if(!found) return renderActivityDashboard();
@@ -4114,7 +4164,7 @@ function renderOwnBlogDetail(blogId) {
 
         function previewSelectedBlogSim(){
             const tree=familyTrees.find(t=>t.id===document.getElementById('simBlogTreeInput')?.value); const sim=tree?.sims?.find(s=>s.id===document.getElementById('simBlogSimInput')?.value); if(!sim) return;
-            if(!editingSimBlogId){ document.getElementById('simBlogNameInput').value ||= `${sim.firstName||''} mindennapjai`.trim(); document.getElementById('simBlogHandleInput').value ||= `@${(sim.firstName||'sim').toLowerCase()}`; }
+            if(!editingSimBlogId){ document.getElementById('simBlogHandleInput').value ||= `@${(sim.firstName||'sim').toLowerCase()}`; }
             if(!tempSimBlogAvatar) renderBlogAvatarPreview(sim.image||'');
         }
 
@@ -4151,7 +4201,7 @@ function renderOwnBlogDetail(blogId) {
             const payload={
                 id: editingSimBlogId || ('blog_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),
                 treeId:tree.id, simId,
-                name:document.getElementById('simBlogNameInput').value.trim() || `${sim.firstName||''} mindennapjai`.trim(),
+                name:document.getElementById('simBlogNameInput').value.trim(),
                 handle:document.getElementById('simBlogHandleInput').value.trim(),
                 bio:document.getElementById('simBlogBioInput').value.trim(),
                 avatar:tempSimBlogAvatar || (editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.avatar||'') : ''),
@@ -4208,12 +4258,36 @@ function renderOwnBlogDetail(blogId) {
             document.getElementById('simBlogPostContentInput').value=texts.join('\n\n');
             document.getElementById('simBlogPostImagesInput').value=images.join('|');
         }
+        function blogEmojiList(){return ['😀','😂','😍','🥰','😎','😭','😡','🤔','😱','🥳','😴','👍','👎','❤️','💚','✨','🔥','🌸','🌈','⭐','🎉','😂','🙈','😇','💫','🦋','🌿','🍀','🎮','🏠','☀️','🌙','☕','🍰','📸','💭','💖','👏','🙏','🤍','🫶'];}
+        function blogEmojiPickerMarkup(){return `<div class="blog-emoji-wrap"><button type="button" class="blog-emoji-btn" title="Emoji beszúrása" onclick="toggleBlogEmojiPicker(this)">😊</button><div class="blog-emoji-picker">${blogEmojiList().map(e=>`<button type="button" class="blog-emoji-choice" onclick="insertBlogEmoji(this,'${e}')">${e}</button>`).join('')}</div></div>`;}
+        function toggleBlogEmojiPicker(btn){
+            const wrap=btn?.closest('.blog-emoji-wrap'); if(!wrap)return;
+            const picker=wrap.querySelector('.blog-emoji-picker');
+            if(picker && !picker.dataset.ready){
+                picker.innerHTML=blogEmojiList().map(e=>`<button type="button" class="blog-emoji-choice" onclick="insertBlogEmoji(this,'${e}')">${e}</button>`).join('');
+                picker.dataset.ready='1';
+            }
+            document.querySelectorAll('.blog-emoji-wrap.open').forEach(x=>{if(x!==wrap)x.classList.remove('open');});
+            wrap.classList.toggle('open');
+        }
+        function insertBlogEmoji(btn,emoji){
+            const wrap=btn?.closest('.blog-emoji-wrap'); if(!wrap)return;
+            const field=wrap.parentElement?.querySelector('textarea,input') || wrap.closest('.blog-comment-form,.blog-reply-form,.blog-text-editor-row')?.querySelector('textarea,input');
+            if(!field)return;
+            const start=typeof field.selectionStart==='number'?field.selectionStart:field.value.length;
+            const end=typeof field.selectionEnd==='number'?field.selectionEnd:start;
+            field.value=field.value.slice(0,start)+emoji+field.value.slice(end);
+            const pos=start+emoji.length; field.focus(); field.setSelectionRange(pos,pos);
+            field.dispatchEvent(new Event('input',{bubbles:true}));
+            wrap.classList.remove('open');
+        }
+        document.addEventListener('click',e=>{if(!e.target.closest('.blog-emoji-wrap'))document.querySelectorAll('.blog-emoji-wrap.open').forEach(x=>x.classList.remove('open'));});
         function renderBlogPostBlocks(){
             const box=document.getElementById('simBlogPostBlocks'); if(!box) return; box.innerHTML='';
             tempSimBlogPostBlocks.forEach((block,index)=>{
                 const wrap=document.createElement('div'); wrap.className='blog-block '+(block.type==='image'?'blog-block-image':'blog-block-text');
                 if(block.type==='text'){
-                    wrap.innerHTML='<button type="button" class="blog-block-remove" title="Blokk törlése">×</button><textarea placeholder="Írj ide..."></textarea>';
+                    wrap.innerHTML=`<button type="button" class="blog-block-remove" title="Blokk törlése">×</button><div class="blog-text-editor-row"><textarea placeholder="Írj ide..."></textarea>${blogEmojiPickerMarkup()}</div>`;
                     const ta=wrap.querySelector('textarea'); ta.value=block.content||'';
                     ta.addEventListener('input',()=>{block.content=ta.value;syncBlogPostLegacyFields();});
                 } else wrap.innerHTML=`<button type="button" class="blog-block-remove" title="Kép törlése">×</button><img src="${escapeHtml(block.src)}" alt="Blog kép">`;
@@ -4237,8 +4311,8 @@ function renderOwnBlogDetail(blogId) {
             const found=findOwnBlog(blogId); if(!found)return; editingSimBlogId=blogId;editingSimBlogPostId=postId;
             const post=postId?(found.blog.posts||[]).find(p=>p.id===postId):null; const modal=document.getElementById('simBlogPostModal');if(!modal)return;
             document.getElementById('simBlogPostModalTitle').textContent=post?'Bejegyzés szerkesztése':'Új bejegyzés';
-            document.getElementById('simBlogPostModalBlogName').textContent=found.blog.name||blogSimName(found.tree,found.blog);
-            document.getElementById('simBlogPostTitleInput').value=post?.title||'';document.getElementById('simBlogPostDateInput').value=post?.date||new Date().toISOString().split('T')[0];document.getElementById('simBlogPostLocationInput').value=post?.location||'';
+            document.getElementById('simBlogPostModalBlogName').textContent=found.blog.name||'';
+            document.getElementById('simBlogPostTitleInput').value=post?.title||'';document.getElementById('simBlogPostLocationInput').value=post?.location||'';
             tempSimBlogPostBlocks=normalizeBlogPostBlocks(post);renderBlogPostBlocks();modal.classList.add('active');
         }
         async function saveSimBlogPost(event){
@@ -4246,7 +4320,7 @@ function renderOwnBlogDetail(blogId) {
             const blocks=tempSimBlogPostBlocks.map(b=>b.type==='image'?{type:'image',src:b.src}:{type:'text',content:b.content||''}).filter(b=>b.type==='image'?!!b.src:true);
             const textContent=blocks.filter(b=>b.type==='text').map(b=>b.content).filter(Boolean).join('\n\n');const images=blocks.filter(b=>b.type==='image').map(b=>b.src);
             if(!blocks.length||(blocks.length===1&&blocks[0].type==='text'&&!blocks[0].content.trim())){alert('Írj legalább egy szöveget vagy szúrj be egy képet.');return;}
-            const payload={id:editingSimBlogPostId||('bp_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),title:document.getElementById('simBlogPostTitleInput').value.trim()||'A mai napom',date:document.getElementById('simBlogPostDateInput').value||new Date().toISOString().split('T')[0],content:textContent,blocks,location:document.getElementById('simBlogPostLocationInput').value.trim(),images,image:images[0]||'',createdAt:editingSimBlogPostId?(blog.posts.find(p=>p.id===editingSimBlogPostId)?.createdAt||new Date().toISOString()):new Date().toISOString()};
+            const payload={id:editingSimBlogPostId||('bp_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),title:document.getElementById('simBlogPostTitleInput').value.trim()||'A mai napom',date:editingSimBlogPostId?(blog.posts.find(p=>p.id===editingSimBlogPostId)?.date||''):'' ,content:textContent,blocks,location:document.getElementById('simBlogPostLocationInput').value.trim(),images,image:images[0]||'',createdAt:editingSimBlogPostId?(blog.posts.find(p=>p.id===editingSimBlogPostId)?.createdAt||new Date().toISOString()):new Date().toISOString()};
             if(editingSimBlogPostId){const idx=blog.posts.findIndex(p=>p.id===editingSimBlogPostId);if(idx>=0)blog.posts[idx]=payload;else blog.posts.push(payload);}else blog.posts.push(payload);
             blog.updatedAt=new Date().toISOString();const ok=await persistBlogTree(found.tree);if(!ok)return;closeBlogPostModal();renderOwnBlogDetail(blog.id);
         }
