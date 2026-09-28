@@ -1037,6 +1037,17 @@
         .tree-canvas-world { width: 0; height: 0; position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
         .tree-svg-layer { position: absolute; top: -10000px; left: -10000px; width: 20000px; height: 20000px; pointer-events: none; z-index: 1; }
 
+        /* KAPCSOLATI JELEK A KÖTELÉKEK KÖZEPÉN – teljesen átlátszó háttérrel */
+        .tree-relation-icon, .public-tree-relation-icon {
+            pointer-events: none;
+            user-select: none;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+            font-size: 22px;
+            line-height: 1;
+        }
+
         /* SIM ELEMEK UI FRISSÍTÉS */
         @keyframes simFloat {
             0% { transform: translateY(0px); }
@@ -2403,11 +2414,12 @@
                     <option value="Jegyes">Jegyes (Rózsaszín kötél)</option>
                     <option value="Szerelmes">Szerelmes (Rózsaszín kötél)</option>
                     <option value="Özvegy">Özvegy (Rózsaszín kötél)</option>
+                    <option value="Ex">Ex (Rózsaszín kötél)</option>
+                        <option value="Elvált">Elvált (Törött karika gyűrű)</option>
                     <option value="Gyerek">Gyerek (Zöld kötél)</option>
                     <option value="Szülő">Szülő (Zöld kötél)</option>
                     <option value="Testvér">Testvér (Zöld kötél)</option>
-                    <option value="Rokon">Rokon (Zöld kötél)</option>
-                    <option value="Barátok">Barátok (Zöld kötél)</option>
+                                        <option value="Barátok">Barátok (Zöld kötél)</option>
                 </select>
             </div>
 
@@ -4593,9 +4605,15 @@ function openSimsFamily(treeId) {
                     const startX=sim.x+100,startY=sim.y+50,endX=partner.x,endY=partner.y+50,midX=startX+(endX-startX)/2;
                     path.setAttribute('d',`M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
                     const relationType=(sim.connectionTypes&&sim.connectionTypes[partnerId])||sim.relationType;
-                    const isLove=['Házas','Jegyes','Szerelmes','Özvegy',null,'Partner'].includes(relationType);
+                    if (relationType === 'Barátok' || relationType === 'Barát') return;
+                    const isLove=['Házas','Jegyes','Szerelmes','Özvegy','Ex',null,'Partner'].includes(relationType);
                     path.setAttribute('class',isLove?'line-love':'line-child');
                     svg.appendChild(path);
+
+                    // Ugyanaz a háttér nélküli kapcsolatjel a publikus megtekintőben is.
+                    const iconX = (startX + endX) / 2;
+                    const iconY = (startY + endY) / 2;
+                    appendRelationshipIcon(svg, iconX, iconY, relationType, 'public-tree-relation-icon');
                 });
             });
 
@@ -4997,8 +5015,7 @@ function openSimsFamily(treeId) {
                     { key:'Mostohatestvér', title:'🧑‍🤝‍🧑 Mostohatestvér' },
                     { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
                     { key:'Gyermek', title:'🧒 Gyermek' },
-                    { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
-                    { key:'Barátok', title:'🤝 Barátok' },
+                                        { key:'Barátok', title:'🤝 Barátok' },
                     { key:'partner', title:'💞 Párkapcsolat', match:type => ['Házas','Jegyes','Szerelmes','Özvegy','Partner'].includes(type) },
                     { key:'állat', title:'🐾 Állatok', match:type => type === 'Állat' },
                 ];
@@ -6483,8 +6500,7 @@ function openSimsFamily(treeId) {
                     { key:'Mostohatestvér', title:'🧑‍🤝‍🧑 Mostohatestvér' },
                     { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
                 { key:'Gyermek', title:'🧒 Gyermek' },
-                { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
-                { key:'Barátok', title:'🤝 Barátok' },
+                                { key:'Barátok', title:'🤝 Barátok' },
                 { key:'partner', title:'💞 Párkapcsolat', match:type => ['Házas','Jegyes','Szerelmes','Özvegy','Partner'].includes(type) },
                 { key:'állat', title:'🐾 Állatok', match:type => type === 'Állat' }
             ];
@@ -6655,6 +6671,65 @@ function openSimsFamily(treeId) {
             simModal.classList.add('active');
         }
 
+        function getRelationshipIcon(relationType) {
+            return ['Szerelmes', 'Jegyes', 'Házas', 'Özvegy', 'Ex', 'Elvált'].includes(relationType)
+                ? relationType
+                : '';
+        }
+
+        function appendRelationshipIcon(svg, x, y, relationType, className) {
+            const icon = getRelationshipIcon(relationType);
+            if (!icon) return;
+
+            const NS = 'http://www.w3.org/2000/svg';
+            const group = document.createElementNS(NS, 'g');
+            group.setAttribute('class', className);
+            group.setAttribute('transform', `translate(${x} ${y})`);
+            group.setAttribute('aria-hidden', 'true');
+
+            if (icon === 'Házas' || icon === 'Elvált') {
+                const circle = document.createElementNS(NS, 'circle');
+                circle.setAttribute('cx', '0');
+                circle.setAttribute('cy', '0');
+                circle.setAttribute('r', '8');
+                circle.setAttribute('fill', 'none');
+                circle.setAttribute('stroke', '#D4AF37');
+                circle.setAttribute('stroke-width', '3');
+
+                if (icon === 'Elvált') {
+                    circle.setAttribute('stroke-dasharray', '12 4 5 4');
+                    circle.setAttribute('transform', 'rotate(-28)');
+                }
+                group.appendChild(circle);
+
+                if (icon === 'Elvált') {
+                    const slash = document.createElementNS(NS, 'path');
+                    slash.setAttribute('d', 'M -6 -7 L 6 7');
+                    slash.setAttribute('fill', 'none');
+                    slash.setAttribute('stroke', '#D4AF37');
+                    slash.setAttribute('stroke-width', '2.5');
+                    slash.setAttribute('stroke-linecap', 'round');
+                    group.appendChild(slash);
+                }
+            } else {
+                const text = document.createElementNS(NS, 'text');
+                text.setAttribute('x', '0');
+                text.setAttribute('y', '0');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('font-size', '22');
+                text.textContent = ({
+                    'Szerelmes': '❤️',
+                    'Jegyes': '💍',
+                    'Özvegy': '✝️',
+                    'Ex': '💔'
+                })[icon] || '';
+                group.appendChild(text);
+            }
+
+            svg.appendChild(group);
+        }
+
         function updateConnections() {
             svgLayer.innerHTML = '';
             const tree = getCurrentTree();
@@ -6773,7 +6848,8 @@ function openSimsFamily(treeId) {
                     );
 
                     const relationType = (sim.connectionTypes && sim.connectionTypes[partnerId]) || sim.relationType;
-                    const isLove = ['Házas', 'Jegyes', 'Szerelmes', 'Özvegy', null]
+                    if (relationType === 'Barátok' || relationType === 'Barát') return;
+                    const isLove = ['Házas', 'Jegyes', 'Szerelmes', 'Özvegy', 'Ex', 'Elvált', 'Partner', null]
                         .includes(relationType);
 
                     path.setAttribute('class', isLove ? 'line-love' : 'line-child');
@@ -6786,6 +6862,12 @@ function openSimsFamily(treeId) {
                     }
 
                     svgLayer.appendChild(path);
+
+                    // A kapcsolat jele közvetlenül a kötél geometriai közepére kerül,
+                    // teljesen átlátszó háttérrel, így olyan hatású, mint egy PNG ikon.
+                    const iconX = (startX + endX) / 2;
+                    const iconY = (startY + endY) / 2;
+                    appendRelationshipIcon(svgLayer, iconX, iconY, relationType, 'tree-relation-icon');
                 });
             });
         }
@@ -6958,7 +7040,7 @@ function openSimsFamily(treeId) {
             } else {
                 connections.forEach(connection => {
                     // Párkapcsolatok és egyedi kapcsolattípusok szerkeszthetők.
-                    if (['Partner', 'Házas', 'Jegyes', 'Szerelmes', 'Özvegy', 'Testvér', 'Rokon', 'Barátok', 'Barát'].includes(connection.type)) {
+                    if (['Partner', 'Házas', 'Jegyes', 'Szerelmes', 'Özvegy', 'Ex', 'Testvér', 'Barátok', 'Barát'].includes(connection.type)) {
                         const target = tree.sims.find(s => s.id === connection.targetId);
                         if (!target) return;
 
@@ -6975,9 +7057,9 @@ function openSimsFamily(treeId) {
                                 <option value="Jegyes" ${connection.type === 'Jegyes' ? 'selected' : ''}>Jegyes</option>
                                 <option value="Szerelmes" ${connection.type === 'Szerelmes' ? 'selected' : ''}>Szerelmes</option>
                                 <option value="Özvegy" ${connection.type === 'Özvegy' ? 'selected' : ''}>Özvegy</option>
+                                <option value="Ex" ${connection.type === 'Ex' ? 'selected' : ''}>Ex</option>
                                 <option value="Testvér" ${connection.type === 'Testvér' ? 'selected' : ''}>Testvér</option>
-                                <option value="Rokon" ${connection.type === 'Rokon' ? 'selected' : ''}>Rokon</option>
-                                <option value="Barátok" ${(connection.type === 'Barátok' || connection.type === 'Barát') ? 'selected' : ''}>Barátok</option>
+                                                                <option value="Barátok" ${(connection.type === 'Barátok' || connection.type === 'Barát') ? 'selected' : ''}>Barátok</option>
                             </select>
                         `;
 
