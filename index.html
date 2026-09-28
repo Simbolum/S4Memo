@@ -887,7 +887,10 @@
         }
         .public-tree-world { position:absolute; left:0; top:0; width:0; height:0; transform-origin:0 0; z-index:1; }
         .public-tree-svg { position:absolute; left:-10000px; top:-10000px; width:20000px; height:20000px; pointer-events:none; z-index:1; }
-        .public-tree-node { position:absolute; width:88px; height:88px; z-index:2; display:flex; align-items:center; justify-content:center; }
+        .public-tree-node { position:absolute; width:88px; height:88px; z-index:2; display:flex; align-items:center; justify-content:center; transition:opacity .16s ease, filter .16s ease; }
+        .public-tree-world.public-tree-focus-mode .public-tree-node:not(.public-tree-focus):not(.public-tree-focus-parent) { opacity:.18; filter:grayscale(.65); }
+        .public-tree-world.public-tree-focus-mode .public-tree-node.public-tree-focus,
+        .public-tree-world.public-tree-focus-mode .public-tree-node.public-tree-focus-parent { opacity:1; filter:none; z-index:6; }
         .public-tree-avatar { width:88px; height:88px; border-radius:var(--sim-node-radius); clip-path:var(--sim-node-clip-path); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--card-solid); border:3px solid #fff; box-shadow:0 8px 20px var(--shadow-color); background-size:cover; background-position:center; position:relative; }
         /* A publikus családfában a kör mérete mindig fix marad.
            Az imageTransform csak a fotót nagyítja/forgatja, nem magát a kört. */
@@ -4429,8 +4432,35 @@ function openSimsFamily(treeId) {
                 normalizeSimExtraFields(sim);
                 const node = document.createElement('div');
                 node.className = 'public-tree-node';
+                node.dataset.simId = sim.id;
                 node.style.left = `${Number(sim.x) || 0}px`;
                 node.style.top = `${Number(sim.y) || 0}px`;
+
+                // Megtekintés módban rámutatáskor csak a kiválasztott Sim és a
+                // hozzá beállított szülők maradnak teljesen láthatók.
+                node.addEventListener('mouseenter', () => {
+                    const parentIds = Array.isArray(sim.parentIds)
+                        ? sim.parentIds.filter(Boolean)
+                        : (sim.parentId ? [sim.parentId] : []);
+
+                    world.classList.add('public-tree-focus-mode');
+                    world.querySelectorAll('.public-tree-node').forEach(otherNode => {
+                        otherNode.classList.remove('public-tree-focus', 'public-tree-focus-parent');
+                    });
+
+                    node.classList.add('public-tree-focus');
+                    parentIds.forEach(parentId => {
+                        const parentNode = world.querySelector(`.public-tree-node[data-sim-id="${CSS.escape(String(parentId))}"]`);
+                        if (parentNode) parentNode.classList.add('public-tree-focus-parent');
+                    });
+                });
+
+                node.addEventListener('mouseleave', () => {
+                    world.classList.remove('public-tree-focus-mode');
+                    world.querySelectorAll('.public-tree-node').forEach(otherNode => {
+                        otherNode.classList.remove('public-tree-focus', 'public-tree-focus-parent');
+                    });
+                });
 
                 const avatar = document.createElement('div');
                 avatar.className = 'public-tree-avatar';
