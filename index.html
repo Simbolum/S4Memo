@@ -4904,6 +4904,63 @@ function openSimsFamily(treeId) {
                 });
             }
 
+            // Féltestvérek: pontosan egy közös szülő.
+            if (siblingParentSet.size) {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds.filter(Boolean) : (other.parentId ? [other.parentId] : []);
+                    const commonParents = otherParents.filter(pid => siblingParentSet.has(pid));
+                    if (commonParents.length === 1) addRelation(other.id, 'Féltestvér');
+                });
+            }
+
+            // Nagynéni / nagybácsi: a Sim szülőinek testvérei.
+            const parentSiblingIds = new Set();
+            parentIds.forEach(parentId => {
+                const parent = (tree.sims || []).find(s => s.id === parentId);
+                if (!parent) return;
+                const grandParentIds = Array.isArray(parent.parentIds) ? parent.parentIds.filter(Boolean) : (parent.parentId ? [parent.parentId] : []);
+                if (!grandParentIds.length) return;
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other) || other.id === parentId) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds : (other.parentId ? [other.parentId] : []);
+                    if (otherParents.some(pid => grandParentIds.includes(pid))) parentSiblingIds.add(other.id);
+                });
+            });
+            parentSiblingIds.forEach(id => addRelation(id, 'Nagynéni/Nagybácsi'));
+
+            // Unokatestvérek: a szülők testvéreinek gyermekei.
+            parentSiblingIds.forEach(auntUncleId => {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds : (other.parentId ? [other.parentId] : []);
+                    if (otherParents.includes(auntUncleId)) addRelation(other.id, 'Unokatestvér');
+                });
+            });
+
+            // Mostohatestvérek: nincs közös vér szerinti szülő, de egyik szülő a másik Sim szülőjének párja.
+            const isPartnerOf = (a, b) => {
+                const aPartners = Array.isArray(a.partnerIds) ? a.partnerIds : (a.partnerId ? [a.partnerId] : []);
+                const bPartners = Array.isArray(b.partnerIds) ? b.partnerIds : (b.partnerId ? [b.partnerId] : []);
+                return aPartners.includes(b.id) || bPartners.includes(a.id);
+            };
+            if (parentIds.length) {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds.filter(Boolean) : (other.parentId ? [other.parentId] : []);
+                    if (!otherParents.length || otherParents.some(pid => siblingParentSet.has(pid))) return;
+                    const stepSibling = parentIds.some(parentId => {
+                        const parent = (tree.sims || []).find(x => x.id === parentId);
+                        if (!parent) return false;
+                        return otherParents.some(otherParentId => {
+                            const otherParent = (tree.sims || []).find(x => x.id === otherParentId);
+                            return otherParent && isPartnerOf(parent, otherParent);
+                        });
+                    });
+                    if (stepSibling) addRelation(other.id, 'Mostohatestvér');
+                });
+            }
+
             // Egyedi kapcsolatok (Párkapcsolat / Rokon / Barátok / régebbi egyedi típusok)
             const partnerIds = Array.isArray(sim.partnerIds) ? sim.partnerIds : (sim.partnerId ? [sim.partnerId] : []);
             partnerIds.forEach(id => {
@@ -4934,6 +4991,10 @@ function openSimsFamily(treeId) {
                     { key:'Szépszülő', title:'👴 Szépszülő' },
                     { key:'Ősszülő', title:'👵 Ősszülő' },
                     { key:'Felmenő', title:'👨‍👩‍👧 Felmenő' },
+                    { key:'Nagynéni/Nagybácsi', title:'👩‍🦱 Nagynéni / Nagybácsi' },
+                    { key:'Unokatestvér', title:'🧑 Unokatestvér' },
+                    { key:'Féltestvér', title:'🧑‍🤝‍🧑 Féltestvér' },
+                    { key:'Mostohatestvér', title:'🧑‍🤝‍🧑 Mostohatestvér' },
                     { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
                     { key:'Gyermek', title:'🧒 Gyermek' },
                     { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
@@ -6323,6 +6384,63 @@ function openSimsFamily(treeId) {
                 });
             }
 
+            // Féltestvérek: pontosan egy közös szülő.
+            if (siblingParentSet.size) {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds.filter(Boolean) : (other.parentId ? [other.parentId] : []);
+                    const commonParents = otherParents.filter(pid => siblingParentSet.has(pid));
+                    if (commonParents.length === 1) addRelation(other.id, 'Féltestvér');
+                });
+            }
+
+            // Nagynéni / nagybácsi: a Sim szülőinek testvérei.
+            const parentSiblingIds = new Set();
+            parentIds.forEach(parentId => {
+                const parent = (tree.sims || []).find(s => s.id === parentId);
+                if (!parent) return;
+                const grandParentIds = Array.isArray(parent.parentIds) ? parent.parentIds.filter(Boolean) : (parent.parentId ? [parent.parentId] : []);
+                if (!grandParentIds.length) return;
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other) || other.id === parentId) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds : (other.parentId ? [other.parentId] : []);
+                    if (otherParents.some(pid => grandParentIds.includes(pid))) parentSiblingIds.add(other.id);
+                });
+            });
+            parentSiblingIds.forEach(id => addRelation(id, 'Nagynéni/Nagybácsi'));
+
+            // Unokatestvérek: a szülők testvéreinek gyermekei.
+            parentSiblingIds.forEach(auntUncleId => {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds : (other.parentId ? [other.parentId] : []);
+                    if (otherParents.includes(auntUncleId)) addRelation(other.id, 'Unokatestvér');
+                });
+            });
+
+            // Mostohatestvérek: nincs közös vér szerinti szülő, de egyik szülő a másik Sim szülőjének párja.
+            const isPartnerOf = (a, b) => {
+                const aPartners = Array.isArray(a.partnerIds) ? a.partnerIds : (a.partnerId ? [a.partnerId] : []);
+                const bPartners = Array.isArray(b.partnerIds) ? b.partnerIds : (b.partnerId ? [b.partnerId] : []);
+                return aPartners.includes(b.id) || bPartners.includes(a.id);
+            };
+            if (parentIds.length) {
+                (tree.sims || []).forEach(other => {
+                    if (!other || other.id === sim.id || isAnimalSim(other)) return;
+                    const otherParents = Array.isArray(other.parentIds) ? other.parentIds.filter(Boolean) : (other.parentId ? [other.parentId] : []);
+                    if (!otherParents.length || otherParents.some(pid => siblingParentSet.has(pid))) return;
+                    const stepSibling = parentIds.some(parentId => {
+                        const parent = (tree.sims || []).find(x => x.id === parentId);
+                        if (!parent) return false;
+                        return otherParents.some(otherParentId => {
+                            const otherParent = (tree.sims || []).find(x => x.id === otherParentId);
+                            return otherParent && isPartnerOf(parent, otherParent);
+                        });
+                    });
+                    if (stepSibling) addRelation(other.id, 'Mostohatestvér');
+                });
+            }
+
             // Egyedi kapcsolatok / párkapcsolatok.
             const partnerIds = Array.isArray(sim.partnerIds)
                 ? sim.partnerIds
@@ -6359,7 +6477,11 @@ function openSimsFamily(treeId) {
                 { key:'Ükszülő', title:'🧓 Ükszülő' },
                 { key:'Szépszülő', title:'👴 Szépszülő' },
                 { key:'Ősszülő', title:'👵 Ősszülő' },
-                { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
+                { key:'Nagynéni/Nagybácsi', title:'👩‍🦱 Nagynéni / Nagybácsi' },
+                    { key:'Unokatestvér', title:'🧑 Unokatestvér' },
+                    { key:'Féltestvér', title:'🧑‍🤝‍🧑 Féltestvér' },
+                    { key:'Mostohatestvér', title:'🧑‍🤝‍🧑 Mostohatestvér' },
+                    { key:'Testvér', title:'🧑‍🤝‍🧑 Testvér' },
                 { key:'Gyermek', title:'🧒 Gyermek' },
                 { key:'Rokon', title:'👨‍👩‍👧 Rokon' },
                 { key:'Barátok', title:'🤝 Barátok' },
