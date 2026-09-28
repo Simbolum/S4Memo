@@ -914,7 +914,8 @@
         .public-tree-animal { position:absolute; left:-30px; width:20px; height:20px; border-radius:50%; overflow:hidden; border:2px solid var(--border-color); background:var(--card-solid); display:flex; align-items:center; justify-content:center; font-size:12px; }
         .public-tree-animal img { width:100%; height:100%; object-fit:cover; }
         .public-tree-controls { position:absolute; left:14px; bottom:14px; z-index:4; display:flex; gap:4px; padding:4px; border:1px solid var(--border-color); border-radius:11px; background:var(--nav-bg); }
-        .public-tree-controls button { width:26px; height:26px; border:1px solid var(--border-color); border-radius:7px; background:var(--card-solid); color:var(--text-color); cursor:pointer; font-weight:800; }
+        .public-tree-controls button { width:26px; height:26px; min-width:26px; flex:0 0 26px; border:1px solid var(--border-color); border-radius:7px; background:var(--card-solid); color:var(--text-color); cursor:pointer; font-weight:800; padding:0; line-height:24px; }
+        .public-tree-controls button:last-child { width:46px; min-width:46px; flex-basis:46px; padding:0 5px; white-space:nowrap; font-size:10px; }
         .public-tree-empty { padding:30px; text-align:center; color:var(--subtext-color); border:1px dashed var(--border-color); border-radius:16px; margin-top:20px; }
 
         /* PUBLIKUS SIM ADATLAP */
