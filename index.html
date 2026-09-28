@@ -948,6 +948,13 @@
         .public-sim-status { font-size:11px; color:var(--subtext-color); }
         .public-sim-section { margin-top:14px; padding:15px; border:1px solid var(--border-color); border-radius:16px; background:rgba(255,255,255,.025); }
         .public-sim-section h4 { margin:0 0 10px; font-size:12px; font-weight:900; color:var(--text-color); }
+        .public-sim-section.relation-collapsible { padding:0; overflow:hidden; }
+        .public-sim-section.relation-collapsible .public-sim-section-toggle { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 15px; margin:0; border:0; background:transparent; color:var(--text-color); cursor:pointer; font:inherit; text-align:left; }
+        .public-sim-section.relation-collapsible .public-sim-section-toggle:hover { background:rgba(255,255,255,.035); }
+        .public-sim-section.relation-collapsible .public-sim-section-chevron { font-size:12px; transition:transform .18s ease; }
+        .public-sim-section.relation-collapsible.open .public-sim-section-chevron { transform:rotate(180deg); }
+        .public-sim-section.relation-collapsible .public-sim-relations-wrap { display:none; padding:0 15px 15px; }
+        .public-sim-section.relation-collapsible.open .public-sim-relations-wrap { display:block; }
         .public-sim-info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:8px; }
         .public-sim-info-item { padding:9px 10px; border-radius:11px; background:var(--card-solid); border:1px solid var(--border-color); }
         .public-sim-info-item small { display:block; font-size:9px; color:var(--subtext-color); margin-bottom:3px; }
@@ -4770,15 +4777,30 @@ function openSimsFamily(treeId) {
                     <h4>📝 Személyiség / Leírás</h4>
                     <div class="public-sim-text" id="publicSimDescription"></div>
                 </div>
-                <div class="public-sim-section" id="publicSimRelationsSection">
-                    <h4>🔗 Kapcsolatok</h4>
-                    <div class="public-sim-relations" id="publicSimRelations"></div>
+                <div class="public-sim-section relation-collapsible" id="publicSimRelationsSection">
+                    <button type="button" class="public-sim-section-toggle" aria-expanded="false" data-public-relations-toggle="1">
+                        <span>🔗 Kapcsolatok</span>
+                        <span class="public-sim-section-chevron">▼</span>
+                    </button>
+                    <div class="public-sim-relations-wrap">
+                        <div class="public-sim-relations" id="publicSimRelations"></div>
+                    </div>
                 </div>
                 <div class="public-sim-section" id="publicSimJournalSection">
                     <h4>📖 Napló</h4>
                     <div id="publicSimJournal"></div>
                 </div>
             `;
+
+            const relationsToggle = document.querySelector('#publicSimRelationsSection [data-public-relations-toggle="1"]');
+            if (relationsToggle) {
+                relationsToggle.onclick = () => {
+                    const section = relationsToggle.closest('#publicSimRelationsSection');
+                    if (!section) return;
+                    const isOpen = section.classList.toggle('open');
+                    relationsToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                };
+            }
 
             const infoGrid = document.getElementById('publicSimInfoGrid');
             const addInfo = (icon, label, value) => {
