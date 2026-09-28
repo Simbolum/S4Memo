@@ -4756,6 +4756,7 @@ function openSimsFamily(treeId) {
             if (!sim) return;
             normalizeSimExtraFields(sim);
             const gallery = normalizeSimGallery(sim);
+            const journalEntries = [...(sim.journal || [])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
             const modal = document.getElementById('publicSimModal');
             const content = document.getElementById('publicSimModalContent');
             if (!modal || !content) return;
@@ -4804,10 +4805,11 @@ function openSimsFamily(treeId) {
                         <div class="public-sim-relations" id="publicSimRelations"></div>
                     </div>
                 </div>
+                ${journalEntries.length ? `
                 <div class="public-sim-section" id="publicSimJournalSection">
                     <h4>📖 Napló</h4>
                     <div id="publicSimJournal"></div>
-                </div>
+                </div>` : ''}
             `;
 
             const relationsToggle = document.querySelector('#publicSimRelationsSection [data-public-relations-toggle="1"]');
@@ -5090,10 +5092,7 @@ function openSimsFamily(treeId) {
             }
 
             const publicJournal = document.getElementById('publicSimJournal');
-            const journalEntries = [...(sim.journal || [])].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
-            if (!journalEntries.length) {
-                publicJournal.innerHTML = '<div class="public-sim-empty">Nincs még nyilvános naplóbejegyzés.</div>';
-            } else {
+            if (publicJournal && journalEntries.length) {
                 journalEntries.forEach(entry => {
                     const card=document.createElement('div'); card.className='public-sim-journal-card';
                     const related=entry.relatedSimId ? (tree.sims||[]).find(s=>s.id===entry.relatedSimId) : null;
