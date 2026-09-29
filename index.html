@@ -2012,6 +2012,33 @@
         </main>
     </div>
 
+    <!-- 4. TÖRTÉNETEK -->
+    <div class="page-view" id="storiesView">
+        <main class="main-card" style="padding:18px; max-width:1340px;">
+            <div class="stories-shell">
+                <div class="stories-topbar">
+                    <div>
+                        <div class="blog-brand">📚 Történetek</div>
+                        <div style="font-size:11px;color:var(--subtext-color);margin-top:4px;">Simekről szóló történetek, szöveggel és képekkel.</div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button type="button" class="blog-mini-btn" onclick="switchView('activity')">✦ SimBlog</button>
+                        <button type="button" class="btn-primary" onclick="openStoryModal()">＋ Új történet</button>
+                    </div>
+                </div>
+                <div class="stories-layout">
+                    <aside class="blog-panel" style="padding:14px;">
+                        <div class="blog-right-title"><strong>Történetek</strong><span>publikált</span></div>
+                        <p style="font-size:10px;line-height:1.6;color:var(--subtext-color);margin:10px 0 14px;">Válassz egy történetet a Simekről, vagy írj egy újat szöveggel és képekkel.</p>
+                        <button type="button" class="blog-side-item active" onclick="renderStoriesPage()">📚 Összes történet</button>
+                        <button type="button" class="blog-side-item" onclick="openStoryModal()">✍️ Új történet</button>
+                    </aside>
+                    <section id="storiesFeed" class="stories-list"></section>
+                </div>
+            </div>
+        </main>
+    </div>
+
     <!-- 4. PUBLIKUM -->
     <div class="page-view" id="publicView">
         <main class="main-card">
