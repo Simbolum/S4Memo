@@ -768,6 +768,16 @@
         .blog-follow-btn.following{color:#49d889;border-color:#49d889}
         .notification-target-highlight{animation:notificationTargetPulse 1.8s ease-out;border-color:#49d889 !important;box-shadow:0 0 0 3px rgba(73,216,137,.18),0 10px 30px rgba(73,216,137,.12) !important}@keyframes notificationTargetPulse{0%{background:rgba(73,216,137,.20)}100%{background:transparent}}
         .blog-follow-count{font-size:9px;color:var(--subtext-color);font-weight:800}
+        .stories-shell{width:100%;max-width:1120px;margin:0 auto}
+        .stories-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;border:1px solid var(--border-color);border-radius:18px;background:var(--nav-bg);backdrop-filter:blur(14px)}
+        .stories-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;align-items:start}
+        .stories-list{display:flex;flex-direction:column;gap:12px}
+        .story-card{padding:16px;border:1px solid var(--border-color);border-radius:18px;background:rgba(255,255,255,.035)}
+        .story-card h3{margin:0 0 6px;font-size:17px}.story-card-meta{font-size:9px;color:var(--subtext-color);font-weight:800;margin-bottom:10px}.story-card-text{font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--text-color)}
+        .story-card-image{width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin:10px 0;border:1px solid var(--border-color)}
+        .story-empty{padding:40px 20px;text-align:center;color:var(--subtext-color);border:1px dashed var(--border-color);border-radius:16px}
+        .story-editor-block{position:relative;margin-bottom:10px}.story-editor-block textarea{width:100%;min-height:120px;box-sizing:border-box}.story-editor-block img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;border:1px solid var(--border-color)}
+        @media(max-width:900px){.stories-layout{grid-template-columns:1fr}}
 
         .blog-layout { display:grid; grid-template-columns:210px minmax(0,1fr) 245px; gap:14px; align-items:start; }
         .blog-panel { border:1px solid var(--border-color); border-radius:18px; background:rgba(255,255,255,.035); box-shadow:0 8px 22px var(--shadow-color); }
@@ -818,7 +828,7 @@
         .blog-emoji-wrap{position:relative;display:inline-flex;align-items:center;flex:0 0 auto}
         .blog-emoji-btn{border:1px solid var(--border-color);background:var(--card-solid);color:var(--text-color);border-radius:7px;padding:4px 6px;line-height:1;cursor:pointer;font-size:13px}
         .blog-emoji-btn:hover{border-color:var(--accent-color)}
-        .blog-emoji-picker{display:none;position:absolute;left:0;bottom:calc(100% + 5px);z-index:99999;width:205px;padding:7px;background:var(--card-solid);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.25);grid-template-columns:repeat(7,1fr);gap:3px;box-sizing:border-box}.blog-emoji-picker.blog-emoji-picker-fixed{position:fixed;left:auto;top:auto;bottom:auto;right:auto}
+        .blog-emoji-picker{display:none;position:absolute;left:0;bottom:calc(100% + 5px);z-index:2147483647;width:205px;padding:7px;background:var(--card-solid);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 16px 42px rgba(0,0,0,.42);grid-template-columns:repeat(7,1fr);gap:3px;box-sizing:border-box}.blog-emoji-picker.blog-emoji-picker-fixed{position:fixed!important;left:auto;top:auto;bottom:auto;right:auto;z-index:2147483647!important;display:grid!important}
         .blog-emoji-wrap.open .blog-emoji-picker{display:grid}
         .blog-emoji-choice{border:0;background:transparent;border-radius:6px;padding:5px 2px;font-size:16px;line-height:1;cursor:pointer}
         .blog-emoji-choice:hover{background:rgba(255,255,255,.08)}
@@ -1864,8 +1874,9 @@
                 <div class="nav-links">
                     <a class="nav-item active" id="navHome" onclick="switchView('home')">Főoldal</a>
                     <a class="nav-item" id="navTree" onclick="switchView('tree')">Családfák</a>
-                    <a class="nav-item" id="navActivity" onclick="switchView('activity')">Aktivitás</a>
                     <a class="nav-item" id="navPublic" onclick="switchView('public')">Publikum</a>
+                    <a class="nav-item" id="navActivity" onclick="switchView('activity')">SimBlog</a>
+                    <a class="nav-item" id="navStories" onclick="switchView('stories')">Történetek</a>
                 </div>
             </div>
             <div class="nav-right">
@@ -1966,6 +1977,7 @@
                         <button type="button" class="blog-mini-btn" onclick="renderActivityDashboard()">Főoldal</button>
                         <button type="button" class="blog-mini-btn" onclick="showMySimBlogs()">Saját blogjaim</button>
                         <button type="button" class="blog-mini-btn" onclick="openBlogCreateModal()">＋ Új blog</button>
+                        <button type="button" class="blog-mini-btn" onclick="switchView('stories')">📚 Történetek</button>
                     </div>
                     <div class="blog-topbar-right">
                         <button type="button" class="blog-mini-btn" onclick="switchView('tree')">🌳 Családfák</button>
@@ -2016,6 +2028,24 @@
 
     </div> <!-- mainContent vége -->
 
+
+    <!-- TÖRTÉNET SZERKESZTŐ MODAL -->
+    <div class="modal-overlay" id="storyModal">
+        <div class="modal-card" style="max-width:760px;">
+            <button type="button" class="close-btn" onclick="closeStoryModal()">&times;</button>
+            <h2 id="storyModalTitle">Új történet</h2>
+            <form id="storyForm" onsubmit="saveStory(event)">
+                <div class="form-row">
+                    <div class="form-group" style="flex:1;"><label>Családfa</label><select id="storyTreeInput" required onchange="populateStorySimSelect()"></select></div>
+                    <div class="form-group" style="flex:1;"><label>Sim</label><select id="storySimInput" required></select></div>
+                </div>
+                <div class="form-group"><label>Történet címe</label><div class="blog-text-editor-row"><input id="storyTitleInput" placeholder="Pl. Egy új kezdet"><div class="blog-emoji-wrap"><button type="button" class="blog-emoji-btn" title="Emoji beszúrása" onclick="toggleBlogEmojiPicker(this)">😊</button><div class="blog-emoji-picker"></div></div></div></div>
+                <div class="form-group"><label>Történet tartalma</label><div id="storyBlocks" class="blog-block-editor"></div><div class="blog-block-tools"><button type="button" class="blog-mini-btn" onclick="addStoryTextBlock()">＋ Szöveg</button><button type="button" class="blog-mini-btn blog-block-add-image" onclick="triggerStoryImagePicker()">＋ Kép beszúrása</button></div><input type="file" id="storyImageInput" accept="image/*" multiple style="display:none" onchange="handleStoryImageUpload(event)"></div>
+                <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="storyPublishedInput"> Történet publikálása</label></div>
+                <div class="modal-actions"><button type="button" class="btn-secondary" onclick="closeStoryModal()">Mégse</button><button type="submit" class="btn-primary">Mentés</button></div>
+            </form>
+        </div>
+    </div>
 
     <!-- SIM BLOG PROFIL / BEÁLLÍTÁS MODAL -->
     <div class="modal-overlay" id="simBlogModal">
@@ -2726,8 +2756,9 @@
             <li><a onclick="switchView('home')" id="menuHome" class="active">🏠 Főoldal</a></li>
             <li><a onclick="switchView('tree')" id="menuTree">🌳 Családfák</a></li>
             <li><a onclick="switchView('sims')" id="menuSims">👤 Simek</a></li>
-            <li><a onclick="switchView('activity')" id="menuActivity">📜 Aktivitás</a></li>
             <li><a onclick="switchView('public')" id="menuPublic">🌐 Publikum</a></li>
+            <li><a onclick="switchView('activity')" id="menuActivity">📜 SimBlog</a></li>
+            <li><a onclick="switchView('stories')" id="menuStories">📚 Történetek</a></li>
             <li><a href="#">🎮 Kisebb játékok</a></li>
         </ul>
     </div>
@@ -2846,6 +2877,8 @@
         let blogCropTarget = null;
         let tempSimBlogPostImages = [];
         let tempSimBlogPostBlocks = [];
+        let tempStoryBlocks = [];
+        let editingStoryId = null;
         let activityMode = 'home';
 
         let contextSimId = null;
@@ -3343,6 +3376,24 @@
             return defaultTrees;
         }
 
+        function getStoryList(tree){ return Array.isArray(tree?.stories)?tree.stories:[]; }
+        function findStory(storyId){ for(const tree of familyTrees||[]){ const st=getStoryList(tree).find(x=>x.id===storyId); if(st)return {tree,story:st}; } return null; }
+        function populateStorySimSelect(){ const tree=familyTrees.find(t=>t.id===document.getElementById('storyTreeInput')?.value); const sel=document.getElementById('storySimInput'); if(!sel)return; sel.innerHTML=''; (tree?.sims||[]).forEach(sim=>{const o=document.createElement('option');o.value=sim.id;o.textContent=`${sim.firstName||''} ${sim.lastName||''}`.trim()||'Névtelen Sim';sel.appendChild(o);}); }
+        function openStoryModal(storyId=null){
+            editingStoryId=storyId; const modal=document.getElementById('storyModal'); if(!modal)return;
+            const treeSel=document.getElementById('storyTreeInput'); treeSel.innerHTML=''; (familyTrees||[]).forEach(tree=>{const o=document.createElement('option');o.value=tree.id;o.textContent=tree.name||'Családfa';treeSel.appendChild(o);});
+            if(storyId){ const f=findStory(storyId); if(!f)return; document.getElementById('storyModalTitle').textContent='Történet szerkesztése'; treeSel.value=f.tree.id; populateStorySimSelect(); document.getElementById('storySimInput').value=f.story.simId||''; document.getElementById('storyTitleInput').value=f.story.title||''; document.getElementById('storyPublishedInput').checked=!!f.story.isPublished; tempStoryBlocks=(f.story.blocks||[]).map(b=>b.type==='image'?{type:'image',src:b.src}:{type:'text',content:b.content||''}); }
+            else { document.getElementById('storyModalTitle').textContent='Új történet'; populateStorySimSelect(); document.getElementById('storyTitleInput').value=''; document.getElementById('storyPublishedInput').checked=false; tempStoryBlocks=[{type:'text',content:''}]; }
+            renderStoryBlocks(); modal.classList.add('active');
+        }
+        function closeStoryModal(){document.getElementById('storyModal')?.classList.remove('active');editingStoryId=null;tempStoryBlocks=[];}
+        function renderStoryBlocks(){const box=document.getElementById('storyBlocks');if(!box)return;box.innerHTML='';tempStoryBlocks.forEach((b,i)=>{const wrap=document.createElement('div');wrap.className='story-editor-block';if(b.type==='image'){wrap.innerHTML=`<button type="button" class="blog-block-remove" title="Kép törlése">×</button><img src="${escapeHtml(b.src||'')}" alt="Történet kép">`;}else{wrap.innerHTML=`<button type="button" class="blog-block-remove" title="Blokk törlése">×</button><div class="blog-text-editor-row"><textarea placeholder="Írj ide..."></textarea>${blogEmojiPickerMarkup()}</div>`;wrap.querySelector('textarea').value=b.content||'';wrap.querySelector('textarea').addEventListener('input',e=>b.content=e.target.value);}wrap.querySelector('.blog-block-remove').onclick=()=>{tempStoryBlocks.splice(i,1);if(!tempStoryBlocks.length)tempStoryBlocks.push({type:'text',content:''});renderStoryBlocks();};box.appendChild(wrap);});}
+        function addStoryTextBlock(){tempStoryBlocks.push({type:'text',content:''});renderStoryBlocks();const a=document.querySelectorAll('#storyBlocks textarea');a[a.length-1]?.focus();}
+        function triggerStoryImagePicker(){document.getElementById('storyImageInput')?.click();}
+        async function handleStoryImageUpload(event){const files=[...(event.target.files||[])];if(!files.length)return;for(const file of files.slice(0,10)){const data=await compressImage(file,1600,1100,.8);const url=await uploadImageToStorage(data,'stories');tempStoryBlocks.push({type:'image',src:url});tempStoryBlocks.push({type:'text',content:''});}renderStoryBlocks();event.target.value='';}
+        async function saveStory(event){event.preventDefault();const tree=familyTrees.find(t=>t.id===document.getElementById('storyTreeInput').value);if(!tree)return;const simId=document.getElementById('storySimInput').value;if(!simId)return;tree.stories=Array.isArray(tree.stories)?tree.stories:[];const blocks=tempStoryBlocks.map(b=>b.type==='image'?{type:'image',src:b.src}:{type:'text',content:b.content||''}).filter(b=>b.type==='image'?!!b.src:true);const payload={id:editingStoryId||('story_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),simId,title:document.getElementById('storyTitleInput').value.trim(),blocks,isPublished:document.getElementById('storyPublishedInput').checked,createdAt:editingStoryId?(findStory(editingStoryId)?.story.createdAt||new Date().toISOString()):new Date().toISOString(),updatedAt:new Date().toISOString()};const idx=tree.stories.findIndex(x=>x.id===payload.id);if(idx>=0)tree.stories[idx]=payload;else tree.stories.unshift(payload);localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));markTreeDirty();closeStoryModal();renderStoriesPage();}
+        function renderStoriesPage(){const feed=document.getElementById('storiesFeed');if(!feed)return;feed.innerHTML='';const stories=[];(familyTrees||[]).forEach(tree=>getStoryList(tree).filter(st=>st.isPublished).forEach(st=>stories.push({tree,story:st})));stories.sort((a,b)=>String(b.story.updatedAt||b.story.createdAt||'').localeCompare(String(a.story.updatedAt||a.story.createdAt||'')));if(!stories.length){feed.innerHTML='<div class="story-empty"><div style="font-size:42px;margin-bottom:10px;">📚</div><h3 style="margin:0 0 7px;">Még nincs publikált történet</h3><p style="margin:0 0 16px;">Írj egy történetet egy Simről, szúrj be képeket, majd publikáld.</p><button type="button" class="btn-primary" onclick="openStoryModal()">＋ Új történet</button></div>';return;}stories.forEach(({tree,story})=>{const sim=(tree.sims||[]).find(s=>s.id===story.simId);const card=document.createElement('article');card.className='story-card';card.innerHTML=`<h3>${escapeHtml(story.title||'Névtelen történet')}</h3><div class="story-card-meta">👤 ${escapeHtml(`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim')} · 🌳 ${escapeHtml(tree.name||'Családfa')}</div>${(story.blocks||[]).map(b=>b.type==='image'?`<img class="story-card-image" src="${escapeHtml(b.src||'')}" alt="Történet kép" loading="lazy">`:(b.content?`<div class="story-card-text">${escapeHtml(b.content)}</div>`:'')).join('')}<div style="display:flex;justify-content:flex-end;margin-top:10px;"><button type="button" class="blog-mini-btn" onclick="openStoryModal('${escapeHtml(story.id)}')">✎ Szerkesztés</button></div>`;feed.appendChild(card);});}
+
         function switchView(viewName) {
             currentView = viewName;
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
@@ -3354,7 +3405,7 @@
             } else {
                 document.body.classList.remove('tree-view-active');
             }
-            if (viewName === 'activity') document.body.classList.add('blog-view-active');
+            if (viewName === 'activity' || viewName === 'stories') document.body.classList.add('blog-view-active');
             else document.body.classList.remove('blog-view-active');
 
             if (viewName !== 'public') stopPublicRefreshTimer();
@@ -3380,6 +3431,11 @@
                 document.getElementById('navActivity').classList.add('active');
                 document.getElementById('menuActivity').classList.add('active');
                 initActivityView();
+            } else if (viewName === 'stories') {
+                document.getElementById('storiesView').classList.add('active');
+                document.getElementById('navStories').classList.add('active');
+                document.getElementById('menuStories').classList.add('active');
+                renderStoriesPage();
             } else if (viewName === 'public') {
                 document.getElementById('publicView').classList.add('active');
                 document.getElementById('navPublic').classList.add('active');
@@ -4347,45 +4403,43 @@ function renderOwnBlogDetail(blogId) {
         function blogEmojiPickerMarkup(){return `<div class="blog-emoji-wrap"><button type="button" class="blog-emoji-btn" title="Emoji beszúrása" onclick="toggleBlogEmojiPicker(this)">😊</button><div class="blog-emoji-picker">${blogEmojiList().map(e=>`<button type="button" class="blog-emoji-choice" onclick="insertBlogEmoji(this,'${e}')">${e}</button>`).join('')}</div></div>`;}
         function positionBlogEmojiPicker(wrap,picker){
             if(!wrap||!picker)return;
-            const r=wrap.getBoundingClientRect(),gap=6,w=205,h=260;
+            const r=wrap.getBoundingClientRect(),gap=6,w=205,h=Math.min(330,Math.max(210,window.innerHeight-24));
             let left=r.right-w;
             if(left<8)left=8;
             if(left+w>window.innerWidth-8)left=Math.max(8,window.innerWidth-w-8);
             let top=r.top-h-gap;
             if(top<8)top=r.bottom+gap;
             if(top+h>window.innerHeight-8)top=Math.max(8,window.innerHeight-h-8);
-            picker.style.left=`${left}px`; picker.style.top=`${top}px`;
+            picker.style.left=`${left}px`; picker.style.top=`${top}px`; picker.style.maxHeight=`${Math.max(190,window.innerHeight-24)}px`; picker.style.overflowY='auto';
         }
-        function resetBlogEmojiPickerPosition(picker){ if(!picker)return; picker.classList.remove('blog-emoji-picker-fixed'); picker.style.left=''; picker.style.top=''; }
+        function closeBlogEmojiPicker(wrap){
+            if(!wrap)return; const picker=wrap._emojiPicker || wrap.querySelector('.blog-emoji-picker');
+            wrap.classList.remove('open');
+            if(picker){picker.classList.remove('blog-emoji-picker-fixed');picker.style.display='none';picker.style.left='';picker.style.top='';picker.style.maxHeight='';picker.style.overflowY=''; if(picker.parentElement===document.body) picker.remove(); wrap.appendChild(picker);}
+            wrap._emojiPicker=null;
+        }
         function toggleBlogEmojiPicker(btn){
             const wrap=btn?.closest('.blog-emoji-wrap'); if(!wrap)return;
-            const picker=wrap.querySelector('.blog-emoji-picker'); if(!picker)return;
-            if(picker && !picker.dataset.ready){
-                picker.innerHTML=blogEmojiList().map(e=>`<button type="button" class="blog-emoji-choice" onclick="insertBlogEmoji(this,'${e}')">${e}</button>`).join('');
-                picker.dataset.ready='1';
-            }
-            document.querySelectorAll('.blog-emoji-wrap.open').forEach(x=>{
-                if(x!==wrap){x.classList.remove('open');const p=x.querySelector('.blog-emoji-picker');if(p)resetBlogEmojiPickerPosition(p);}
-            });
+            let picker=wrap._emojiPicker || wrap.querySelector('.blog-emoji-picker'); if(!picker)return;
+            if(!picker.dataset.ready){picker.innerHTML=blogEmojiList().map(e=>`<button type="button" class="blog-emoji-choice" onclick="insertBlogEmoji(this,'${e}')">${e}</button>`).join('');picker.dataset.ready='1';}
+            document.querySelectorAll('.blog-emoji-wrap.open').forEach(x=>{if(x!==wrap)closeBlogEmojiPicker(x);});
             const opening=!wrap.classList.contains('open');
-            wrap.classList.toggle('open');
-            if(opening){picker.classList.add('blog-emoji-picker-fixed');positionBlogEmojiPicker(wrap,picker);}
-            else resetBlogEmojiPickerPosition(picker);
+            if(!opening){closeBlogEmojiPicker(wrap);return;}
+            wrap.classList.add('open'); wrap._emojiPicker=picker; picker._emojiWrap=wrap;
+            document.body.appendChild(picker);
+            picker.classList.add('blog-emoji-picker-fixed'); picker.style.display='grid';
+            positionBlogEmojiPicker(wrap,picker);
         }
-        window.addEventListener('resize',()=>document.querySelectorAll('.blog-emoji-wrap.open').forEach(w=>{const p=w.querySelector('.blog-emoji-picker');if(p)positionBlogEmojiPicker(w,p);}));
-        window.addEventListener('scroll',()=>document.querySelectorAll('.blog-emoji-wrap.open').forEach(w=>{const p=w.querySelector('.blog-emoji-picker');if(p)positionBlogEmojiPicker(w,p);}),true);
+        window.addEventListener('resize',()=>document.querySelectorAll('.blog-emoji-wrap.open').forEach(w=>{const p=w._emojiPicker;if(p)positionBlogEmojiPicker(w,p);}));
+        window.addEventListener('scroll',()=>document.querySelectorAll('.blog-emoji-wrap.open').forEach(w=>{const p=w._emojiPicker;if(p)positionBlogEmojiPicker(w,p);}),true);
         function insertBlogEmoji(btn,emoji){
-            const wrap=btn?.closest('.blog-emoji-wrap'); if(!wrap)return;
+            const picker=btn?.closest('.blog-emoji-picker'); const wrap=picker?picker._emojiWrap:btn?.closest('.blog-emoji-wrap'); if(!wrap)return;
             const field=wrap.parentElement?.querySelector('textarea,input') || wrap.closest('.blog-comment-form,.blog-reply-form,.blog-text-editor-row')?.querySelector('textarea,input');
             if(!field)return;
-            const start=typeof field.selectionStart==='number'?field.selectionStart:field.value.length;
-            const end=typeof field.selectionEnd==='number'?field.selectionEnd:start;
-            field.value=field.value.slice(0,start)+emoji+field.value.slice(end);
-            const pos=start+emoji.length; field.focus(); field.setSelectionRange(pos,pos);
-            field.dispatchEvent(new Event('input',{bubbles:true}));
-            wrap.classList.remove('open'); resetBlogEmojiPickerPosition(wrap.querySelector('.blog-emoji-picker'));
+            const start=typeof field.selectionStart==='number'?field.selectionStart:field.value.length; const end=typeof field.selectionEnd==='number'?field.selectionEnd:start;
+            field.value=field.value.slice(0,start)+emoji+field.value.slice(end); const pos=start+emoji.length; field.focus(); field.setSelectionRange(pos,pos); field.dispatchEvent(new Event('input',{bubbles:true})); closeBlogEmojiPicker(wrap);
         }
-        document.addEventListener('click',e=>{if(!e.target.closest('.blog-emoji-wrap'))document.querySelectorAll('.blog-emoji-wrap.open').forEach(x=>{x.classList.remove('open');resetBlogEmojiPickerPosition(x.querySelector('.blog-emoji-picker'));});});
+        document.addEventListener('click',e=>{if(!e.target.closest('.blog-emoji-wrap')&&!e.target.closest('.blog-emoji-picker'))document.querySelectorAll('.blog-emoji-wrap.open').forEach(closeBlogEmojiPicker);});
         function renderBlogPostBlocks(){
             const box=document.getElementById('simBlogPostBlocks'); if(!box) return; box.innerHTML='';
             tempSimBlogPostBlocks.forEach((block,index)=>{
