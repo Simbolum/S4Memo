@@ -1847,8 +1847,7 @@
 .story-tree-start-body{padding:10px 11px 11px;}
 .story-tree-start-body-top{display:flex;align-items:center;gap:8px;justify-content:space-between;}
 .story-tree-start-body-top strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.story-tree-start-delete{border:1px solid var(--border-color);background:var(--card-solid);color:var(--subtext-color);border-radius:8px;padding:4px 6px;font-size:10px;cursor:pointer;flex:0 0 auto;}
-.story-tree-start-delete:hover{border-color:#ff6b7f;color:#ff6b7f;background:rgba(255,107,127,.08);}
+
 .story-workspace-shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px;align-items:start;}
 .story-workspace-sidebar{position:sticky;top:14px;border:1px solid var(--border-color);border-radius:18px;background:var(--card-solid);padding:12px;}
 .story-workspace-sidebar-head{font-size:11px;font-weight:900;margin-bottom:8px;}
@@ -3857,7 +3856,7 @@
             box.innerHTML=`
                 <div class="story-workspace-topbar">
                     <div><button type="button" class="blog-mini-btn" onclick="closeStoryDetail()">← Vissza a Saját történeteimhez</button><h1 class="story-workspace-title" style="margin-top:8px;">🌳 ${escapeHtml(tree.name||'Névtelen családfa')} – Történetek</h1></div>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;">${story?`<button type="button" class="blog-mini-btn story-preview-btn" onclick="openStoryPreview('${escapeHtml(story.id)}','${escapeHtml(chapter?.id||'')}')">👁️ Megtekintés</button>`:''}<button type="button" class="blog-mini-btn" onclick="openStoryModal(null,'${escapeHtml(tree.id)}')">＋ Új történet</button><button type="button" class="blog-mini-btn" onclick="deleteTree('${escapeHtml(tree.id)}')">🗑 Családfa törlése</button></div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">${story?`<button type="button" class="blog-mini-btn story-preview-btn" onclick="openStoryPreview('${escapeHtml(story.id)}','${escapeHtml(chapter?.id||'')}')">👁️ Megtekintés</button>`:''}<button type="button" class="blog-mini-btn" onclick="openStoryModal(null,'${escapeHtml(tree.id)}')">＋ Új történet</button></div>
                 </div>
                 <div class="story-workspace-shell">
                     <aside class="story-workspace-sidebar">
@@ -4038,7 +4037,7 @@ function openStoryPreview(storyId,chapterId=null){
                 const cover=tree.bgConfig?.publicIndexImage||tree.bgConfig?.coverImage||tree.cover||'';
                 const coverHtml=cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(tree.name||'Családfa')}" loading="lazy">`:'<div class="story-tree-start-placeholder">🌳</div>';
                 const stories=getStoryList(tree),storyCount=stories.length,chapterCount=stories.reduce((n,st)=>n+storyNormalizeChapters(st).length,0),publishedChapterCount=stories.reduce((n,st)=>n+storyGetPublishedChapters(st).length,0);
-                return `<article class="story-tree-start-card"><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="${storyCount?'Történetek megnyitása':'Történetoldal megnyitása'}">${coverHtml}<div class="story-tree-start-overlay">📖 Történet megnyitása</div></div><div class="story-tree-start-body"><div class="story-tree-start-body-top"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong><button type="button" class="story-tree-start-delete" onclick="event.stopPropagation();deleteTree('${escapeHtml(tree.id)}')" title="Családfa törlése">🗑</button></div><span>${storyCount} történet · ${chapterCount} fejezet${publishedChapterCount?` · ${publishedChapterCount} publikált`:''}</span></div></article>`;
+                return `<article class="story-tree-start-card"><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="${storyCount?'Történetek megnyitása':'Történetoldal megnyitása'}">${coverHtml}<div class="story-tree-start-overlay">📖 Történet megnyitása</div></div><div class="story-tree-start-body"><div class="story-tree-start-body-top"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong></div><span>${storyCount} történet · ${chapterCount} fejezet${publishedChapterCount?` · ${publishedChapterCount} publikált`:''}</span></div></article>`;
             }).join('')}</div>`;
         }
         function startStoryForTree(treeId){
@@ -4063,7 +4062,7 @@ function openStoryPreview(storyId,chapterId=null){
             const renderGroups=(trees,isOwn)=>{
                 const visible=(trees||[]).filter(t=>{
                     if(isOwn)return isStoryTreeOwnedByCurrentUser(t)&&matches(t);
-                    return !!t?.isPublic&&!isStoryTreeOwnedByCurrentUser(t)&&getStoryList(t).some(st=>storyHasPublishedChapter(st))&&matches(t);
+                    return !!t?.isPublic&&getStoryList(t).some(st=>storyHasPublishedChapter(st))&&matches(t);
                 });
                 if(!visible.length)return `<div class="stories-sidebar-empty">${isOwn?(query?'Nincs saját találat.':'Nincs saját családfa.'):(query?'Nincs publikus találat.':'Nincs elérhető publikált történet.')}</div>`;
                 return visible.map(tree=>{
@@ -4129,7 +4128,7 @@ function openStoryPreview(storyId,chapterId=null){
             renderStorySidebarNavigation();
             const query=(document.getElementById('storiesSearchInput')?.value||'').trim().toLocaleLowerCase('hu-HU');
             const grouped=[];
-            (publicFamilyTrees||[]).filter(t=>!!t.isPublic&&!isStoryTreeOwnedByCurrentUser(t)).forEach(tree=>{
+            (publicFamilyTrees||[]).filter(t=>!!t.isPublic).forEach(tree=>{
                 const publicStories=getStoryList(tree).map(st=>({story:st,chapters:storyGetPublishedChapters(st)})).filter(x=>x.chapters.length);
                 if(!publicStories.length)return;
                 const simNames=publicStories.map(x=>{const sim=(tree.sims||[]).find(s=>String(s.id)===String(x.story.simId));return `${sim?.firstName||''} ${sim?.lastName||''}`.trim();}).join(' ');
