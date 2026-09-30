@@ -1739,6 +1739,11 @@
 .story-detail-empty{padding:55px 20px;text-align:center;color:var(--subtext-color);}
 .story-detail-back{margin-bottom:12px;}
 @media(max-width:760px){.story-chapters{grid-template-columns:1fr}.story-detail-cover{height:220px}.story-detail-title{font-size:23px}}
+.story-list-card{overflow:hidden;}
+.story-list-open{cursor:pointer;}
+.story-list-open:hover h3{text-decoration:underline;text-underline-offset:3px;}
+.story-list-no-cover{height:220px;border-radius:14px;margin:-2px 0 12px;border:1px dashed var(--border-color);background:var(--card-solid);display:flex;align-items:center;justify-content:center;font-size:56px;opacity:.7;}
+.story-card-open-hint{font-size:10px;color:var(--subtext-color);font-weight:800;margin-right:auto;}
 
 </style>
 
@@ -2073,16 +2078,15 @@
                     <button type="button" class="blog-mini-btn" onclick="renderStoriesPage()">↻ Frissítés</button>
                 </div>
                 <div class="stories-tabs">
-                    <button type="button" class="stories-tab active" id="storiesTabPublic" onclick="setStoriesMode('public')">🌐 Publikus</button>
-                    <button type="button" class="stories-tab" id="storiesTabOwn" onclick="setStoriesMode('own')">👤 Saját történeteim</button>
+                    <button type="button" class="stories-tab active" id="storiesTabPublic" data-stories-mode="public" onclick="setStoriesMode('public')">🌐 Publikus</button>
+                    <button type="button" class="stories-tab" id="storiesTabOwn" data-stories-mode="own" onclick="setStoriesMode('own')">👤 Saját történeteim</button>
                 </div>
                 <div class="stories-layout">
                     <aside class="blog-panel" style="padding:14px;">
                         <div class="blog-right-title"><strong>Történetek</strong><span>publikált</span></div>
                         <p style="font-size:10px;line-height:1.6;color:var(--subtext-color);margin:10px 0 14px;">Simekről szóló családi történetek, szöveggel és képekkel.</p>
-                        <button type="button" class="blog-side-item active" onclick="setStoriesMode('public')">🌐 Publikus történetek</button>
-                        <button type="button" class="blog-side-item" onclick="setStoriesMode('own')">👤 Saját történeteim</button>
-                        <button type="button" class="blog-side-item" onclick="openStoryModal()">✍️ Új történet</button>
+                        <button type="button" class="blog-side-item story-side-mode active" data-stories-mode="public" onclick="setStoriesMode('public')">🌐 Publikus történetek</button>
+                        <button type="button" class="blog-side-item story-side-mode" data-stories-mode="own" onclick="setStoriesMode('own')">👤 Saját történeteim</button>
                     </aside>
                     <section id="storiesFeed" class="stories-list"><div id="storyTreeStarts"></div><div id="storyCardsFeed"></div></section>
                 </div>
@@ -3582,7 +3586,7 @@
             const blocks=(chapter?.blocks||[]).map(b=>b.type==='image'?`<img class="story-card-image" src="${escapeHtml(b.src||'')}" alt="Történet kép" loading="lazy">`:(b.content?`<div class="story-card-text">${escapeHtml(b.content).replace(/\n/g,'<br>')}</div>`:'')).join('');
             box.innerHTML=`<button type="button" class="blog-mini-btn story-detail-back" onclick="closeStoryDetail()">← Vissza a történetekhez</button>
             <section class="story-detail-head">
-              <div class="story-detail-cover" onclick="${own?`openStoryModal('${escapeHtml(story.id)}')`:'void(0)'}">${story.cover?`<img src="${escapeHtml(story.cover)}" style="${coverStyle}" alt="Történet borítóképe">`:'<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;opacity:.55;">📚</div>'}<div class="story-detail-cover-overlay"><div><h1 class="story-detail-title">${escapeHtml(story.title||'Névtelen történet')}</h1><div class="story-detail-meta">👤 ${escapeHtml(`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim')} · 🌳 ${escapeHtml(tree.name||'Családfa')} · ${story.isPublished?'🌐 Publikus':'🔒 Nem publikált'}</div></div></div></div>
+              <div class="story-detail-cover" onclick="${own?`openStoryModal('${escapeHtml(story.id)}')`:'void(0)'}">${story.cover?`<img src="${escapeHtml(story.cover)}" style="${coverStyle}" alt="Történet borítóképe">`:'<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;opacity:.55;">📚</div>'}<div class="story-detail-cover-overlay"><div><h1 class="story-detail-title">${escapeHtml(String(story.title||'').trim())}</h1><div class="story-detail-meta">👤 ${escapeHtml(`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim')} · 🌳 ${escapeHtml(tree.name||'Családfa')} · ${story.isPublished?'🌐 Publikus':'🔒 Nem publikált'}</div></div></div></div>
               <div class="story-detail-toolbar"><button type="button" class="story-social-btn${liked?' liked':''}" onclick="toggleStoryLike('${escapeHtml(story.id)}');renderStoryDetail('${escapeHtml(story.id)}','${escapeHtml(chapter?.id||'')}')"><span class="blog-plumbob">${blogPlumbobSvg()}</span> ${likes.length}</button><span class="story-card-meta">💬 ${storyCommentCount(comments)}</span>${own?`<button type="button" class="blog-mini-btn" onclick="addStoryChapter('${escapeHtml(story.id)}')">＋ Új fejezet</button><button type="button" class="blog-mini-btn" onclick="openStoryModal('${escapeHtml(story.id)}')">✎ Adatok / borító</button><button type="button" class="blog-mini-btn" onclick="deleteStory('${escapeHtml(story.id)}')">🗑 Történet törlése</button>`:''}</div>
             </section>
             <div class="story-chapters"><aside class="story-chapter-list"><strong style="display:block;margin:2px 4px 10px;">📖 Fejezetek</strong>${chapters.map((c,i)=>`<button type="button" class="story-chapter-item ${chapter&&c.id===chapter.id?'active':''}" onclick="renderStoryDetail('${escapeHtml(story.id)}','${escapeHtml(c.id)}')"><span class="story-chapter-number">${i+1}</span><span>${escapeHtml(c.title||`Fejezet ${i+1}`)}</span></button>`).join('')}${own&&chapters.length===0?'<div class="story-detail-empty" style="padding:15px 5px;">Még nincs fejezet.</div>':''}</aside>
@@ -3656,21 +3660,17 @@
             if(!box) return;
             if(storiesMode!=='own'){ box.innerHTML=''; return; }
             const trees=(familyTrees||[]).filter(tree=>!currentUser || !tree.user_id || String(tree.user_id)===String(currentUser.id));
-            if(!trees.length){
-                box.innerHTML='';
-                return;
-            }
+            if(!trees.length){ box.innerHTML=''; return; }
             const cards=trees.map(tree=>{
                 const stories=getStoryList(tree);
                 const cover=tree.bgConfig?.publicIndexImage || tree.bgConfig?.coverImage || tree.cover || '';
-                const storyCount=stories.length;
-                const title=tree.name||'Névtelen családfa';
+                const title=tree.name||'';
                 const coverHtml=cover
                     ? `<img src="${escapeHtml(cover)}" alt="${escapeHtml(title)}" loading="lazy">`
                     : `<div class="story-tree-start-placeholder">🌳</div>`;
                 return `<article class="story-tree-start-card">
-                    <div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')">${coverHtml}<div class="story-tree-start-overlay">✍️ Történet írása ehhez a családfához</div></div>
-                    <div class="story-tree-start-info"><div><strong>${escapeHtml(title)}</strong><span>${storyCount} történet</span></div><button type="button" class="blog-mini-btn" onclick="startStoryForTree('${escapeHtml(tree.id)}')">＋ Új történet</button></div>
+                    <div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="Új történet kezdése ehhez a családfához">${coverHtml}<div class="story-tree-start-overlay">✍️ Új történet kezdése ehhez a családfához</div></div>
+                    <div class="story-tree-start-info"><div><strong>${escapeHtml(title)}</strong><span>${stories.length} történet</span></div></div>
                 </article>`;
             }).join('');
             box.innerHTML=`<div class="story-tree-start-heading"><div><h3>🌳 Saját családfáim</h3><p>Kattints egy családfa borítójára, és kezdj hozzá egy új történethez.</p></div></div><div class="story-tree-start-grid">${cards}</div>`;
@@ -3741,10 +3741,9 @@
         function setStoriesMode(mode){
             storiesMode = mode === 'own' ? 'own' : 'public';
             const search=document.getElementById('storiesSearchInput'); if(search) search.value='';
+            document.querySelectorAll('[data-stories-mode]').forEach(el=>el.classList.toggle('active',el.dataset.storiesMode===storiesMode));
             document.getElementById('storiesTabPublic')?.classList.toggle('active',storiesMode==='public');
             document.getElementById('storiesTabOwn')?.classList.toggle('active',storiesMode==='own');
-            document.querySelectorAll('.story-side-mode').forEach(el=>el.classList.remove('active'));
-            document.querySelectorAll('[data-stories-mode]').forEach(el=>el.classList.toggle('active',el.dataset.storiesMode===storiesMode));
             renderStoriesPage();
         }
 
@@ -3757,7 +3756,27 @@
             const stories=[];source.forEach(tree=>{const list=getStoryList(tree);list.filter(st=>storiesMode==='own'?true:!!st.isPublished).forEach(st=>{const sim=(tree.sims||[]).find(s=>String(s.id)===String(st.simId));const simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim();const owner=tree.ownerProfile?.display_name||'';const hay=[st.title||'',simName,tree.name||'',owner].join(' ').toLocaleLowerCase('hu-HU');if(!query||hay.includes(query))stories.push({tree,story:st,sim,owner});});});
             const seen=new Set();const unique=stories.filter(x=>{if(seen.has(x.story.id))return false;seen.add(x.story.id);return true;});unique.sort((a,b)=>String(b.story.updatedAt||b.story.createdAt||'').localeCompare(String(a.story.updatedAt||a.story.createdAt||'')));
             if(!unique.length){feed.innerHTML=`<div class="story-empty"><div style="font-size:42px;margin-bottom:10px;">${storiesMode==='public'?'🌐':'📚'}</div><h3 style="margin:0 0 7px;">${query?'Nincs találat':storiesMode==='own'?'Még nincs történeted':'Még nincs publikált történet'}</h3><p style="margin:0 0 16px;">${query?'Próbálj másik nevet vagy keresőkifejezést.':'Írj egy történetet egy Simről, szúrj be képeket, majd mentsd el vagy publikáld.'}</p>${storiesMode==='own'?'<button type="button" class="btn-primary" onclick="openStoryModal()">＋ Új történet</button>':''}</div>`;return;}
-            unique.forEach(({tree,story,sim,owner})=>{const card=document.createElement('article');card.className='story-card';const own=storyOwnerCanManage(story,tree),d=getStoryInteractions(story.id),likes=d.likes||[],comments=d.comments||[],liked=!!currentUser&&likes.includes(currentUser.id);const title=story.title||'Névtelen történet';const ct=story.coverTransform||{};const coverStyle=`transform:translate(${Number(ct.offsetX||0)}px,${Number(ct.offsetY||0)}px) scale(${Number(ct.scale||1)}) rotate(${Number(ct.rotation||0)}deg);filter:${ct.filter||'none'};`;card.innerHTML=`${story.cover?`<div style="height:220px;border-radius:14px;overflow:hidden;margin:-2px 0 12px;border:1px solid var(--border-color);background:var(--card-solid);cursor:pointer;" onclick="openStoryDetail('${escapeHtml(story.id)}')"><img class="story-card-cover" style="${coverStyle}" src="${escapeHtml(story.cover)}" alt="Történet borítóképe" loading="lazy"></div>`:''}<h3 style="cursor:pointer;" onclick="openStoryDetail('${escapeHtml(story.id)}')">${escapeHtml(title)}</h3><div class="story-card-meta">👤 ${escapeHtml(`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim')} · 🌳 ${escapeHtml(tree.name||'Családfa')} · ${story.isPublished?'🌐 Publikus':'🔒 Nem publikált'}</div>${owner?`<div class="story-card-owner">✦ ${escapeHtml(owner)}</div>`:''}${(story.blocks||[]).map(b=>b.type==='image'?`<img class="story-card-image" src="${escapeHtml(b.src||'')}" alt="Történet kép" loading="lazy">`:(b.content?`<div class="story-card-text">${escapeHtml(b.content)}</div>`:'')).join('')}<div class="story-card-actions"><button type="button" class="story-social-btn${liked?' liked':''}" onclick="toggleStoryLike('${escapeHtml(story.id)}')"><span class="blog-plumbob">${blogPlumbobSvg()}</span> ${likes.length}</button><span style="font-size:9px;color:var(--subtext-color);font-weight:800;">💬 ${storyCommentCount(comments)}</span>${own?`<button type="button" class="blog-mini-btn" onclick="openStoryModal('${escapeHtml(story.id)}')">✎ Szerkesztés</button><button type="button" class="blog-mini-btn" onclick="deleteStory('${escapeHtml(story.id)}')">🗑 Törlés</button>`:''}</div><div class="story-comments"><div>${comments.map(c=>renderStoryCommentMarkup(story.id,tree,story,c)).join('')}</div><div class="story-comment-form"><input data-story-comment-input="${escapeHtml(story.id)}" placeholder="Írj egy hozzászólást…" maxlength="500">${blogEmojiPickerMarkup()}<button type="button" class="story-social-btn" onclick="addStoryComment('${escapeHtml(story.id)}',this.parentElement.querySelector('[data-story-comment-input=\'${escapeHtml(story.id)}\']'))">Küldés</button></div></div>`;feed.appendChild(card);});
+            unique.forEach(({tree,story,sim,owner})=>{
+                const card=document.createElement('article');
+                card.className='story-card story-list-card';
+                const own=storyOwnerCanManage(story,tree);
+                const title=String(story.title||'').trim();
+                const ct=story.coverTransform||{};
+                const coverStyle=`transform:translate(${Number(ct.offsetX||0)}px,${Number(ct.offsetY||0)}px) scale(${Number(ct.scale||1)}) rotate(${Number(ct.rotation||0)}deg);filter:${ct.filter||'none'};`;
+                const simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim';
+                card.innerHTML=`
+                    <div class="story-list-open" onclick="openStoryDetail('${escapeHtml(story.id)}')" title="Történet megnyitása">
+                        ${story.cover?`<div style="height:220px;border-radius:14px;overflow:hidden;margin:-2px 0 12px;border:1px solid var(--border-color);background:var(--card-solid);"><img class="story-card-cover" style="${coverStyle}" src="${escapeHtml(story.cover)}" alt="Történet borítóképe" loading="lazy"></div>`:'<div class="story-list-no-cover">📚</div>'}
+                        ${title?`<h3 style="margin:0 0 6px;">${escapeHtml(title)}</h3>`:''}
+                        <div class="story-card-meta">👤 ${escapeHtml(simName)} · 🌳 ${escapeHtml(tree.name||'Családfa')} · ${story.isPublished?'🌐 Publikus':'🔒 Nem publikált'}</div>
+                        ${owner?`<div class="story-card-owner">✦ ${escapeHtml(owner)}</div>`:''}
+                    </div>
+                    <div class="story-card-actions">
+                        <span class="story-card-open-hint">📖 Megnyitás</span>
+                        ${own?`<button type="button" class="blog-mini-btn" onclick="event.stopPropagation();openStoryModal('${escapeHtml(story.id)}')">✎ Szerkesztés</button><button type="button" class="blog-mini-btn" onclick="event.stopPropagation();deleteStory('${escapeHtml(story.id)}')">🗑 Törlés</button>`:''}
+                    </div>`;
+                feed.appendChild(card);
+            });
         }
 
         function switchView(viewName) {
