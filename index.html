@@ -1812,6 +1812,56 @@
 .story-list-open h3{cursor:default;}
 .story-list-no-cover{height:220px;border-radius:14px;margin:-2px 0 12px;border:1px dashed var(--border-color);background:var(--card-solid);display:flex;align-items:center;justify-content:center;font-size:56px;opacity:.7;}
 .story-card-open-hint{font-size:10px;color:var(--subtext-color);font-weight:800;margin-right:auto;}
+.stories-sidebar-sublist{display:flex;flex-direction:column;gap:3px;margin:2px 4px 8px 16px;padding-left:8px;border-left:1px solid var(--border-color);}
+.stories-sidebar-tree{display:flex;flex-direction:column;gap:2px;}
+.stories-sidebar-tree-btn,.stories-sidebar-story-btn,.stories-sidebar-chapter-btn{width:100%;border:0;background:transparent;color:var(--text-color);text-align:left;cursor:pointer;border-radius:8px;font-weight:800;}
+.stories-sidebar-tree-btn{padding:5px 6px;font-size:10px;display:flex;align-items:center;gap:5px;}
+.stories-sidebar-tree-btn:hover{background:rgba(255,255,255,.05);color:var(--accent-color);}
+.stories-sidebar-tree-btn .tree-count{margin-left:auto;color:var(--subtext-color);font-size:8px;font-weight:800;}
+.stories-sidebar-story-btn{padding:4px 5px;font-size:9px;color:var(--accent-color);}
+.stories-sidebar-story-btn:hover{background:rgba(46,213,115,.08);}
+.stories-sidebar-chapter-btn{padding:3px 5px 3px 17px;font-size:8px;color:var(--subtext-color);font-weight:700;}
+.stories-sidebar-chapter-btn:hover{background:rgba(255,255,255,.04);color:var(--text-color);}
+.stories-sidebar-empty{padding:5px 4px;color:var(--subtext-color);font-size:8px;line-height:1.45;}
+.story-tree-start-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.story-tree-start-card{position:relative;overflow:hidden;}
+.story-tree-start-cover{height:160px;cursor:pointer;}
+.story-tree-start-body{padding:10px 11px 11px;}
+.story-tree-start-body-top{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.story-tree-start-body-top strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.story-tree-start-delete{border:1px solid var(--border-color);background:var(--card-solid);color:var(--subtext-color);border-radius:8px;padding:4px 6px;font-size:10px;cursor:pointer;flex:0 0 auto;}
+.story-tree-start-delete:hover{border-color:#ff6b7f;color:#ff6b7f;background:rgba(255,107,127,.08);}
+.story-workspace-shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px;align-items:start;}
+.story-workspace-sidebar{position:sticky;top:14px;border:1px solid var(--border-color);border-radius:18px;background:var(--card-solid);padding:12px;}
+.story-workspace-sidebar-head{font-size:11px;font-weight:900;margin-bottom:8px;}
+.story-workspace-tree-name{font-size:15px;font-weight:900;margin-bottom:2px;}
+.story-workspace-tree-meta{font-size:8px;color:var(--subtext-color);font-weight:700;margin-bottom:10px;}
+.story-workspace-main{min-width:0;}
+.story-workspace-topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.story-workspace-title{margin:0;font-size:22px;font-weight:900;}
+.story-workspace-cover{width:100%;height:250px;border-radius:18px;overflow:hidden;border:1px solid var(--border-color);background:var(--card-solid);position:relative;}
+.story-workspace-cover img{width:100%;height:100%;object-fit:cover;display:block;}
+.story-workspace-cover-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.72));display:flex;align-items:flex-end;padding:18px;}
+.story-workspace-story-title{color:#fff;font-size:24px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.45);margin:0 0 4px;}
+.story-workspace-story-meta{color:rgba(255,255,255,.82);font-size:10px;font-weight:700;}
+.story-workspace-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0 12px;padding:10px;border:1px solid var(--border-color);border-radius:14px;background:var(--card-solid);}
+.story-workspace-editor{border:1px solid var(--border-color);border-radius:16px;background:var(--card-solid);padding:14px;}
+.story-workspace-editor-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.story-workspace-chapter-title{width:100%;max-width:620px;padding:10px 12px;border:1px solid var(--border-color);border-radius:10px;background:var(--input-bg);color:var(--text-color);font-weight:800;font-size:12px;outline:none;}
+.story-workspace-blocks{display:flex;flex-direction:column;gap:9px;}
+.story-workspace-block{position:relative;padding:10px;border:1px solid var(--border-color);border-radius:12px;background:rgba(255,255,255,.02);}
+.story-workspace-block textarea{width:100%;min-height:170px;resize:vertical;border:0;outline:none;background:transparent;color:var(--text-color);font-size:12px;line-height:1.7;}
+.story-workspace-block img{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:10px;}
+.story-workspace-block-remove{position:absolute;right:7px;top:7px;border:0;background:rgba(0,0,0,.4);color:#fff;border-radius:7px;cursor:pointer;font-size:12px;width:24px;height:24px;z-index:2;}
+.story-workspace-block-remove:hover{background:#ff5e7e;}
+.story-workspace-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.story-workspace-tools-left{display:flex;gap:6px;flex-wrap:wrap;}
+.story-workspace-empty{padding:55px 25px;text-align:center;border:1px dashed var(--border-color);border-radius:16px;color:var(--subtext-color);}
+.story-workspace-no-story{padding:60px 25px;text-align:center;border:1px dashed var(--border-color);border-radius:18px;}
+.story-workspace-no-story h2{margin:8px 0 7px;font-size:22px;}
+.story-workspace-no-story p{margin:0 auto 16px;color:var(--subtext-color);font-size:11px;line-height:1.6;max-width:560px;}
+@media(max-width:860px){.story-workspace-shell{grid-template-columns:1fr}.story-workspace-sidebar{position:static}.story-workspace-cover{height:220px}.story-workspace-title{font-size:19px}}
+
 
 </style>
 
@@ -2151,10 +2201,12 @@
                 </div>
                 <div class="stories-layout">
                     <aside class="blog-panel" style="padding:14px;">
-                        <div class="blog-right-title"><strong>Történetek</strong><span>publikált</span></div>
-                        <p style="font-size:10px;line-height:1.6;color:var(--subtext-color);margin:10px 0 14px;">Simekről szóló családi történetek, szöveggel és képekkel.</p>
+                        <div class="blog-right-title"><strong>Történetek</strong><span>Publikus / Saját</span></div>
+                        <p style="font-size:10px;line-height:1.6;color:var(--subtext-color);margin:10px 0 14px;">A családfák történetei és fejezetei itt egymás alatt jelennek meg.</p>
                         <button type="button" class="blog-side-item story-side-mode active" data-stories-mode="public" onclick="setStoriesMode('public')">🌐 Publikus történetek</button>
+                        <div id="storiesPublicTreeList" class="stories-sidebar-sublist"></div>
                         <button type="button" class="blog-side-item story-side-mode" data-stories-mode="own" onclick="setStoriesMode('own')">👤 Saját történeteim</button>
+                        <div id="storiesOwnTreeList" class="stories-sidebar-sublist"></div>
                     </aside>
                     <section id="storiesFeed" class="stories-list"><div id="storyTreeStarts"></div><div id="storyCardsFeed"></div></section>
                 </div>
@@ -2163,7 +2215,7 @@
     </div>
 
     <!-- TÖRTÉNET RÉSZLET / FEJEZETEK -->
-    <div class="page-view" id="storyDetailView">
+    <div class="page-view" id="storyDetailView" data-view-type="story-workspace">
         <main class="main-card story-detail-main">
             <div id="storyDetailContent"></div>
         </main>
@@ -3719,6 +3771,119 @@
         }
         function storyGetChapter(story,chapterId){const cs=storyNormalizeChapters(story);return cs.find(c=>String(c.id)===String(chapterId))||cs[0]||null;}
 
+        let storyWorkspaceTreeId=null, storyWorkspaceStoryId=null, storyWorkspaceChapterId=null, storyWorkspaceBlocks=[];
+        function openStoryWorkspace(treeId,storyId=null,chapterId=null){
+            const tree=(familyTrees||[]).find(t=>String(t.id)===String(treeId));
+            if(!tree||!isStoryTreeOwnedByCurrentUser(tree))return;
+            storyWorkspaceTreeId=tree.id;
+            storyWorkspaceStoryId=storyId||null;
+            storyWorkspaceChapterId=chapterId||null;
+            currentView='story-detail';
+            document.querySelectorAll('.page-view').forEach(el=>el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+            document.body.classList.add('blog-view-active');
+            document.getElementById('storyDetailView')?.classList.add('active');
+            renderStoryWorkspace();
+        }
+        function renderStoryWorkspace(){
+            const box=document.getElementById('storyDetailContent');if(!box)return;
+            const tree=(familyTrees||[]).find(t=>String(t.id)===String(storyWorkspaceTreeId));
+            if(!tree||!isStoryTreeOwnedByCurrentUser(tree)){switchView('stories');return;}
+            const stories=getStoryList(tree);
+            let story=stories.find(st=>String(st.id)===String(storyWorkspaceStoryId))||stories[0]||null;
+            if(story)storyWorkspaceStoryId=story.id;
+            const sim=story?(tree.sims||[]).find(s=>String(s.id)===String(story.simId)):null;
+            const chapters=story?storyNormalizeChapters(story):[];
+            let chapter=story?storyGetChapter(story,storyWorkspaceChapterId):null;
+            if(chapter)storyWorkspaceChapterId=chapter.id;
+            else if(chapters.length){chapter=chapters[0];storyWorkspaceChapterId=chapter.id;}
+            storyWorkspaceBlocks=chapter?chapter.blocks.map(b=>b.type==='image'?{type:'image',src:b.src}:{type:'text',content:b.content||''}):[];
+            const ct=story?.coverTransform||{};
+            const coverStyle=`transform:translate(${Number(ct.offsetX||0)}px,${Number(ct.offsetY||0)}px) scale(${Number(ct.scale||1)}) rotate(${Number(ct.rotation||0)}deg);filter:${ct.filter||'none'};`;
+            const sidebar=stories.length?stories.map(st=>{
+                const cs=storyNormalizeChapters(st);
+                return `<div class="stories-sidebar-tree">
+                    <button type="button" class="stories-sidebar-tree-btn" style="color:${String(st.id)===String(story?.id)?'var(--accent-color)':'var(--text-color)'}" onclick="openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}')">📖 ${escapeHtml(st.title||'Névtelen történet')}<span class="tree-count">${cs.length} fej.</span></button>
+                    ${cs.map((c,i)=>`<button type="button" class="stories-sidebar-chapter-btn" style="color:${chapter&&String(c.id)===String(chapter.id)?'var(--text-color)':'var(--subtext-color)'}" onclick="openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}','${escapeHtml(c.id)}')">${i+1}. ${escapeHtml(c.title||`Fejezet ${i+1}`)}</button>`).join('')}
+                </div>`;
+            }).join(''):'<div class="stories-sidebar-empty">Még nincs történet. Az oldalon belül létrehozhatod az elsőt.</div>';
+            const editor=story&&chapter?`
+                <div class="story-workspace-editor">
+                    <div class="story-workspace-editor-head">
+                        <input id="storyWorkspaceChapterTitle" class="story-workspace-chapter-title" value="${escapeHtml(chapter.title||'')}" placeholder="Fejezet címe">
+                        <span style="font-size:9px;color:var(--subtext-color);font-weight:800;">A változtatások a Mentés gombbal kerülnek a történetbe.</span>
+                    </div>
+                    <div id="storyWorkspaceBlocks" class="story-workspace-blocks"></div>
+                    <div class="story-workspace-tools">
+                        <div class="story-workspace-tools-left">
+                            <button type="button" class="blog-mini-btn" onclick="addStoryWorkspaceTextBlock()">＋ Szöveg</button>
+                            <button type="button" class="blog-mini-btn" onclick="triggerStoryWorkspaceImagePicker()">🖼️ Kép</button>
+                            <input id="storyWorkspaceImageInput" type="file" accept="image/*" multiple style="display:none" onchange="handleStoryWorkspaceImageUpload(event)">
+                        </div>
+                        <button type="button" class="btn-primary" onclick="saveStoryWorkspaceChapter()">💾 Fejezet mentése</button>
+                    </div>
+                </div>`:`<div class="story-workspace-empty">${story?`Ennek a történetnek még nincs fejezete.<br><button type="button" class="blog-mini-btn" style="margin-top:10px;" onclick="createStoryWorkspaceChapter('${escapeHtml(story.id)}')">＋ Első fejezet</button>`:'Válassz ki egy történetet a bal oldalon, vagy hozz létre egy újat.'}</div>`;
+            box.innerHTML=`
+                <div class="story-workspace-topbar">
+                    <div><button type="button" class="blog-mini-btn" onclick="closeStoryDetail()">← Vissza a Saját történeteimhez</button><h1 class="story-workspace-title" style="margin-top:8px;">🌳 ${escapeHtml(tree.name||'Névtelen családfa')} – Történetek</h1></div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;"><button type="button" class="blog-mini-btn" onclick="openStoryModal(null,'${escapeHtml(tree.id)}')">＋ Új történet</button><button type="button" class="blog-mini-btn" onclick="deleteTree('${escapeHtml(tree.id)}')">🗑 Családfa törlése</button></div>
+                </div>
+                <div class="story-workspace-shell">
+                    <aside class="story-workspace-sidebar">
+                        <div class="story-workspace-sidebar-head">📚 Történetek és fejezetek</div>
+                        <div class="story-workspace-tree-name">${escapeHtml(tree.name||'Névtelen családfa')}</div>
+                        <div class="story-workspace-tree-meta">${stories.length} történet · ${stories.reduce((n,st)=>n+storyNormalizeChapters(st).length,0)} fejezet</div>
+                        ${sidebar}
+                        ${!stories.length?`<button type="button" class="btn-primary" style="width:100%;margin-top:8px;" onclick="openStoryModal(null,'${escapeHtml(tree.id)}')">＋ Első történet</button>`:''}
+                    </aside>
+                    <section class="story-workspace-main">
+                        ${story?`<div class="story-workspace-cover">${story.cover?`<img src="${escapeHtml(story.cover)}" style="${coverStyle}" alt="Történet borítóképe">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;opacity:.55;">📚</div>'}<div class="story-workspace-cover-overlay"><div><h2 class="story-workspace-story-title">${escapeHtml(story.title||'Névtelen történet')}</h2><div class="story-workspace-story-meta">${sim?`👤 ${escapeHtml(`${sim.firstName||''} ${sim.lastName||''}`.trim())}`:''} · ${story.isPublished?'🌐 Publikus':'🔒 Privát'}</div></div></div></div>
+                        <div class="story-workspace-toolbar"><button type="button" class="blog-mini-btn" onclick="createStoryWorkspaceChapter('${escapeHtml(story.id)}')">＋ Új fejezet</button><button type="button" class="blog-mini-btn" onclick="openStoryModal('${escapeHtml(story.id)}')">✎ Történet adatai</button><button type="button" class="blog-mini-btn" onclick="deleteStory('${escapeHtml(story.id)}')">🗑 Történet törlése</button></div>`:''}
+                        ${story?editor:`<div class="story-workspace-no-story"><div style="font-size:52px;">📖</div><h2>${escapeHtml(tree.name||'Névtelen családfa')} történetei</h2><p>Még nincs történet ehhez a családfához. Itt tudod létrehozni az első történetet, és utána ezen a külön oldalon írhatod a fejezeteket.</p><button type="button" class="btn-primary" onclick="openStoryModal(null,'${escapeHtml(tree.id)}')">＋ Új történet létrehozása</button></div>`}
+                    </section>
+                </div>`;
+            if(story&&chapter)renderStoryWorkspaceBlocks();
+        }
+        function renderStoryWorkspaceBlocks(){
+            const box=document.getElementById('storyWorkspaceBlocks');if(!box)return;box.innerHTML='';
+            storyWorkspaceBlocks.forEach((b,i)=>{
+                const wrap=document.createElement('div');wrap.className='story-workspace-block';
+                if(b.type==='image')wrap.innerHTML=`<button type="button" class="story-workspace-block-remove" title="Kép törlése">×</button><img src="${escapeHtml(b.src||'')}" alt="Történet kép">`;
+                else{wrap.innerHTML=`<button type="button" class="story-workspace-block-remove" title="Szövegrész törlése">×</button><textarea placeholder="Írj ide..."></textarea>`;wrap.querySelector('textarea').value=b.content||'';wrap.querySelector('textarea').addEventListener('input',e=>b.content=e.target.value);}
+                wrap.querySelector('.story-workspace-block-remove').onclick=()=>{storyWorkspaceBlocks.splice(i,1);renderStoryWorkspaceBlocks();};box.appendChild(wrap);
+            });
+            if(!storyWorkspaceBlocks.length){const empty=document.createElement('div');empty.className='story-workspace-empty';empty.textContent='Még nincs tartalom. Adj hozzá egy szövegrészt vagy képet.';box.appendChild(empty);}
+        }
+        function addStoryWorkspaceTextBlock(){storyWorkspaceBlocks.push({type:'text',content:''});renderStoryWorkspaceBlocks();const a=document.querySelectorAll('#storyWorkspaceBlocks textarea');a[a.length-1]?.focus();}
+        function triggerStoryWorkspaceImagePicker(){document.getElementById('storyWorkspaceImageInput')?.click();}
+        async function handleStoryWorkspaceImageUpload(event){
+            const files=[...(event.target.files||[])];if(!files.length)return;
+            for(const file of files.slice(0,10)){const data=await compressImage(file,1600,1100,.8);const url=await uploadImageToStorage(data,'stories');storyWorkspaceBlocks.push({type:'image',src:url});storyWorkspaceBlocks.push({type:'text',content:''});}
+            renderStoryWorkspaceBlocks();event.target.value='';
+        }
+        async function saveStoryWorkspaceChapter(){
+            const tree=(familyTrees||[]).find(t=>String(t.id)===String(storyWorkspaceTreeId));const story=getStoryList(tree).find(st=>String(st.id)===String(storyWorkspaceStoryId));
+            if(!tree||!story||!storyOwnerCanManage(story,tree))return;
+            const chapters=storyNormalizeChapters(story);let chapter=chapters.find(c=>String(c.id)===String(storyWorkspaceChapterId));
+            if(!chapter){chapter={id:'chapter_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),title:`${chapters.length+1}. fejezet`,blocks:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};chapters.push(chapter);storyWorkspaceChapterId=chapter.id;}
+            chapter.title=(document.getElementById('storyWorkspaceChapterTitle')?.value||'').trim()||`Fejezet ${chapters.indexOf(chapter)+1}`;
+            chapter.blocks=storyWorkspaceBlocks.map(b=>b.type==='image'?{type:'image',src:b.src}:{type:'text',content:b.content||''}).filter(b=>b.type==='image'?!!b.src:true);
+            chapter.updatedAt=new Date().toISOString();story.chapters=chapters;story.blocks=chapters[0]?.blocks||[];story.updatedAt=new Date().toISOString();setStoryList(tree,getStoryList(tree));
+            const ok=await saveFamilyTreeToSupabase(tree);if(!ok)return;
+            try{localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));}catch(e){}
+            dirtyTreeIds.delete(tree.id);updateTreeSaveUI();
+            renderStorySidebarNavigation();renderStoryWorkspace();
+        }
+        async function createStoryWorkspaceChapter(storyId){
+            const tree=(familyTrees||[]).find(t=>String(t.id)===String(storyWorkspaceTreeId));const story=getStoryList(tree).find(st=>String(st.id)===String(storyId));
+            if(!tree||!story||!storyOwnerCanManage(story,tree))return;
+            const chapters=storyNormalizeChapters(story),now=new Date().toISOString(),id='chapter_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+            chapters.push({id,title:`${chapters.length+1}. fejezet`,blocks:[{type:'text',content:''}],createdAt:now,updatedAt:now});story.chapters=chapters;story.updatedAt=now;setStoryList(tree,getStoryList(tree));
+            const ok=await saveFamilyTreeToSupabase(tree);if(!ok)return;
+            try{localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));}catch(e){}
+            dirtyTreeIds.delete(tree.id);updateTreeSaveUI();storyWorkspaceStoryId=story.id;storyWorkspaceChapterId=id;renderStoryWorkspace();
+        }
+        
         function openStoryDetail(storyId,chapterId=null){
             const f=findStory(storyId);if(!f)return;
             currentView='story-detail';
@@ -3796,17 +3961,54 @@
         function renderOwnStoryTreeStarts(){
             const box=document.getElementById('storyTreeStarts');if(!box)return;
             if(storiesMode!=='own'){box.innerHTML='';return;}
-            const trees=(familyTrees||[]).filter(t=>isStoryTreeOwnedByCurrentUser(t));
-            if(!trees.length){box.innerHTML='';return;}
-            box.innerHTML=`<div class="story-tree-start-heading"><div><h3>🌳 Saját családfáim</h3><p>Kattints egy családfa borítójára, ha új történetet szeretnél hozzá létrehozni.</p></div></div><div class="story-tree-start-grid">${trees.map(tree=>{
+            const query=(document.getElementById('storiesSearchInput')?.value||'').trim().toLocaleLowerCase('hu-HU');
+            const trees=(familyTrees||[]).filter(t=>{
+                if(!isStoryTreeOwnedByCurrentUser(t))return false;
+                if(!query)return true;
+                const storyText=getStoryList(t).map(st=>st.title||'').join(' ');
+                return `${t.name||''} ${storyText}`.toLocaleLowerCase('hu-HU').includes(query);
+            });
+            if(!trees.length){
+                box.innerHTML=`<div class="story-empty"><div style="font-size:42px;margin-bottom:10px;">🌳</div><h3 style="margin:0 0 7px;">${query?'Nincs találat':'Nincs saját családfa'}</h3><p style="margin:0 0 16px;">${query?'Próbálj másik családfanevet vagy történetcímet.':'Hozz létre egy családfát a Családfák nézetben.'}</p></div>`;
+                return;
+            }
+            box.innerHTML=`<div class="story-tree-start-heading"><div><h3>🌳 Saját családfáim</h3><p>Kattints a családfa borítójára: egy külön történetoldal nyílik meg, nem a családfa szerkesztője.</p></div></div><div class="story-tree-start-grid">${trees.map(tree=>{
                 const cover=tree.bgConfig?.publicIndexImage||tree.bgConfig?.coverImage||tree.cover||'';
                 const coverHtml=cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(tree.name||'Családfa')}" loading="lazy">`:'<div class="story-tree-start-placeholder">🌳</div>';
-                return `<article class="story-tree-start-card"><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="Új történet kezdése ehhez a családfához">${coverHtml}<div class="story-tree-start-overlay">✍️ Új történet</div></div><div class="story-tree-start-body"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong><span>${getStoryList(tree).length} saját történet</span></div></article>`;
+                const storyCount=getStoryList(tree).length,chapterCount=getStoryList(tree).reduce((n,st)=>n+storyNormalizeChapters(st).length,0);
+                return `<article class="story-tree-start-card"><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="${storyCount?'Történetek megnyitása':'Történetoldal megnyitása'}">${coverHtml}<div class="story-tree-start-overlay">📖 Történet megnyitása</div></div><div class="story-tree-start-body"><div class="story-tree-start-body-top"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong><button type="button" class="story-tree-start-delete" onclick="event.stopPropagation();deleteTree('${escapeHtml(tree.id)}')" title="Családfa törlése">🗑</button></div><span>${storyCount} történet · ${chapterCount} fejezet</span></div></article>`;
             }).join('')}</div>`;
         }
         function startStoryForTree(treeId){
-            if(!currentUser){alert('A történet létrehozásához jelentkezz be.');return;}
-            openStoryModal(null,treeId);
+            if(!currentUser){alert('A történetek kezeléséhez jelentkezz be.');return;}
+            openStoryWorkspace(treeId);
+        }
+
+        function renderStorySidebarNavigation(){
+            const pubBox=document.getElementById('storiesPublicTreeList'),ownBox=document.getElementById('storiesOwnTreeList');
+            if(!pubBox||!ownBox)return;
+            const renderGroups=(trees,isOwn)=>{
+                const visible=(trees||[]).filter(t=>isOwn?isStoryTreeOwnedByCurrentUser(t):!!t.isPublic);
+                if(!visible.length)return `<div class="stories-sidebar-empty">${isOwn?'Nincs saját családfa.':'Nincs elérhető publikált történet.'}</div>`;
+                return visible.map(tree=>{
+                    const stories=getStoryList(tree).filter(st=>isOwn||st.isPublished);
+                    if(!isOwn&&!stories.length)return '';
+                    const chaptersCount=stories.reduce((n,st)=>n+storyNormalizeChapters(st).length,0);
+                    return `<div class="stories-sidebar-tree">
+                        <button type="button" class="stories-sidebar-tree-btn" onclick="${isOwn?`openStoryWorkspace('${escapeHtml(tree.id)}')`:`scrollToStoryTreeStories('${escapeHtml(tree.id)}')`}">🌳 ${escapeHtml(tree.name||'Családfa')}<span class="tree-count">${isOwn?`${chaptersCount} fej.`:`${stories.length} tört.`}</span></button>
+                        ${stories.map(st=>{
+                            const chapters=storyNormalizeChapters(st);
+                            return `<button type="button" class="stories-sidebar-story-btn" onclick="${isOwn?`openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}')`:`openStoryDetail('${escapeHtml(st.id)}')`}">📖 ${escapeHtml(st.title||'Névtelen történet')}</button>${chapters.map((c,i)=>`<button type="button" class="stories-sidebar-chapter-btn" onclick="${isOwn?`openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}','${escapeHtml(c.id)}')`:`openStoryDetail('${escapeHtml(st.id)}','${escapeHtml(c.id)}')`}">${i+1}. ${escapeHtml(c.title||`Fejezet ${i+1}`)}</button>`).join('')}`;
+                        }).join('')}
+                    </div>`;
+                }).join('');
+            };
+            pubBox.innerHTML=renderGroups(publicFamilyTrees||[],false);
+            ownBox.innerHTML=renderGroups(familyTrees||[],true);
+        }
+        function scrollToStoryTreeStories(treeId){
+            const el=document.querySelector(`[data-story-tree-id="${CSS.escape(String(treeId))}"]`);
+            if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('notification-target-highlight');setTimeout(()=>el.classList.remove('notification-target-highlight'),1800);}
         }
 
         async function saveStory(event){
@@ -3826,7 +4028,7 @@
             setStoryList(tree,stories);
             const ok=await saveFamilyTreeToSupabase(tree);if(!ok)return false;
             try{localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));}catch(e){console.warn('Történetek helyi mentése sikertelen',e);}
-            dirtyTreeIds.delete(tree.id);updateTreeSaveUI();closeStoryModal();storiesMode='own';document.querySelectorAll('[data-stories-mode]').forEach(el=>el.classList.toggle('active',el.dataset.storiesMode==='own'));renderStoriesPage();return false;
+            const keepWorkspace=currentView==='story-detail';dirtyTreeIds.delete(tree.id);updateTreeSaveUI();closeStoryModal();storiesMode='own';document.querySelectorAll('[data-stories-mode]').forEach(el=>el.classList.toggle('active',el.dataset.storiesMode==='own'));if(keepWorkspace)openStoryWorkspace(tree.id,story.id);else renderStoriesPage();return false;
         }
 
         function setStoriesMode(mode){
@@ -3843,16 +4045,22 @@
             const starts=document.getElementById('storyTreeStarts'),feed=document.getElementById('storyCardsFeed');
             if(!feed)return;
             feed.innerHTML='<div class="story-empty">📚 Történetek betöltése…</div>';
-            if(storiesMode==='own'){await ensureOwnStoriesLoaded(false);renderOwnStoryTreeStarts();}
-            else {if(starts)starts.innerHTML='';await ensurePublicStoriesLoaded();}
+            if(storiesMode==='own'){
+                await ensureOwnStoriesLoaded(false);
+                renderStorySidebarNavigation();
+                renderOwnStoryTreeStarts();
+                feed.innerHTML='';
+                return;
+            }
+            if(starts)starts.innerHTML='';
+            await ensurePublicStoriesLoaded();
+            renderStorySidebarNavigation();
             const query=(document.getElementById('storiesSearchInput')?.value||'').trim().toLocaleLowerCase('hu-HU');
-            let source=[];
-            if(storiesMode==='own') source=(familyTrees||[]).filter(t=>isStoryTreeOwnedByCurrentUser(t));
-            else source=(publicFamilyTrees||[]).filter(t=>!!t.isPublic && (!currentUser || String(t.user_id||t.userId||'')!==String(currentUser.id)));
+            const source=(publicFamilyTrees||[]).filter(t=>!!t.isPublic && (!currentUser || String(t.user_id||t.userId||'')!==String(currentUser.id)));
             const rows=[];
             source.forEach(tree=>{
                 getStoryList(tree).forEach(st=>{
-                    if(storiesMode==='public'&&!st.isPublished)return;
+                    if(!st.isPublished)return;
                     const sim=(tree.sims||[]).find(s=>String(s.id)===String(st.simId));
                     const simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim';
                     const owner=tree.ownerProfile?.display_name||'';
@@ -3863,21 +4071,16 @@
             const seen=new Set(),unique=rows.filter(x=>{const k=`${x.tree.id}:${x.story.id}`;if(seen.has(k))return false;seen.add(k);return true;});
             unique.sort((a,b)=>String(b.story.updatedAt||b.story.createdAt||'').localeCompare(String(a.story.updatedAt||a.story.createdAt||'')));
             if(!unique.length){
-                feed.innerHTML=`<div class="story-empty"><div style="font-size:42px;margin-bottom:10px;">${storiesMode==='public'?'🌐':'📚'}</div><h3 style="margin:0 0 7px;">${query?'Nincs találat':storiesMode==='own'?'Még nincs saját történeted':'Még nincs publikált történet'}</h3><p style="margin:0 0 16px;">${query?'Próbálj másik nevet vagy címet.':storiesMode==='own'?'Készíts egy történetet, vagy kattints egy saját családfa borítójára.':'Más simmerek publikált történetei itt jelennek meg.'}</p>${storiesMode==='own'?'<button type="button" class="btn-primary" onclick="openStoryModal()">＋ Új történet</button>':''}</div>`;
+                feed.innerHTML=`<div class="story-empty"><div style="font-size:42px;margin-bottom:10px;">🌐</div><h3 style="margin:0 0 7px;">${query?'Nincs találat':'Még nincs publikált történet'}</h3><p style="margin:0 0 16px;">${query?'Próbálj másik nevet vagy címet.':'Más simmerek publikált történetei itt jelennek meg.'}</p></div>`;
                 return;
             }
-            feed.innerHTML=`<div class="story-list-heading"><h3>${storiesMode==='own'?'📚 Saját történeteim':'🌐 Publikus történetek'}</h3><span>${unique.length} történet</span></div>`;
+            feed.innerHTML=`<div class="story-list-heading"><h3>🌐 Publikus történetek</h3><span>${unique.length} történet</span></div>`;
             unique.forEach(({tree,story,sim,owner})=>{
-                const own=storiesMode==='own' && storyOwnerCanManage(story,tree),ct=story.coverTransform||{},title=String(story.title||'').trim(),simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim';
+                const ct=story.coverTransform||{},title=String(story.title||'').trim(),simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim';
                 const coverStyle=`transform:translate(${Number(ct.offsetX||0)}px,${Number(ct.offsetY||0)}px) scale(${Number(ct.scale||1)}) rotate(${Number(ct.rotation||0)}deg);filter:${ct.filter||'none'};`;
-                const card=document.createElement('article');card.className='story-card story-list-card';
-                card.innerHTML=`<div class="story-list-open">
-                    ${story.cover?`<button type="button" class="story-cover-click" onclick="openStoryDetail('${escapeHtml(story.id)}')" title="${own?'Történet megnyitása és fejezetek szerkesztése':'Történet megnyitása'}"><img class="story-card-cover" style="${coverStyle}" src="${escapeHtml(story.cover)}" alt="Történet borítóképe – kattints a történet megnyitásához" loading="lazy"><span class="story-cover-open-badge">📖 Megnyitás</span></button>`:`<button type="button" class="story-cover-click story-list-no-cover-btn" onclick="openStoryDetail('${escapeHtml(story.id)}')" title="Történet megnyitása"><span class="story-list-no-cover">📚</span><span class="story-cover-open-badge">📖 Megnyitás</span></button>`}
-                    ${title?`<h3 style="margin:0 0 6px;">${escapeHtml(title)}</h3>`:'<div style="height:18px;margin-bottom:6px;"></div>'}
-                    <div class="story-card-meta">👤 ${escapeHtml(simName)} · 🌳 ${escapeHtml(tree.name||'Családfa')} · ${story.isPublished?'🌐 Publikus':'🔒 Privát'}</div>
-                    ${owner?`<div class="story-card-owner">✦ ${escapeHtml(owner)}</div>`:''}
-                </div>
-                <div class="story-card-actions"><span class="story-card-open-hint">${own?'📖 A borítóra kattintva: fejezetek':'📖 A borítóra kattintva megnyílik'}</span>${own?`<button type="button" class="blog-mini-btn" onclick="event.stopPropagation();openStoryModal('${escapeHtml(story.id)}')">✎ Adatok / borító</button><button type="button" class="blog-mini-btn" onclick="event.stopPropagation();deleteStory('${escapeHtml(story.id)}')">🗑 Törlés</button>`:''}</div>`;
+                const card=document.createElement('article');card.className='story-card story-list-card';card.dataset.storyTreeId=tree.id;
+                card.innerHTML=`<div class="story-list-open" onclick="openStoryDetail('${escapeHtml(story.id)}')" title="Történet megnyitása">${story.cover?`<div class="story-cover-click"><img class="story-card-cover" style="${coverStyle}" src="${escapeHtml(story.cover)}" alt="Történet borítóképe" loading="lazy"><span class="story-cover-open-badge">📖 Megnyitás</span></div>`:'<div class="story-list-no-cover">📚</div>'}${title?`<h3 style="margin:0 0 6px;">${escapeHtml(title)}</h3>`:'<div style="height:18px;margin-bottom:6px;"></div>'}<div class="story-card-meta">👤 ${escapeHtml(simName)} · 🌳 ${escapeHtml(tree.name||'Családfa')} · 🌐 Publikus</div>${owner?`<div class="story-card-owner">✦ ${escapeHtml(owner)}</div>`:''}</div><div class="story-card-actions"><span class="story-card-open-hint">📖 Megnyitás</span></div>`;
+                const cover=card.querySelector('.story-cover-click');if(cover)cover.onclick=(e)=>{e.stopPropagation();openStoryDetail(story.id);};
                 feed.appendChild(card);
             });
         }
@@ -3945,6 +4148,7 @@
                 document.getElementById('menuActivity').classList.add('active');
                 initActivityView();
             } else if (viewName === 'stories') {
+                storyWorkspaceTreeId=null; storyWorkspaceStoryId=null; storyWorkspaceChapterId=null;
                 document.getElementById('storiesView').classList.add('active');
                 document.getElementById('navStories').classList.add('active');
                 document.getElementById('menuStories').classList.add('active');
@@ -5414,47 +5618,45 @@ function openSimsFamily(treeId) {
             updateAddSimButtonVisibility();
         }
 
-        function deleteTree(treeId) {
-            const treeToDelete = familyTrees.find(t => t.id === treeId);
+        async function deleteTree(treeId) {
+            const treeToDelete = familyTrees.find(t => String(t.id) === String(treeId));
             if (!treeToDelete) return;
+            if (currentUser && !isStoryTreeOwnedByCurrentUser(treeToDelete)) return;
+            if (!confirm(`Biztosan törölni szeretnéd a(z) "${treeToDelete.name}" családfát? Ez a művelet nem visszavonható, a hozzá tartozó történetekkel és fejezetekkel együtt törlődik!`)) return;
 
-            if (confirm(`Biztosan törölni szeretnéd a(z) "${treeToDelete.name}" családfát? Ez a művelet nem visszavonható!`)) {
-                // Minden kép törlése a Storage-ból
-                if (treeToDelete.sims) {
-                    treeToDelete.sims.forEach(sim => {
-                        // Profil kép törlése
-                        if (sim.image) {
-                            deleteImageFromStorage(sim.image);
-                        }
-                        // Galéria képek törlése
-                        if (Array.isArray(sim.gallery)) {
-                            sim.gallery.forEach(item => {
-                                const imageUrl = typeof item === 'string' ? item : item.src;
-                                if (imageUrl) {
-                                    deleteImageFromStorage(imageUrl);
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                // Háttérkép törlése
-                if (treeToDelete.bgConfig && treeToDelete.bgConfig.customUrl) {
-                    deleteImageFromStorage(treeToDelete.bgConfig.customUrl);
-                }
+            // Képek összegyűjtése: Sim profilok, galéria, háttér + történetek/fejezetek.
+            const imageUrls=[];
+            (treeToDelete.sims||[]).forEach(sim=>{
+                if(sim.image)imageUrls.push(sim.image);
+                (sim.gallery||[]).forEach(item=>{const u=typeof item==='string'?item:item?.src;if(u)imageUrls.push(u);});
+            });
+            if(treeToDelete.bgConfig?.customUrl)imageUrls.push(treeToDelete.bgConfig.customUrl);
+            getStoryList(treeToDelete).forEach(st=>{
+                if(st.cover)imageUrls.push(st.cover);
+                (storyNormalizeChapters(st)||[]).forEach(ch=>(ch.blocks||[]).forEach(b=>{if(b.type==='image'&&b.src)imageUrls.push(b.src);}));
+            });
+            [...new Set(imageUrls)].forEach(u=>{try{deleteImageFromStorage(u);}catch(e){console.warn('Kép törlése sikertelen',e);}});
 
-                familyTrees = familyTrees.filter(t => t.id !== treeId);
+            let ok=true;
+            if(currentUser&&supabaseClient){
+                try{
+                    const result=await supabaseClient.from('family_trees').delete().eq('id',treeId).eq('user_id',currentUser.id);
+                    if(result?.error){console.error('Családfa törlési hiba:',result.error);ok=false;}
+                }catch(e){console.error('Családfa törlési hiba:',e);ok=false;}
+            }
+            if(!ok){alert('A családfa törlése nem sikerült, ezért az adatokat nem vettem ki a listából.');return;}
 
-                if (currentTreeId === treeId) {
-                    currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
-                }
-
-                markTreeDirty();
-                renderTreeTabs();
-                renderJournalEntries();
-                applyPageBackground();
-                loadCurrentTreeCanvas();
-                updateAddSimButtonVisibility();
+            familyTrees=familyTrees.filter(t=>String(t.id)!==String(treeId));
+            dirtyTreeIds.delete(treeId);
+            if(currentTreeId===treeId)currentTreeId=familyTrees.length?familyTrees[0].id:null;
+            try{localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));}catch(e){console.warn('Helyi mentés sikertelen',e);}
+            renderTreeTabs();renderJournalEntries();applyPageBackground();loadCurrentTreeCanvas();updateAddSimButtonVisibility();
+            renderStorySidebarNavigation();
+            if(String(storyWorkspaceTreeId)===String(treeId)){
+                storyWorkspaceTreeId=null;storyWorkspaceStoryId=null;storyWorkspaceChapterId=null;
+                switchView('stories');
+            }else if(currentView==='stories'){
+                renderStoriesPage();
             }
         }
 
