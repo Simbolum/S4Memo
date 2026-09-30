@@ -3748,7 +3748,16 @@
         }
 
         async function renderStoriesPage(){
-            const shell=document.getElementById('storiesFeed');if(!shell)return;const starts=document.getElementById('storyTreeStarts');if(starts)starts.innerHTML='';const feed=document.getElementById('storyCardsFeed')||shell;feed.innerHTML='<div class="story-empty">📚 Történetek betöltése…</div>';if(storiesMode==='own')renderOwnStoryTreeStarts();if(storiesMode==='public')await ensurePublicStoriesLoaded();
+            const shell=document.getElementById('storiesFeed');if(!shell)return;
+            const starts=document.getElementById('storyTreeStarts');
+            const feed=document.getElementById('storyCardsFeed')||shell;
+            if(starts) starts.innerHTML='';
+            feed.innerHTML='<div class="story-empty">📚 Történetek betöltése…</div>';
+            // A Saját történeteim nézetben a saját történetek ugyanúgy kártyákon jelennek meg,
+            // mint a publikus történetek, de a saját kártyák szerkeszthetők. A családfa-kártyák
+            // külön, felül maradnak gyors új történet indításához.
+            if(storiesMode==='own') renderOwnStoryTreeStarts();
+            if(storiesMode==='public') await ensurePublicStoriesLoaded();
             const query=(document.getElementById('storiesSearchInput')?.value||'').trim().toLocaleLowerCase('hu-HU');
             const source=storiesMode==='own'
                 ? (familyTrees||[]).filter(tree=>!currentUser || !tree.user_id || String(tree.user_id)===String(currentUser.id)).map(tree=>({tree,ownerProfile:null}))
@@ -3765,14 +3774,14 @@
                 const coverStyle=`transform:translate(${Number(ct.offsetX||0)}px,${Number(ct.offsetY||0)}px) scale(${Number(ct.scale||1)}) rotate(${Number(ct.rotation||0)}deg);filter:${ct.filter||'none'};`;
                 const simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim()||'Névtelen Sim';
                 card.innerHTML=`
-                    <div class="story-list-open" onclick="openStoryDetail('${escapeHtml(story.id)}')" title="Történet megnyitása">
+                    <div class="story-list-open" onclick="openStoryDetail('${escapeHtml(story.id)}')" title="${own?'Történet megnyitása és szerkesztése':'Történet megnyitása'}">
                         ${story.cover?`<div style="height:220px;border-radius:14px;overflow:hidden;margin:-2px 0 12px;border:1px solid var(--border-color);background:var(--card-solid);"><img class="story-card-cover" style="${coverStyle}" src="${escapeHtml(story.cover)}" alt="Történet borítóképe" loading="lazy"></div>`:'<div class="story-list-no-cover">📚</div>'}
                         ${title?`<h3 style="margin:0 0 6px;">${escapeHtml(title)}</h3>`:''}
                         <div class="story-card-meta">👤 ${escapeHtml(simName)} · 🌳 ${escapeHtml(tree.name||'Családfa')} · ${story.isPublished?'🌐 Publikus':'🔒 Nem publikált'}</div>
                         ${owner?`<div class="story-card-owner">✦ ${escapeHtml(owner)}</div>`:''}
                     </div>
                     <div class="story-card-actions">
-                        <span class="story-card-open-hint">📖 Megnyitás</span>
+                        <span class="story-card-open-hint">${own?'📖 Megnyitás és szerkesztés':'📖 Megnyitás'}</span>
                         ${own?`<button type="button" class="blog-mini-btn" onclick="event.stopPropagation();openStoryModal('${escapeHtml(story.id)}')">✎ Szerkesztés</button><button type="button" class="blog-mini-btn" onclick="event.stopPropagation();deleteStory('${escapeHtml(story.id)}')">🗑 Törlés</button>`:''}
                     </div>`;
                 feed.appendChild(card);
