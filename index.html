@@ -3574,6 +3574,58 @@
         function addStoryComment(storyId,input){if(!currentUser){alert('A hozzászóláshoz jelentkezz be.');return;}const text=input?.value?.trim();if(!text)return;const d=getStoryInteractions(storyId);d.comments=Array.isArray(d.comments)?d.comments:[];d.comments.push({id:'sc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),userId:currentUser.id,name:storyUserName(),text,createdAt:new Date().toISOString(),likes:[],replies:[]});saveStoryInteractions(storyId,d);input.value='';renderStoriesPage();}
         function submitStoryReply(storyId,commentId){if(!currentUser){alert('A válaszhoz jelentkezz be.');return;}const key=String(commentId).replace(/[^a-zA-Z0-9_-]/g,'_'),input=document.querySelector(`[data-story-reply-input="${key}"]`);const text=input?.value?.trim();if(!text)return;const d=getStoryInteractions(storyId),parent=findStoryCommentNode(d.comments,commentId);if(!parent)return;parent.replies=Array.isArray(parent.replies)?parent.replies:[];parent.replies.push({id:'sr_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),userId:currentUser.id,name:storyUserName(),text,createdAt:new Date().toISOString(),likes:[],replies:[]});saveStoryInteractions(storyId,d);renderStoriesPage();}
         function deleteStoryComment(storyId,commentId){if(!currentUser)return;const f=findStory(storyId);if(!f)return;const d=getStoryInteractions(storyId),c=findStoryCommentNode(d.comments,commentId);if(!c)return;const allowed=storyOwnerCanManage(f.story,f.tree)||c.userId===currentUser.id;if(!allowed)return;if(!confirm('Törlöd ezt a hozzászólást és a hozzá tartozó válaszokat?'))return;function remove(arr){const i=arr.findIndex(x=>x.id===commentId);if(i>=0){arr.splice(i,1);return true;}return arr.some(x=>remove(x.replies||[]));}remove(d.comments);saveStoryInteractions(storyId,d);renderStoriesPage();}
+        async function ensurePublicStoriesLoaded(){
+            // A Történetek nézetnek saját, célzott betöltése van, így nem függ a Publikum oldal DOM-jától.
+            if (!supabaseClient) {
+                publicFamilyTrees = (familyTrees || []).filter(t => !!t.isPublic).map(t => ({...t, ownerProfile: t.ownerProfile || null}));
+                return publicFamilyTrees;
+            }
+            try {
+                const { data, error } = await supabaseClient
+                    .from('family_trees')
+                    .select('id, name, background_config, sims, journal, user_id, is_public, updated_at')
+                    .eq('is_public', true)
+                    .order('updated_at', { ascending: false })
+                    .limit(200);
+                if (error) throw error;
+
+                const ownerIds=[...new Set((data||[]).map(t=>t.user_id).filter(Boolean))];
+                const profiles=new Map();
+                if(ownerIds.length){
+                    const {data:rows}=await supabaseClient.from('profiles').select('id, display_name, avatar_url, bio').in('id',ownerIds);
+                    (rows||[]).forEach(r=>profiles.set(r.id,r));
+                }
+                publicFamilyTrees=(data||[]).map(t=>({
+                    id:t.id,
+                    name:t.name,
+                    bgConfig:t.background_config||{},
+                    stories:Array.isArray(t.background_config?.stories)?t.background_config.stories:[],
+                    lineStyle:t.background_config?.lineStyle||'style-glow',
+                    sims:Array.isArray(t.sims)?t.sims:[],
+                    journal:Array.isArray(t.journal)?t.journal:[],
+                    userId:t.user_id,
+                    user_id:t.user_id,
+                    ownerProfile:profiles.get(t.user_id)||{id:t.user_id,display_name:'Ismeretlen felhasználó',avatar_url:'',bio:''},
+                    isPublic:!!t.is_public,
+                    updatedAt:t.updated_at
+                }));
+            }catch(e){
+                console.error('Publikus történetek betöltési hiba:',e);
+                // Hálózati hiba esetén a már betöltött publikus családfákból próbálunk dolgozni.
+                if(!Array.isArray(publicFamilyTrees)) publicFamilyTrees=[];
+            }
+            return publicFamilyTrees;
+        }
+
+        function setStoriesMode(mode){
+            storiesMode = mode === 'own' ? 'own' : 'public';
+            document.getElementById('storiesTabPublic')?.classList.toggle('active',storiesMode==='public');
+            document.getElementById('storiesTabOwn')?.classList.toggle('active',storiesMode==='own');
+            document.querySelectorAll('.story-side-mode').forEach(el=>el.classList.remove('active'));
+            document.querySelectorAll('[data-stories-mode]').forEach(el=>el.classList.toggle('active',el.dataset.storiesMode===storiesMode));
+            renderStoriesPage();
+        }
+
         async function renderStoriesPage(){
             const shell=document.getElementById('storiesFeed');if(!shell)return;renderOwnStoryTreeStarts();const feed=document.getElementById('storyCardsFeed')||shell;feed.innerHTML='<div class="story-empty">📚 Történetek betöltése…</div>';if(storiesMode==='public')await ensurePublicStoriesLoaded();
             const query=(document.getElementById('storiesSearchInput')?.value||'').trim().toLocaleLowerCase('hu-HU');
