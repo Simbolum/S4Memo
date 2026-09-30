@@ -3499,7 +3499,7 @@
         function saveStoryInteractions(storyId,d){try{localStorage.setItem(getStoryInteractionKey(storyId),JSON.stringify(d));}catch(e){}}
         function findStoryCommentNode(comments,id){for(const c of comments||[]){if(String(c.id)===String(id))return c;const r=findStoryCommentNode(c.replies||[],id);if(r)return r;}return null;}
         function storyCommentCount(comments){return (comments||[]).reduce((n,c)=>n+1+storyCommentCount(c.replies||[]),0);}
-        function storyOwnerCanManage(story,tree){return !!currentUser&&((tree?.user_id&&tree.user_id===currentUser.id)||familyTrees.some(t=>t.id===tree?.id));}
+        function storyOwnerCanManage(story,tree){return !!currentUser && !!tree && String(tree.user_id||tree.userId||'')===String(currentUser.id);}
         function storyUserName(){return currentUser?.user_metadata?.full_name||currentUser?.user_metadata?.name||currentUser?.email?.split('@')[0]||'Felhasználó';}
         function renderStoryCommentMarkup(storyId,tree,story,c,depth=0){
             const d=getStoryInteractions(storyId), likes=Array.isArray(c.likes)?c.likes:[], liked=!!currentUser&&likes.includes(currentUser.id), own=!!currentUser&&c.userId===currentUser.id, canDelete=storyOwnerCanManage(story,tree)||own;
@@ -3760,9 +3760,9 @@
             if(storiesMode==='public') await ensurePublicStoriesLoaded();
             const query=(document.getElementById('storiesSearchInput')?.value||'').trim().toLocaleLowerCase('hu-HU');
             const source=storiesMode==='own'
-                ? (familyTrees||[]).filter(tree=>!currentUser || !tree.user_id || String(tree.user_id)===String(currentUser.id)).map(tree=>({tree,ownerProfile:null}))
-                : ((publicFamilyTrees&&publicFamilyTrees.length)?publicFamilyTrees:(familyTrees||[]).map(tree=>({...tree,ownerProfile:null})));
-            const stories=[];source.forEach(tree=>{const list=getStoryList(tree);list.filter(st=>storiesMode==='own'?true:!!st.isPublished).forEach(st=>{const sim=(tree.sims||[]).find(s=>String(s.id)===String(st.simId));const simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim();const owner=tree.ownerProfile?.display_name||'';const hay=[st.title||'',simName,tree.name||'',owner].join(' ').toLocaleLowerCase('hu-HU');if(!query||hay.includes(query))stories.push({tree,story:st,sim,owner});});});
+                ? (familyTrees||[]).filter(tree=>!currentUser || String(tree.user_id||tree.userId||'')===String(currentUser.id)).map(tree=>({tree,ownerProfile:null}))
+                : ((publicFamilyTrees&&publicFamilyTrees.length)?publicFamilyTrees:(familyTrees||[]).map(tree=>({...tree,ownerProfile:null}))).filter(tree=>!currentUser || String(tree.user_id||tree.userId||'')!==String(currentUser.id));
+            const stories=[];source.forEach(tree=>{const list=getStoryList(tree);list.filter(st=>storiesMode==='own'?true:(!!st.isPublished && (!currentUser || String(tree.user_id||tree.userId||'')!==String(currentUser.id)))).forEach(st=>{const sim=(tree.sims||[]).find(s=>String(s.id)===String(st.simId));const simName=`${sim?.firstName||''} ${sim?.lastName||''}`.trim();const owner=tree.ownerProfile?.display_name||'';const hay=[st.title||'',simName,tree.name||'',owner].join(' ').toLocaleLowerCase('hu-HU');if(!query||hay.includes(query))stories.push({tree,story:st,sim,owner});});});
             const seen=new Set();const unique=stories.filter(x=>{if(seen.has(x.story.id))return false;seen.add(x.story.id);return true;});unique.sort((a,b)=>String(b.story.updatedAt||b.story.createdAt||'').localeCompare(String(a.story.updatedAt||a.story.createdAt||'')));
             if(!unique.length){feed.innerHTML=`<div class="story-empty"><div style="font-size:42px;margin-bottom:10px;">${storiesMode==='public'?'🌐':'📚'}</div><h3 style="margin:0 0 7px;">${query?'Nincs találat':storiesMode==='own'?'Még nincs történeted':'Még nincs publikált történet'}</h3><p style="margin:0 0 16px;">${query?'Próbálj másik nevet vagy keresőkifejezést.':'Írj egy történetet egy Simről, szúrj be képeket, majd mentsd el vagy publikáld.'}</p>${storiesMode==='own'?'<button type="button" class="btn-primary" onclick="openStoryModal()">＋ Új történet</button>':''}</div>`;return;}
             unique.forEach(({tree,story,sim,owner})=>{
