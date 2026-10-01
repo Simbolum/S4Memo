@@ -6333,9 +6333,16 @@ function openSimsFamily(treeId) {
                     avatar.style.setProperty('--public-avatar-image', `url(${JSON.stringify(sim.image)})`);
                     if (sim.imageTransform) {
                         const t = sim.imageTransform;
+                        // Ugyanazt a transzformációt alkalmazzuk, mint a szerkesztőben:
+                        // a crop editor 200px-es koordinátáit a 100px-es Sim keretre arányosítjuk.
+                        const cropModalSize = 200;
+                        const publicAvatarSize = 100;
+                        const sizeRatio = publicAvatarSize / cropModalSize;
+                        const offsetX = (t.offsetX || 0) * sizeRatio;
+                        const offsetY = (t.offsetY || 0) * sizeRatio;
                         avatar.style.setProperty(
                             '--public-avatar-transform',
-                            `rotate(${t.rotate || 0}deg) scale(${t.scale || 1})`
+                            `translate(${offsetX}px, ${offsetY}px) rotate(${t.rotate || 0}deg) scale(${t.scale || 1})`
                         );
                         avatar.style.setProperty('--public-avatar-filter', t.filter || 'none');
                     }
