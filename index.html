@@ -126,30 +126,6 @@
             to { stroke-dashoffset: 0; }
         }
 
-        @keyframes simsEnergyFlow {
-            0% { stroke-dashoffset: 54; opacity: .72; filter: drop-shadow(0 0 3px rgba(46,213,115,.25)); }
-            50% { opacity: 1; filter: drop-shadow(0 0 9px rgba(46,213,115,.75)); }
-            100% { stroke-dashoffset: 0; opacity: .72; filter: drop-shadow(0 0 3px rgba(46,213,115,.25)); }
-        }
-
-        @keyframes simsSparkle {
-            0%, 100% { opacity: .55; stroke-width: var(--line-stroke-width); filter: drop-shadow(0 0 2px rgba(255,255,255,.15)); }
-            25% { opacity: 1; stroke-width: calc(var(--line-stroke-width) + 1px); filter: drop-shadow(0 0 7px rgba(255,255,255,.6)); }
-            50% { opacity: .72; }
-            75% { opacity: 1; filter: drop-shadow(0 0 10px rgba(120,255,180,.65)); }
-        }
-
-        @keyframes electricPulse {
-            0% { stroke-dashoffset: 0; opacity: .65; }
-            45% { opacity: 1; }
-            100% { stroke-dashoffset: -72; opacity: .65; }
-        }
-
-        @keyframes gentleWave {
-            0%, 100% { stroke-width: var(--line-stroke-width); opacity: .78; }
-            50% { stroke-width: calc(var(--line-stroke-width) + 2px); opacity: 1; }
-        }
-
         svg path {
             fill: none !important;
             stroke-linecap: round;
@@ -183,78 +159,6 @@
 
         .style-dots-flow .line-love { stroke: var(--line-pink); stroke-width: var(--line-stroke-width); stroke-dasharray: 6 10; animation: flowDots 1s linear infinite; }
         .style-dots-flow .line-child { stroke: var(--line-green); stroke-width: var(--line-stroke-width); stroke-dasharray: 6 10; animation: flowDots 1s linear infinite; }
-
-        /* Sims-hangulatú extra vonal animációk */
-        .style-sims-energy .line-love {
-            stroke: var(--line-pink); stroke-width: var(--line-stroke-width);
-            stroke-dasharray: 10 7 2 7; animation: simsEnergyFlow 1.25s linear infinite;
-        }
-        .style-sims-energy .line-child {
-            stroke: var(--line-green); stroke-width: var(--line-stroke-width);
-            stroke-dasharray: 10 7 2 7; animation: simsEnergyFlow 1.25s linear infinite;
-        }
-
-        .style-sims-sparkle .line-love {
-            stroke: var(--line-pink); stroke-width: var(--line-stroke-width);
-            stroke-dasharray: 3 9; animation: simsSparkle 1.7s ease-in-out infinite;
-        }
-        .style-sims-sparkle .line-child {
-            stroke: var(--line-green); stroke-width: var(--line-stroke-width);
-            stroke-dasharray: 3 9; animation: simsSparkle 1.7s ease-in-out infinite .25s;
-        }
-
-        .style-electric .line-love {
-            stroke: var(--line-pink); stroke-width: var(--line-stroke-width);
-            stroke-dasharray: 4 5 14 5; animation: electricPulse 1.35s linear infinite;
-            filter: drop-shadow(0 0 6px rgba(255,94,126,.55));
-        }
-        .style-electric .line-child {
-            stroke: var(--line-green); stroke-width: var(--line-stroke-width);
-            stroke-dasharray: 4 5 14 5; animation: electricPulse 1.35s linear infinite;
-            filter: drop-shadow(0 0 6px rgba(46,213,115,.55));
-        }
-
-        .style-breathing .line-love {
-            stroke: var(--line-pink); stroke-width: var(--line-stroke-width);
-            animation: gentleWave 2.1s ease-in-out infinite;
-            filter: drop-shadow(0 0 5px rgba(255,94,126,.38));
-        }
-        .style-breathing .line-child {
-            stroke: var(--line-green); stroke-width: var(--line-stroke-width);
-            animation: gentleWave 2.1s ease-in-out infinite .35s;
-            filter: drop-shadow(0 0 5px rgba(46,213,115,.38));
-        }
-
-        @keyframes miniPlumbobPulse {
-            0%, 100% { opacity: .72; filter: drop-shadow(0 0 2px currentColor); }
-            50% { opacity: 1; filter: drop-shadow(0 0 7px currentColor); }
-        }
-        @keyframes miniPlumbobTwinkle {
-            0%, 100% { opacity: .35; transform: scale(.82); }
-            45% { opacity: 1; transform: scale(1.08); }
-            70% { opacity: .75; transform: scale(.94); }
-        }
-        .mini-plumbob-marker {
-            stroke: rgba(255,255,255,.92);
-            stroke-width: 1.15;
-            paint-order: stroke fill;
-            transform-box: fill-box;
-            transform-origin: center;
-            vector-effect: non-scaling-stroke;
-            animation: miniPlumbobPulse 1.35s ease-in-out infinite;
-        }
-        .style-mini-plumbobs .mini-plumbob-marker { animation-duration: 1.45s; }
-        .style-mini-plumbobs-rare .mini-plumbob-marker { animation: miniPlumbobTwinkle 2.1s ease-in-out infinite; }
-        .style-mini-plumbobs-fast .mini-plumbob-marker { animation-duration: .72s; }
-        .style-mini-plumbobs .line-love,
-        .style-mini-plumbobs-rare .line-love,
-        .style-mini-plumbobs-fast .line-love { stroke: var(--line-pink); stroke-width: var(--line-stroke-width); stroke-dasharray: 2 8; }
-        .style-mini-plumbobs .line-child,
-        .style-mini-plumbobs-rare .line-child,
-        .style-mini-plumbobs-fast .line-child { stroke: var(--line-green); stroke-width: var(--line-stroke-width); stroke-dasharray: 2 8; }
-        .style-mini-plumbobs .line-widow,
-        .style-mini-plumbobs-rare .line-widow,
-        .style-mini-plumbobs-fast .line-widow { stroke: #111 !important; stroke-width: var(--line-stroke-width) !important; stroke-dasharray: 2 8; }
 
         /* Özvegy kapcsolat: ugyanazt a kiválasztott kötélstílust és animációt használja,
            mint a többi párkapcsolati kötél, csak fekete színben. */
@@ -291,27 +195,6 @@
             stroke-width: var(--line-stroke-width) !important;
             stroke-dasharray: 6 10;
             animation: flowDots 1s linear infinite;
-        }
-
-        .style-sims-energy .line-widow {
-            stroke: #111 !important; stroke-width: var(--line-stroke-width) !important;
-            stroke-dasharray: 10 7 2 7; animation: simsEnergyFlow 1.25s linear infinite;
-            filter: drop-shadow(0 0 5px rgba(0,0,0,.45));
-        }
-        .style-sims-sparkle .line-widow {
-            stroke: #111 !important; stroke-width: var(--line-stroke-width) !important;
-            stroke-dasharray: 3 9; animation: simsSparkle 1.7s ease-in-out infinite;
-            filter: drop-shadow(0 0 5px rgba(0,0,0,.45));
-        }
-        .style-electric .line-widow {
-            stroke: #111 !important; stroke-width: var(--line-stroke-width) !important;
-            stroke-dasharray: 4 5 14 5; animation: electricPulse 1.35s linear infinite;
-            filter: drop-shadow(0 0 6px rgba(0,0,0,.5));
-        }
-        .style-breathing .line-widow {
-            stroke: #111 !important; stroke-width: var(--line-stroke-width) !important;
-            animation: gentleWave 2.1s ease-in-out infinite;
-            filter: drop-shadow(0 0 5px rgba(0,0,0,.4));
         }
 
 
@@ -2697,13 +2580,6 @@
                     <option value="style-dashed">Szaggatott</option>
                     <option value="style-flicker">Villódzó Pulzus</option>
                     <option value="style-dots-flow">Pontozott Áramlás</option>
-                    <option value="style-sims-energy">Sims Energia</option>
-                    <option value="style-sims-sparkle">Sims Csillámlás</option>
-                    <option value="style-electric">Elektromos Impulzus</option>
-                    <option value="style-breathing">Lélegző Fény</option>
-                    <option value="style-mini-plumbobs">💚 Mini Plumbobok</option>
-                    <option value="style-mini-plumbobs-rare">✨ Mini Plumbobok (Ritka)</option>
-                    <option value="style-mini-plumbobs-fast">⚡ Mini Plumbobok (Gyors)</option>
                 </select>
             </div>
             <div class="style-group" id="simShapeGroup">
@@ -6575,7 +6451,7 @@ function openSimsFamily(treeId) {
                 const endX = child.x + 50, endY = child.y, midY = startY + (endY - startY) / 2;
                 const path = document.createElementNS('http://www.w3.org/2000/svg','path');
                 path.setAttribute('d',`M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`);
-                path.setAttribute('class','line-child'); svg.appendChild(path); appendPublicMiniPlumbobs(svg, path, tree.lineStyle || 'style-glow');
+                path.setAttribute('class','line-child'); svg.appendChild(path);
             });
 
             // Partner vonalak
@@ -6596,7 +6472,6 @@ function openSimsFamily(treeId) {
                     const isLove=['Házas','Jegyes','Szerelmes','Özvegy','Ex',null,'Partner'].includes(relationType);
                     path.setAttribute('class', relationType === 'Özvegy' ? 'line-widow' : (isLove ? 'line-love' : 'line-child'));
                     svg.appendChild(path);
-                    appendPublicMiniPlumbobs(svg, path, tree.lineStyle || 'style-glow');
 
                     // Ugyanaz a háttér nélküli kapcsolatjel a publikus megtekintőben is.
                     const iconX = (startX + endX) / 2;
@@ -8947,112 +8822,6 @@ function openSimsFamily(treeId) {
             svg.appendChild(group);
         }
 
-        let miniPlumbobIdCounter = 0;
-
-        // Valódi, animált mini Plumbobok a kapcsolati vonalon.
-        // Nem animateMotion-t használunk, mert az egyes böngészőkben / SVG-kben
-        // eltérően viselkedhet. A pontokat közvetlenül a path.getPointAtLength()
-        // alapján mozgatjuk, így a Plumbobok ténylegesen a kötél görbéjén haladnak.
-        function createMiniPlumbob(NS, color, size = 1) {
-            const group = document.createElementNS(NS, 'g');
-            group.setAttribute('class', 'mini-plumbob-marker');
-            group.setAttribute('pointer-events', 'none');
-            group.style.color = color;
-
-            const outer = document.createElementNS(NS, 'polygon');
-            outer.setAttribute('points', `0,${-7*size} ${4.4*size},0 0,${8*size} ${-4.4*size},0`);
-            outer.setAttribute('fill', color);
-            outer.setAttribute('stroke', '#ffffff');
-            outer.setAttribute('stroke-width', `${1.15*size}`);
-            outer.setAttribute('stroke-linejoin', 'round');
-
-            const inner = document.createElementNS(NS, 'polygon');
-            inner.setAttribute('points', `0,${-4.8*size} ${2.7*size},0 0,${5.5*size} ${-2.7*size},0`);
-            inner.setAttribute('fill', 'rgba(255,255,255,.20)');
-            inner.setAttribute('stroke', 'rgba(255,255,255,.75)');
-            inner.setAttribute('stroke-width', `${.55*size}`);
-
-            const shine = document.createElementNS(NS, 'path');
-            shine.setAttribute('d', `M ${-1.5*size} ${-3.4*size} L 0 ${-5.2*size} L ${1.5*size} ${-3.4*size}`);
-            shine.setAttribute('fill', 'none');
-            shine.setAttribute('stroke', '#fff');
-            shine.setAttribute('stroke-width', `${.8*size}`);
-            shine.setAttribute('stroke-linecap', 'round');
-            shine.setAttribute('opacity', '.9');
-
-            group.appendChild(outer);
-            group.appendChild(inner);
-            group.appendChild(shine);
-            return group;
-        }
-
-        function animateMiniPlumbobTrail(path, group, styleClass, color, count) {
-            const length = path.getTotalLength ? path.getTotalLength() : 0;
-            if (!length) return;
-
-            const fast = styleClass === 'style-mini-plumbobs-fast';
-            const rare = styleClass === 'style-mini-plumbobs-rare';
-            const duration = fast ? 2300 : (rare ? 4700 : 3400);
-            const spacing = fast ? .105 : (rare ? .30 : .17);
-            const speed = 0.0005 * (fast ? 1.65 : (rare ? .72 : 1));
-            const start = performance.now();
-            const items = [];
-
-            for (let i = 0; i < count; i++) {
-                const bob = createMiniPlumbob('http://www.w3.org/2000/svg', color, fast ? .9 : 1);
-                const phase = i * spacing;
-                group.appendChild(bob);
-                items.push({ bob, phase });
-            }
-
-            const tick = now => {
-                if (!group.isConnected || !path.isConnected) return;
-                const elapsed = now - start;
-                items.forEach((item, i) => {
-                    const progress = ((elapsed * speed + item.phase) % 1 + 1) % 1;
-                    const pos = path.getPointAtLength(progress * length);
-                    const ahead = path.getPointAtLength(Math.min(length, progress * length + 2));
-                    const angle = Math.atan2(ahead.y - pos.y, ahead.x - pos.x) * 180 / Math.PI + 90;
-                    const pulse = rare
-                        ? 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(elapsed / 330 + i * 1.7))
-                        : 0.84 + 0.16 * (0.5 + 0.5 * Math.sin(elapsed / (fast ? 180 : 260) + i));
-                    const scale = (fast ? .82 : 1) * pulse;
-                    item.bob.setAttribute('transform', `translate(${pos.x} ${pos.y}) rotate(${angle}) scale(${scale})`);
-                    item.bob.style.opacity = String(0.72 + pulse * .28);
-                });
-                requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-        }
-
-        function appendMiniPlumbobs(svg, path, styleClass, color, count = 5) {
-            if (!svg || !path || !['style-mini-plumbobs','style-mini-plumbobs-rare','style-mini-plumbobs-fast'].includes(styleClass)) return;
-            const NS = 'http://www.w3.org/2000/svg';
-            const group = document.createElementNS(NS, 'g');
-            group.setAttribute('class', `mini-plumbob-trail ${styleClass}`);
-            group.setAttribute('pointer-events', 'none');
-            svg.appendChild(group);
-            miniPlumbobIdCounter++;
-            requestAnimationFrame(() => animateMiniPlumbobTrail(path, group, styleClass, color, Math.max(1, count)));
-        }
-
-        function appendMiniPlumbobsForPath(svg, path) {
-            const styleClass = (getCurrentTree()?.lineStyle) || 'style-glow';
-            if (!['style-mini-plumbobs','style-mini-plumbobs-rare','style-mini-plumbobs-fast'].includes(styleClass)) return;
-            const isWidow = path.classList.contains('line-widow');
-            const color = isWidow ? '#111111' : (path.classList.contains('line-love') ? '#ff4f86' : '#25d66f');
-            const count = styleClass === 'style-mini-plumbobs-fast' ? 11 : (styleClass === 'style-mini-plumbobs-rare' ? 4 : 7);
-            appendMiniPlumbobs(svg, path, styleClass, color, count);
-        }
-
-        function appendPublicMiniPlumbobs(svg, path, styleClass) {
-            if (!svg || !path || !['style-mini-plumbobs','style-mini-plumbobs-rare','style-mini-plumbobs-fast'].includes(styleClass)) return;
-            const isWidow = path.classList.contains('line-widow');
-            const color = isWidow ? '#111111' : (path.classList.contains('line-love') ? '#ff4f86' : '#25d66f');
-            const count = styleClass === 'style-mini-plumbobs-fast' ? 11 : (styleClass === 'style-mini-plumbobs-rare' ? 4 : 7);
-            appendMiniPlumbobs(svg, path, styleClass, color, count);
-        }
-
         function updateConnections() {
             svgLayer.innerHTML = '';
             const tree = getCurrentTree();
@@ -9101,7 +8870,6 @@ function openSimsFamily(treeId) {
                     );
                     path.setAttribute('class', 'line-child');
                     svgLayer.appendChild(path);
-                    appendMiniPlumbobsForPath(svgLayer, path);
 
                 } else if (parents.length === 1) {
                     // Egy szülő esetén marad a régi működés.
@@ -9124,7 +8892,6 @@ function openSimsFamily(treeId) {
                     );
                     path.setAttribute('class', 'line-child');
                     svgLayer.appendChild(path);
-                    appendMiniPlumbobsForPath(svgLayer, path);
                 }
             });
 
@@ -9187,7 +8954,6 @@ function openSimsFamily(treeId) {
                     }
 
                     svgLayer.appendChild(path);
-                    appendMiniPlumbobsForPath(svgLayer, path);
 
                     // A kapcsolat jele közvetlenül a kötél geometriai közepére kerül,
                     // teljesen átlátszó háttérrel, így olyan hatású, mint egy PNG ikon.
