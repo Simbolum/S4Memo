@@ -8949,74 +8949,108 @@ function openSimsFamily(treeId) {
 
         let miniPlumbobIdCounter = 0;
 
+        // Valódi, animált mini Plumbobok a kapcsolati vonalon.
+        // Nem animateMotion-t használunk, mert az egyes böngészőkben / SVG-kben
+        // eltérően viselkedhet. A pontokat közvetlenül a path.getPointAtLength()
+        // alapján mozgatjuk, így a Plumbobok ténylegesen a kötél görbéjén haladnak.
+        function createMiniPlumbob(NS, color, size = 1) {
+            const group = document.createElementNS(NS, 'g');
+            group.setAttribute('class', 'mini-plumbob-marker');
+            group.setAttribute('pointer-events', 'none');
+            group.style.color = color;
+
+            const outer = document.createElementNS(NS, 'polygon');
+            outer.setAttribute('points', `0,${-7*size} ${4.4*size},0 0,${8*size} ${-4.4*size},0`);
+            outer.setAttribute('fill', color);
+            outer.setAttribute('stroke', '#ffffff');
+            outer.setAttribute('stroke-width', `${1.15*size}`);
+            outer.setAttribute('stroke-linejoin', 'round');
+
+            const inner = document.createElementNS(NS, 'polygon');
+            inner.setAttribute('points', `0,${-4.8*size} ${2.7*size},0 0,${5.5*size} ${-2.7*size},0`);
+            inner.setAttribute('fill', 'rgba(255,255,255,.20)');
+            inner.setAttribute('stroke', 'rgba(255,255,255,.75)');
+            inner.setAttribute('stroke-width', `${.55*size}`);
+
+            const shine = document.createElementNS(NS, 'path');
+            shine.setAttribute('d', `M ${-1.5*size} ${-3.4*size} L 0 ${-5.2*size} L ${1.5*size} ${-3.4*size}`);
+            shine.setAttribute('fill', 'none');
+            shine.setAttribute('stroke', '#fff');
+            shine.setAttribute('stroke-width', `${.8*size}`);
+            shine.setAttribute('stroke-linecap', 'round');
+            shine.setAttribute('opacity', '.9');
+
+            group.appendChild(outer);
+            group.appendChild(inner);
+            group.appendChild(shine);
+            return group;
+        }
+
+        function animateMiniPlumbobTrail(path, group, styleClass, color, count) {
+            const length = path.getTotalLength ? path.getTotalLength() : 0;
+            if (!length) return;
+
+            const fast = styleClass === 'style-mini-plumbobs-fast';
+            const rare = styleClass === 'style-mini-plumbobs-rare';
+            const duration = fast ? 2300 : (rare ? 4700 : 3400);
+            const spacing = fast ? .105 : (rare ? .30 : .17);
+            const speed = 0.0005 * (fast ? 1.65 : (rare ? .72 : 1));
+            const start = performance.now();
+            const items = [];
+
+            for (let i = 0; i < count; i++) {
+                const bob = createMiniPlumbob('http://www.w3.org/2000/svg', color, fast ? .9 : 1);
+                const phase = i * spacing;
+                group.appendChild(bob);
+                items.push({ bob, phase });
+            }
+
+            const tick = now => {
+                if (!group.isConnected || !path.isConnected) return;
+                const elapsed = now - start;
+                items.forEach((item, i) => {
+                    const progress = ((elapsed * speed + item.phase) % 1 + 1) % 1;
+                    const pos = path.getPointAtLength(progress * length);
+                    const ahead = path.getPointAtLength(Math.min(length, progress * length + 2));
+                    const angle = Math.atan2(ahead.y - pos.y, ahead.x - pos.x) * 180 / Math.PI + 90;
+                    const pulse = rare
+                        ? 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(elapsed / 330 + i * 1.7))
+                        : 0.84 + 0.16 * (0.5 + 0.5 * Math.sin(elapsed / (fast ? 180 : 260) + i));
+                    const scale = (fast ? .82 : 1) * pulse;
+                    item.bob.setAttribute('transform', `translate(${pos.x} ${pos.y}) rotate(${angle}) scale(${scale})`);
+                    item.bob.style.opacity = String(0.72 + pulse * .28);
+                });
+                requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        }
+
         function appendMiniPlumbobs(svg, path, styleClass, color, count = 5) {
             if (!svg || !path || !['style-mini-plumbobs','style-mini-plumbobs-rare','style-mini-plumbobs-fast'].includes(styleClass)) return;
-            const d = path.getAttribute('d');
-            if (!d) return;
             const NS = 'http://www.w3.org/2000/svg';
             const group = document.createElementNS(NS, 'g');
             group.setAttribute('class', `mini-plumbob-trail ${styleClass}`);
             group.setAttribute('pointer-events', 'none');
-            const safeCount = Math.max(1, count);
-            const baseDur = styleClass === 'style-mini-plumbobs-fast' ? 2.2 : (styleClass === 'style-mini-plumbobs-rare' ? 4.8 : 3.5);
-
-            for (let i = 0; i < safeCount; i++) {
-                const plumbob = document.createElementNS(NS, 'polygon');
-                plumbob.setAttribute('points', '0,-5.2 3.2,0 0,6 -3.2,0');
-                plumbob.setAttribute('fill', color);
-                plumbob.setAttribute('class', 'mini-plumbob-marker');
-                plumbob.style.color = color;
-
-                const motion = document.createElementNS(NS, 'animateMotion');
-                motion.setAttribute('dur', `${baseDur}s`);
-                motion.setAttribute('begin', `${(-baseDur * i / safeCount).toFixed(2)}s`);
-                motion.setAttribute('repeatCount', 'indefinite');
-                motion.setAttribute('rotate', 'auto');
-                motion.setAttribute('path', d);
-                plumbob.appendChild(motion);
-                group.appendChild(plumbob);
-            }
             svg.appendChild(group);
             miniPlumbobIdCounter++;
+            requestAnimationFrame(() => animateMiniPlumbobTrail(path, group, styleClass, color, Math.max(1, count)));
         }
 
         function appendMiniPlumbobsForPath(svg, path) {
             const styleClass = (getCurrentTree()?.lineStyle) || 'style-glow';
             if (!['style-mini-plumbobs','style-mini-plumbobs-rare','style-mini-plumbobs-fast'].includes(styleClass)) return;
             const isWidow = path.classList.contains('line-widow');
-            const color = isWidow ? '#111' : (path.classList.contains('line-love') ? '#ff5e7e' : '#2ed573');
-            const count = styleClass === 'style-mini-plumbobs-fast' ? 10 : (styleClass === 'style-mini-plumbobs-rare' ? 3 : 6);
+            const color = isWidow ? '#111111' : (path.classList.contains('line-love') ? '#ff4f86' : '#25d66f');
+            const count = styleClass === 'style-mini-plumbobs-fast' ? 11 : (styleClass === 'style-mini-plumbobs-rare' ? 4 : 7);
             appendMiniPlumbobs(svg, path, styleClass, color, count);
         }
 
         function appendPublicMiniPlumbobs(svg, path, styleClass) {
             if (!svg || !path || !['style-mini-plumbobs','style-mini-plumbobs-rare','style-mini-plumbobs-fast'].includes(styleClass)) return;
-            const d = path.getAttribute('d');
-            if (!d) return;
-            const NS = 'http://www.w3.org/2000/svg';
-            const group = document.createElementNS(NS, 'g');
-            group.setAttribute('class', `mini-plumbob-trail ${styleClass}`);
-            group.setAttribute('pointer-events', 'none');
-            const safeCount = styleClass === 'style-mini-plumbobs-fast' ? 10 : (styleClass === 'style-mini-plumbobs-rare' ? 3 : 6);
-            const baseDur = styleClass === 'style-mini-plumbobs-fast' ? 2.2 : (styleClass === 'style-mini-plumbobs-rare' ? 4.8 : 3.5);
             const isWidow = path.classList.contains('line-widow');
-            const color = isWidow ? '#111' : (path.classList.contains('line-love') ? '#ff5e7e' : '#2ed573');
-            for (let i = 0; i < safeCount; i++) {
-                const plumbob = document.createElementNS(NS, 'polygon');
-                plumbob.setAttribute('points', '0,-5.2 3.2,0 0,6 -3.2,0');
-                plumbob.setAttribute('fill', color);
-                plumbob.setAttribute('class', 'mini-plumbob-marker');
-                plumbob.style.color = color;
-                const motion = document.createElementNS(NS, 'animateMotion');
-                motion.setAttribute('dur', `${baseDur}s`);
-                motion.setAttribute('begin', `${(-baseDur * i / safeCount).toFixed(2)}s`);
-                motion.setAttribute('repeatCount', 'indefinite');
-                motion.setAttribute('rotate', 'auto');
-                motion.setAttribute('path', d);
-                plumbob.appendChild(motion);
-                group.appendChild(plumbob);
-            }
-            svg.appendChild(group);
+            const color = isWidow ? '#111111' : (path.classList.contains('line-love') ? '#ff4f86' : '#25d66f');
+            const count = styleClass === 'style-mini-plumbobs-fast' ? 11 : (styleClass === 'style-mini-plumbobs-rare' ? 4 : 7);
+            appendMiniPlumbobs(svg, path, styleClass, color, count);
         }
 
         function updateConnections() {
