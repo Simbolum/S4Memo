@@ -165,15 +165,19 @@
             position: fixed; bottom: 16px; left: 16px; z-index: 1060;
             background-color: var(--nav-bg); border: 1px solid var(--border-color);
             border-radius: 16px; box-shadow: 0 10px 26px var(--shadow-color);
-            width: 200px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 220px; max-height: calc(100vh - 32px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
 
         .style-panel-header {
-            padding: 7px 12px; font-weight: 800; font-size: 10px;
-            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; font-weight: 800; font-size: 10px;
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
             cursor: pointer; background: rgba(255, 255, 255, 0.05); border-bottom: 1px solid var(--border-color);
-            user-select: none; letter-spacing: 0.5px;
+            user-select: none; letter-spacing: 0.5px; min-width: 0;
+        }
+        .style-panel-header > span:first-child {
+            min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
 
         .style-panel-content {
@@ -182,7 +186,8 @@
         }
 
         .style-panel-drawer.open .style-panel-content {
-            max-height: 520px; opacity: 1; pointer-events: all;
+            max-height: min(520px, calc(100vh - 78px));
+            opacity: 1; pointer-events: all; overflow-y: auto;
         }
 
         .style-group { display: flex; flex-direction: column; gap: 4px; text-align: left; }
@@ -686,6 +691,17 @@
             cursor: pointer; font-size: 11px; text-align: left; flex: 1; outline: none;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
+        .tree-rename-btn {
+            flex: 0 0 24px; width: 24px; height: 24px; padding: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            border: 1px solid transparent; border-radius: 7px;
+            background: transparent; color: var(--subtext-color);
+            cursor: pointer; font-size: 11px; line-height: 1;
+        }
+        .tree-rename-btn:hover {
+            color: var(--accent-color); border-color: var(--border-color);
+            background: rgba(255,255,255,.06);
+        }
         .tree-delete-btn {
             background: none; border: none; cursor: pointer; font-size: 10px;
             opacity: 0.4; padding: 1px 3px; border-radius: 6px; transition: all 0.2s ease;
@@ -935,7 +951,7 @@
         }
 
         .publish-tree-floating-btn {
-            position: absolute; bottom: 62px; right: 185px; z-index: 1050;
+            position: absolute; bottom: 16px; right: 185px; z-index: 1050;
             background: linear-gradient(135deg, #ff9a6c 0%, #ff8a5c 100%);
             color: white; border: none; padding: 10px 15px;
             border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer;
@@ -944,6 +960,7 @@
         }
         .publish-tree-floating-btn:hover { transform: translateY(-2px) scale(1.03); }
         .publish-tree-floating-btn.is-public {
+            bottom: 62px;
             background: linear-gradient(135deg, #2ed573 0%, #219d52 100%);
             box-shadow: 0 8px 25px rgba(46,213,115,.28);
         }
@@ -961,8 +978,9 @@
             box-shadow: 0 10px 28px var(--active-glow);
         }
         @media (max-width: 700px) {
-            .publish-tree-floating-btn { right: 16px; bottom: 118px; }
-            .view-public-tree-floating-btn { right: 16px; bottom: 70px; }
+            .publish-tree-floating-btn { right: 16px; bottom: 16px; }
+            .publish-tree-floating-btn.is-public { bottom: 70px; }
+            .view-public-tree-floating-btn { right: 16px; bottom: 16px; }
         }
 
         /* PUBLIKUS / CSAÁDFA MEGTEKINTŐ */
@@ -3460,6 +3478,10 @@ Shift + Enter = új sor"></textarea>
             const bgConfig = getActiveBgConfig();
 
             document.getElementById('bgStyleSelect').value = bgConfig.style;
+            const simShapeSelect = document.getElementById('simShapeSelect');
+            const savedSimShape = bgConfig.simShape || 'circle';
+            applySimShape(savedSimShape);
+            if (simShapeSelect) simShapeSelect.value = savedSimShape;
             document.getElementById('bgBlurSlider').value = bgConfig.blur || 0;
             document.getElementById('bgBlurValText').innerText = `${bgConfig.blur || 0}px`;
             document.documentElement.style.setProperty('--bg-blur', `${bgConfig.blur || 0}px`);
@@ -3577,22 +3599,34 @@ Shift + Enter = új sor"></textarea>
             }
         }
 
-        function changeSimShape(shape) {
-            if (shape === 'circle') {
+        function applySimShape(shape = 'circle') {
+            const safeShape = ['circle', 'rounded', 'square', 'plumbob', 'hexagon'].includes(shape) ? shape : 'circle';
+            if (safeShape === 'circle') {
                 document.documentElement.style.setProperty('--sim-node-radius', '50%');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'none');
-            } else if (shape === 'rounded') {
+            } else if (safeShape === 'rounded') {
                 document.documentElement.style.setProperty('--sim-node-radius', '18px');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'none');
-            } else if (shape === 'square') {
+            } else if (safeShape === 'square') {
                 document.documentElement.style.setProperty('--sim-node-radius', '4px');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'none');
-            } else if (shape === 'plumbob') {
+            } else if (safeShape === 'plumbob') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)');
-            } else if (shape === 'hexagon') {
+            } else if (safeShape === 'hexagon') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)');
+            }
+            return safeShape;
+        }
+
+        function changeSimShape(shape) {
+            const tree = getCurrentTree();
+            const safeShape = applySimShape(shape);
+            if (tree) {
+                tree.bgConfig = tree.bgConfig || {};
+                tree.bgConfig.simShape = safeShape;
+                markTreeDirty();
             }
         }
 
@@ -4525,6 +4559,16 @@ function openStoryPreview(storyId,chapterId=null){
                 btn.innerText = tree.name;
                 btn.onclick = () => selectTree(tree.id);
 
+                const renameBtn = document.createElement('button');
+                renameBtn.className = 'tree-rename-btn';
+                renameBtn.innerText = '✎';
+                renameBtn.title = 'Családfa átnevezése';
+                renameBtn.setAttribute('aria-label', 'Családfa átnevezése');
+                renameBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    renameTree(tree.id);
+                };
+
                 const delBtn = document.createElement('button');
                 delBtn.className = 'tree-delete-btn';
                 delBtn.innerText = '🗑️';
@@ -4535,6 +4579,7 @@ function openStoryPreview(storyId,chapterId=null){
                 };
 
                 wrapper.appendChild(btn);
+                wrapper.appendChild(renameBtn);
                 wrapper.appendChild(delBtn);
                 treeTabsList.appendChild(wrapper);
             });
@@ -5687,6 +5732,23 @@ function openSimsFamily(treeId) {
             updateAddSimButtonVisibility();
         }
 
+        function renameTree(treeId) {
+            const tree = familyTrees.find(t => String(t.id) === String(treeId));
+            if (!tree) return;
+            const nextName = prompt('Családfa új neve:', tree.name || 'Névtelen családfa');
+            if (nextName === null) return;
+            const trimmed = nextName.trim();
+            if (!trimmed) {
+                alert('A családfa neve nem lehet üres.');
+                return;
+            }
+            if (trimmed === tree.name) return;
+            tree.name = trimmed;
+            markSpecificTreeDirty(tree.id);
+            renderTreeTabs();
+            updateAddSimButtonVisibility();
+        }
+
         function createNewTree() {
             const name = prompt("Új családfa neve:", "Új családfa");
             if (!name || name.trim() === "") return;
@@ -5694,7 +5756,7 @@ function openSimsFamily(treeId) {
             const newTree = {
                 id: 'tree_' + Date.now(),
                 name: name.trim(),
-                bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' },
+                bgConfig: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '', simShape: 'circle' },
                 lineStyle: 'style-glow',
                 sims: [],
                 journal: [],
@@ -5903,7 +5965,7 @@ function openSimsFamily(treeId) {
             }
         }
 
-        async function togglePublishCurrentTree() {
+        function togglePublishCurrentTree() {
             const tree = getCurrentTree();
             if (!tree) return;
 
@@ -5917,24 +5979,6 @@ function openSimsFamily(treeId) {
             tree.isPublic = nextState;
             markTreeDirty();
             updateAddSimButtonVisibility();
-
-            try {
-                const saved = await saveTreeChanges();
-                if (!saved) {
-                    tree.isPublic = !nextState;
-                    updateAddSimButtonVisibility();
-                    return;
-                }
-                if (nextState) {
-                    alert('A családfa mostantól megjelenik a Publikum oldalon.');
-                } else {
-                    alert('A családfa publikussága vissza lett vonva.');
-                }
-                if (currentView === 'public') await loadPublicFamilyTrees();
-            } catch (e) {
-                tree.isPublic = !nextState;
-                updateAddSimButtonVisibility();
-            }
         }
 
         function startPublicRefreshTimer() {
@@ -6240,6 +6284,7 @@ function openSimsFamily(treeId) {
             // A publikus nézetben a családfa vonalai mindig jól látható, nem szerkeszthető
             // formában jelennek meg. A node-ok továbbra is csak vizuális elemek.
             world.className = `public-tree-world ${tree.lineStyle || 'style-glow'}`;
+            applySimShape(tree.bgConfig?.simShape || 'circle');
             applyPublicTreeBackground(tree);
 
             world.querySelectorAll('.public-tree-node').forEach(node => node.remove());
@@ -7165,6 +7210,10 @@ function openSimsFamily(treeId) {
             treeWorld.className = `tree-canvas-world ${lineStyle}`;
             const lineSelect = document.getElementById('lineStyleSelect');
             if (lineSelect) lineSelect.value = lineStyle;
+            const simShape = tree?.bgConfig?.simShape || 'circle';
+            applySimShape(simShape);
+            const simShapeSelect = document.getElementById('simShapeSelect');
+            if (simShapeSelect) simShapeSelect.value = simShape;
 
             const nodes = treeWorld.querySelectorAll('.sim-node');
             nodes.forEach(n => n.remove());
