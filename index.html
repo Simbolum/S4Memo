@@ -160,10 +160,41 @@
         .style-dots-flow .line-love { stroke: var(--line-pink); stroke-width: var(--line-stroke-width); stroke-dasharray: 6 10; animation: flowDots 1s linear infinite; }
         .style-dots-flow .line-child { stroke: var(--line-green); stroke-width: var(--line-stroke-width); stroke-dasharray: 6 10; animation: flowDots 1s linear infinite; }
 
-        /* Özvegy kapcsolat: fekete kötél minden vonalstílusnál. */
+        /* Özvegy kapcsolat: ugyanazt a kiválasztott kötélstílust és animációt használja,
+           mint a többi párkapcsolati kötél, csak fekete színben. */
         .line-widow {
             stroke: #111 !important;
             stroke-width: var(--line-stroke-width) !important;
+        }
+        .style-glow .line-widow {
+            stroke: #111 !important;
+            stroke-width: var(--line-stroke-width) !important;
+            stroke-dasharray: 140 30;
+            animation: pulseGlowPath 2.5s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 8px rgba(0,0,0,.6));
+        }
+        .style-solid .line-widow {
+            stroke: #111 !important;
+            stroke-width: var(--line-stroke-width) !important;
+            stroke-dasharray: none;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+        }
+        .style-dashed .line-widow {
+            stroke: #111 !important;
+            stroke-width: var(--line-stroke-width) !important;
+            stroke-dasharray: 8 6;
+        }
+        .style-flicker .line-widow {
+            stroke: #111 !important;
+            stroke-width: var(--line-stroke-width) !important;
+            animation: flickerPath 1.8s infinite ease-in-out;
+            filter: drop-shadow(0 0 8px rgba(0,0,0,.55));
+        }
+        .style-dots-flow .line-widow {
+            stroke: #111 !important;
+            stroke-width: var(--line-stroke-width) !important;
+            stroke-dasharray: 6 10;
+            animation: flowDots 1s linear infinite;
         }
 
 
