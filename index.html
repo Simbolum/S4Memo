@@ -236,6 +236,15 @@
             height: 16px;
         }
 
+        .sim-traits-editor{border:1px solid var(--border-color);border-radius:11px;background:var(--card-solid);padding:7px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:46px;}
+        .sim-trait-bubbles{display:flex;flex-wrap:wrap;gap:6px;width:100%;}
+        .sim-trait-bubble{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:rgba(73,216,137,.13);border:1px solid rgba(73,216,137,.38);color:var(--text-color);font-size:10px;font-weight:800;animation:simTraitBubbleIn .22s ease both;}
+        .sim-trait-bubble button{border:0;background:transparent;color:var(--subtext-color);cursor:pointer;font-size:12px;line-height:1;padding:0;}
+        .sim-trait-bubble button:hover{color:#ff7185;transform:scale(1.08);}
+        .sim-traits-editor #editTraits{border:0!important;background:transparent!important;padding:5px 2px!important;min-width:120px;flex:1;box-shadow:none!important;outline:none;}
+        .sim-traits-hint{font-size:9px;color:var(--subtext-color);margin-top:5px;}
+        @keyframes simTraitBubbleIn{from{opacity:0;transform:translateY(4px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+
         /* INTERAKTÍV KÉPSZERKESZTŐ */
         .avatar-crop-view {
             position: relative;
@@ -2793,9 +2802,15 @@
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 10px;">
-                        <label>Személyiségjegyek / Leírás</label>
-                        <textarea id="editTraits" rows="3" placeholder="Pl.: Vidám, Kreatív..."></textarea>
+                    <div class="form-group sim-traits-editor-group" style="margin-top: 10px;">
+                        <label>✨ Személyiségjegyek / Leírás</label>
+                        <div class="sim-traits-editor" id="simTraitsEditor">
+                            <div class="sim-trait-bubbles" id="simTraitBubbles"></div>
+                            <textarea id="editTraits" rows="2" placeholder="Írj egy személyiségjegyet, majd Enter…
+Shift + Enter = új sor"></textarea>
+                        </div>
+                        <div class="sim-traits-hint">Enter → személyiség buborék &nbsp;·&nbsp; Shift + Enter → új sor</div>
+                        <textarea id="editTraitsDescription" rows="3" placeholder="Leírás…" style="margin-top:7px;"></textarea>
                     </div>
 
                     <div class="modal-actions">
@@ -3310,9 +3325,9 @@
                         sim.image = tempUploadedImage;
                         sim.imageTransform = {
                             scale: imageScale,
+                            rotate: currentRotation,
                             offsetX: imageOffsetX,
                             offsetY: imageOffsetY,
-                            rotation: currentRotation,
                             filter: currentFilter
                         };
                         markTreeDirty();
@@ -6592,7 +6607,17 @@ function openSimsFamily(treeId) {
             addInfo(sim.isDead ? '💀' : '💚', 'Státusz', sim.isDead ? 'Halott' : 'Élő');
 
             const description = document.getElementById('publicSimDescription');
-            description.textContent = sim.traits || 'Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
+            const traitData=getSimTraitData(sim);
+            description.innerHTML='';
+            if(traitData.tags.length){
+                const tagWrap=document.createElement('div'); tagWrap.className='sim-public-traits';
+                traitData.tags.forEach(tag=>{const b=document.createElement('span');b.className='sim-trait-bubble';b.textContent=tag;tagWrap.appendChild(b);});
+                description.appendChild(tagWrap);
+            }
+            if(traitData.description.trim()){
+                const p=document.createElement('div'); p.style.marginTop=traitData.tags.length?'10px':'0'; p.textContent=traitData.description; description.appendChild(p);
+            }
+            if(!traitData.tags.length&&!traitData.description.trim()) description.textContent='Nincs még ehhez a Simhez leírás vagy történet rögzítve.';
 
             const relationList = document.getElementById('publicSimRelations');
             const relationEntries = [];
@@ -8410,6 +8435,67 @@ function openSimsFamily(treeId) {
             }
         }
 
+        function getSimTraitData(sim){
+            const raw=sim?.traits;
+            if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
+                return {tags:Array.isArray(raw.tags)?raw.tags.filter(Boolean).map(String):[],description:String(raw.description||'')};
+            }
+            return {tags:[],description:typeof raw==='string'?raw:''};
+        }
+
+        function renderSimTraitBubbles(tags=[]){
+            const box=document.getElementById('simTraitBubbles'); if(!box)return;
+            box.innerHTML='';
+            tags.forEach((tag,index)=>{
+                const el=document.createElement('span'); el.className='sim-trait-bubble';
+                const text=document.createElement('span'); text.textContent=tag;
+                const btn=document.createElement('button'); btn.type='button'; btn.title='Személyiségjegy törlése'; btn.textContent='×';
+                btn.onclick=()=>{const data=collectSimTraitEditor();data.tags.splice(index,1);setSimTraitEditor(data);};
+                el.append(text,btn); box.appendChild(el);
+            });
+        }
+
+        function collectSimTraitEditor(){
+            const box=document.getElementById('simTraitBubbles');
+            const tags=box?[...box.querySelectorAll('.sim-trait-bubble span:first-child')].map(x=>x.textContent.trim()).filter(Boolean):[];
+            const description=document.getElementById('editTraitsDescription')?.value||'';
+            return {tags,description};
+        }
+
+        function setSimTraitEditor(data){
+            renderSimTraitBubbles(data.tags||[]);
+            const input=document.getElementById('editTraits'); if(input)input.value='';
+            const desc=document.getElementById('editTraitsDescription'); if(desc)desc.value=data.description||'';
+        }
+
+        function loadSimTraitsEditor(sim){
+            const data=getSimTraitData(sim);
+            // Régi, egyszerű szöveges adatot leírásként őrzünk meg, így semmi nem vész el.
+            setSimTraitEditor(data);
+        }
+
+        function saveSimTraitsEditor(sim){
+            const data=collectSimTraitEditor();
+            sim.traits={tags:data.tags,description:data.description};
+        }
+
+        function commitSimTraitInput(){
+            const input=document.getElementById('editTraits'); if(!input)return;
+            const value=input.value.trim(); if(!value)return;
+            const data=collectSimTraitEditor();
+            data.tags.push(value);
+            setSimTraitEditor(data);
+            input.focus();
+        }
+
+        function initSimTraitEditor(){
+            const input=document.getElementById('editTraits'); if(!input||input.dataset.traitsReady)return;
+            input.dataset.traitsReady='1';
+            input.addEventListener('keydown',e=>{
+                if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();commitSimTraitInput();}
+            });
+        }
+
         function openSimModal(simId) {
             const tree = getCurrentTree(); if (!tree) return;
             const sim = tree.sims.find(s => s.id === simId); if (!sim) return;
@@ -8438,7 +8524,7 @@ function openSimsFamily(treeId) {
             tempAnimalIds = [...sim.animalIds];
             updateFamilyPickerButtons();
             renderSimConnectionsInEditor(simId);
-            document.getElementById('editTraits').value = sim.traits || '';
+            loadSimTraitsEditor(sim);
 
             normalizeSimGallery(sim);
             renderSimJournalEntries(sim);
@@ -8476,6 +8562,7 @@ function openSimsFamily(treeId) {
             }
 
             switchSimTab('info');
+            initSimTraitEditor();
             simModal.classList.add('active');
         }
 
@@ -9487,6 +9574,9 @@ function openSimsFamily(treeId) {
                     document.getElementById('imgFilterSelect').value = 'none';
                     document.getElementById('imageEditorBox').style.display = 'none';
                     updateImageTransform();
+                    // Új profilképnél azonnal ugyanaz a képszerkesztő nyílik meg,
+                    // amelyet a galéria/borítókép képeinél is használunk: húzás, zoom, forgatás, szűrők.
+                    openImageCropModal();
 
                     // Ha a képvágó modal nyitva van, frissítjük azt is
                     const cropModal = document.getElementById('imageCropModal');
@@ -9549,7 +9639,7 @@ function openSimsFamily(treeId) {
             sim.species = document.getElementById('editSpecies').value;
             sim.gender = document.getElementById('editGender').value;
             sim.color = document.getElementById('editColor').value;
-            sim.traits = document.getElementById('editTraits').value;
+            saveSimTraitsEditor(sim);
 
             sim.parentIds = [...tempParentIds];
             sim.parentId = sim.parentIds[0] || null;
