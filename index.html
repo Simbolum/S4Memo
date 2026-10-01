@@ -160,6 +160,13 @@
         .style-dots-flow .line-love { stroke: var(--line-pink); stroke-width: var(--line-stroke-width); stroke-dasharray: 6 10; animation: flowDots 1s linear infinite; }
         .style-dots-flow .line-child { stroke: var(--line-green); stroke-width: var(--line-stroke-width); stroke-dasharray: 6 10; animation: flowDots 1s linear infinite; }
 
+        /* Özvegy kapcsolat: fekete kötél minden vonalstílusnál. */
+        .line-widow {
+            stroke: #111 !important;
+            stroke-width: var(--line-stroke-width) !important;
+        }
+
+
         /* TESTRESZABÁSI PANEL */
         .style-panel-drawer {
             position: fixed; bottom: 16px; left: 16px; z-index: 1060;
@@ -6421,7 +6428,7 @@ function openSimsFamily(treeId) {
                     const relationType=(sim.connectionTypes&&sim.connectionTypes[partnerId])||sim.relationType;
                     if (relationType === 'Barátok' || relationType === 'Barát') return;
                     const isLove=['Házas','Jegyes','Szerelmes','Özvegy','Ex',null,'Partner'].includes(relationType);
-                    path.setAttribute('class',isLove?'line-love':'line-child');
+                    path.setAttribute('class', relationType === 'Özvegy' ? 'line-widow' : (isLove ? 'line-love' : 'line-child'));
                     svg.appendChild(path);
 
                     // Ugyanaz a háttér nélküli kapcsolatjel a publikus megtekintőben is.
@@ -8662,6 +8669,26 @@ function openSimsFamily(treeId) {
                     slash.setAttribute('stroke-linecap', 'round');
                     group.appendChild(slash);
                 }
+            } else if (icon === 'Özvegy') {
+                // Fekete, kör alakú özvegy-jel fehér vékony kerettel,
+                // hogy a fekete kapcsolati vonalon is jól látható legyen.
+                const badge = document.createElementNS(NS, 'circle');
+                badge.setAttribute('cx', '0');
+                badge.setAttribute('cy', '0');
+                badge.setAttribute('r', '10');
+                badge.setAttribute('fill', '#111');
+                badge.setAttribute('stroke', '#fff');
+                badge.setAttribute('stroke-width', '1.5');
+                group.appendChild(badge);
+
+                const cross = document.createElementNS(NS, 'path');
+                cross.setAttribute('d', 'M 0 -6 L 0 6 M -3.5 -2.5 L 3.5 -2.5');
+                cross.setAttribute('fill', 'none');
+                cross.setAttribute('stroke', '#fff');
+                cross.setAttribute('stroke-width', '2.4');
+                cross.setAttribute('stroke-linecap', 'square');
+                cross.setAttribute('stroke-linejoin', 'miter');
+                group.appendChild(cross);
             } else {
                 const text = document.createElementNS(NS, 'text');
                 text.setAttribute('x', '0');
@@ -8672,7 +8699,6 @@ function openSimsFamily(treeId) {
                 text.textContent = ({
                     'Szerelmes': '❤️',
                     'Jegyes': '💍',
-                    'Özvegy': '✝️',
                     'Ex': '💔'
                 })[icon] || '';
                 group.appendChild(text);
@@ -8803,7 +8829,7 @@ function openSimsFamily(treeId) {
                     const isLove = ['Házas', 'Jegyes', 'Szerelmes', 'Özvegy', 'Ex', 'Elvált', 'Partner', null]
                         .includes(relationType);
 
-                    path.setAttribute('class', isLove ? 'line-love' : 'line-child');
+                    path.setAttribute('class', relationType === 'Özvegy' ? 'line-widow' : (isLove ? 'line-love' : 'line-child'));
 
                     // Közös gyermek esetén a partner-vonal csak háttérként
                     // jelenik meg, a gyermek kapcsolata pedig a két szülő
