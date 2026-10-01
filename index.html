@@ -634,7 +634,7 @@
         }
         .plumbob {
             width: 14px; height: 22px; background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
-            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); display: inline-block;
+            clip-path: polygon(50% 0%, 72% 50%, 50% 100%, 28% 50%); display: inline-block;
             filter: drop-shadow(0 0 8px rgba(0, 255, 135, 0.8));
             animation: plumbobFloat 5s ease-in-out infinite;
         }
@@ -960,7 +960,7 @@
         }
         .publish-tree-floating-btn:hover { transform: translateY(-2px) scale(1.03); }
         .publish-tree-floating-btn.is-public {
-            bottom: 62px;
+            bottom: 16px;
             background: linear-gradient(135deg, #2ed573 0%, #219d52 100%);
             box-shadow: 0 8px 25px rgba(46,213,115,.28);
         }
@@ -979,7 +979,7 @@
         }
         @media (max-width: 700px) {
             .publish-tree-floating-btn { right: 16px; bottom: 16px; }
-            .publish-tree-floating-btn.is-public { bottom: 70px; }
+            .publish-tree-floating-btn.is-public { bottom: 16px; }
             .view-public-tree-floating-btn { right: 16px; bottom: 16px; }
         }
 
@@ -3612,7 +3612,7 @@ Shift + Enter = új sor"></textarea>
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'none');
             } else if (safeShape === 'plumbob') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
-                document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)');
+                document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 72% 50%, 50% 100%, 28% 50%)');
             } else if (safeShape === 'hexagon') {
                 document.documentElement.style.setProperty('--sim-node-radius', '0');
                 document.documentElement.style.setProperty('--sim-node-clip-path', 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)');
