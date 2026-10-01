@@ -951,7 +951,7 @@
         }
 
         .publish-tree-floating-btn {
-            position: absolute; bottom: 16px; right: 185px; z-index: 1050;
+            position: absolute; bottom: 16px; right: 300px; z-index: 1050;
             background: linear-gradient(135deg, #ff9a6c 0%, #ff8a5c 100%);
             color: white; border: none; padding: 10px 15px;
             border-radius: 14px; font-weight: 800; font-size: 11px; cursor: pointer;
@@ -978,9 +978,9 @@
             box-shadow: 0 10px 28px var(--active-glow);
         }
         @media (max-width: 700px) {
-            .publish-tree-floating-btn { right: 16px; bottom: 16px; }
+            .publish-tree-floating-btn { right: 274px; bottom: 16px; }
             .publish-tree-floating-btn.is-public { bottom: 16px; }
-            .view-public-tree-floating-btn { right: 16px; bottom: 16px; }
+            .view-public-tree-floating-btn { right: 145px; bottom: 16px; }
         }
 
         /* PUBLIKUS / CSAÁDFA MEGTEKINTŐ */
@@ -5862,8 +5862,8 @@ function openSimsFamily(treeId) {
                 if (publishBtn) {
                     publishBtn.style.display = 'block';
                     publishBtn.classList.toggle('is-public', !!tree?.isPublic);
-                    publishBtn.textContent = tree?.isPublic ? '↩ Publikusság visszavonása' : '🌐 Publikálás';
-                    publishBtn.title = tree?.isPublic ? 'A családfa levétele a Publikum oldalról' : 'A családfa közzététele a Publikum oldalon';
+                    publishBtn.textContent = tree?.isPublic ? '↩ Visszavonás' : '🌐 Publikálás';
+                    publishBtn.title = tree?.isPublic ? 'A családfa publikusságának visszavonása' : 'A családfa közzététele a Publikum oldalon';
                 }
                 if (viewPublicBtn) {
                     viewPublicBtn.style.display = tree?.isPublic ? 'block' : 'none';
