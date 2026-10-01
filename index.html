@@ -5032,7 +5032,7 @@ function openStoryPreview(storyId,chapterId=null){
                     <div class="blog-profile-row">
                         <div class="blog-profile-avatar">${img?`<img src="${escapeHtml(img)}" alt="" style="${avatarStyle}">`:'👤'}</div>
                         <div style="min-width:0;"><div class="blog-profile-name">${escapeHtml(blog.name||'')}</div><div class="blog-profile-handle">${escapeHtml(blogHandle(blog,tree))} · ${escapeHtml(blogSimName(tree,blog))} · 👤 ${escapeHtml(getBlogOwnerName(blog,tree))}</div></div>
-                        ${editable ? `<div class="blog-profile-actions"><span class="blog-follow-count">👥 ${getBlogFollowers(blog.id).length} követő</span><button class="blog-mini-btn" onclick="event.stopPropagation();openBlogEditModal('${escapeHtml(blog.id)}')">✎ Szerkesztés</button><button class="blog-mini-btn" onclick="event.stopPropagation();openBlogPostModal('${escapeHtml(blog.id)}')">＋ Bejegyzés</button>${blog.isPublic ? `<button class="blog-mini-btn" onclick="event.stopPropagation();setSimBlogPublic('${escapeHtml(blog.id)}',false)">🔒 Visszavonás</button>` : `<button class="blog-mini-btn" onclick="event.stopPropagation();setSimBlogPublic('${escapeHtml(blog.id)}',true)">🌐 Nyilvánossá tétel</button>`}</div>` : `<div class="blog-profile-actions"><span class="blog-public-badge">🌐 Nyilvános</span><button type="button" class="blog-mini-btn blog-follow-btn${isFollowingBlog(blog.id)?' following':''}" onclick="event.stopPropagation();toggleBlogFollow('${escapeHtml(blog.id)}','${escapeHtml(tree?.id||blog._treeId||'')}')">${isFollowingBlog(blog.id)?'✓ Követed':'＋ Követés'}</button><span class="blog-follow-count">👥 ${getBlogFollowers(blog.id).length} követő</span></div>`}
+                        ${editable ? `<div class="blog-profile-actions"><span class="blog-follow-count">👥 ${getBlogFollowers(blog.id).length} követő</span><button class="blog-mini-btn" onclick="event.stopPropagation();openBlogEditModal('${escapeHtml(blog.id)}')">✎ Szerkesztés</button><button class="blog-mini-btn" onclick="event.stopPropagation();openBlogPostModal('${escapeHtml(blog.id)}')">＋ Bejegyzés</button>${blog.isPublic ? `<button class="blog-mini-btn" onclick="event.stopPropagation();setSimBlogPublic('${escapeHtml(blog.id)}',false)">🔒 Visszavonás</button>` : `<button class="blog-mini-btn" onclick="event.stopPropagation();setSimBlogPublic('${escapeHtml(blog.id)}',true)">🌐 Nyilvánossá tétel</button>`}<button type="button" class="blog-mini-btn danger" title="Blog törlése" aria-label="Blog törlése" onclick="event.stopPropagation();deleteOwnBlog('${escapeHtml(blog.id)}')">🗑</button></div>` : `<div class="blog-profile-actions"><span class="blog-public-badge">🌐 Nyilvános</span><button type="button" class="blog-mini-btn blog-follow-btn${isFollowingBlog(blog.id)?' following':''}" onclick="event.stopPropagation();toggleBlogFollow('${escapeHtml(blog.id)}','${escapeHtml(tree?.id||blog._treeId||'')}')">${isFollowingBlog(blog.id)?'✓ Követed':'＋ Követés'}</button><span class="blog-follow-count">👥 ${getBlogFollowers(blog.id).length} követő</span></div>`}
                     </div>
                     <div class="blog-profile-bio">${escapeHtml(blog.bio||'Nincs még bemutatkozás.')}</div>
                     <div class="blog-profile-meta"><span class="blog-meta-pill">📖 ${getBlogPostCount(blog)} bejegyzés</span><span class="blog-meta-pill">🌳 ${escapeHtml(tree?.name||'Családfa')}</span>${blog.isPublic?'<span class="blog-public-badge">🌐 Nyilvános</span>':''}</div>
@@ -5433,7 +5433,30 @@ function renderOwnBlogDetail(blogId) {
 
         function closeBlogPostModal(){ document.getElementById('simBlogPostModal')?.classList.remove('active'); editingSimBlogId=null; editingSimBlogPostId=null; tempSimBlogPostImages=[]; tempSimBlogPostBlocks=[]; }
 
-        async function deleteBlogPost(blogId,postId){ if(!confirm('Biztosan törölni szeretnéd ezt a blogbejegyzést?')) return; const found=findOwnBlog(blogId); if(!found) return; found.blog.posts=(found.blog.posts||[]).filter(p=>p.id!==postId); found.blog.updatedAt=new Date().toISOString(); const ok=await persistBlogTree(found.tree); if(ok) renderOwnBlogDetail(blogId); }
+        async function deleteOwnBlog(blogId){
+    if(!currentUser){ alert('A blog törléséhez jelentkezz be.'); return; }
+    const found=findOwnBlog(blogId);
+    if(!found) return;
+    const ownerId=found.blog.ownerUserId||found.tree?.user_id||found.tree?.userId||'';
+    if(ownerId && String(ownerId)!==String(currentUser.id)){ alert('Ezt a blogot csak a létrehozója törölheti.'); return; }
+    if(!confirm(`Biztosan törölni szeretnéd a(z) „${found.blog.name||'Névtelen blog'}” blogot? A blog összes bejegyzése is törlődik.`)) return;
+    const tree=found.tree;
+    tree.bgConfig=tree.bgConfig||{};
+    const blogs=ensureTreeBlogStore(tree);
+    tree.bgConfig.blogs=blogs.filter(b=>String(b.id)!==String(blogId));
+    tree.blogs=tree.bgConfig.blogs;
+    tree.updatedAt=new Date().toISOString();
+    const ok=await persistBlogTree(tree);
+    if(!ok) return;
+    try{
+        localStorage.removeItem(`s4memo_blog_followers_${blogId}`);
+        Object.keys(localStorage).filter(k=>k.startsWith(`s4memo_blog_interactions_${blogId}_`)).forEach(k=>localStorage.removeItem(k));
+    }catch(e){}
+    if(activeSimBlogId===blogId){ activeSimBlogId=null; activityMode='own'; }
+    showMySimBlogs();
+}
+
+async function deleteBlogPost(blogId,postId){ if(!confirm('Biztosan törölni szeretnéd ezt a blogbejegyzést?')) return; const found=findOwnBlog(blogId); if(!found) return; found.blog.posts=(found.blog.posts||[]).filter(p=>p.id!==postId); found.blog.updatedAt=new Date().toISOString(); const ok=await persistBlogTree(found.tree); if(ok) renderOwnBlogDetail(blogId); }
 
         async function shareOwnBlog(blogId){
             const found=findOwnBlog(blogId); if(!found) return;
