@@ -8677,21 +8677,54 @@ function openSimsFamily(treeId) {
             group.setAttribute('aria-hidden', 'true');
 
             if (icon === 'Házas' || icon === 'Elvált') {
-                const circle = document.createElementNS(NS, 'circle');
-                circle.setAttribute('cx', '0');
-                circle.setAttribute('cy', '0');
-                circle.setAttribute('r', '8');
-                circle.setAttribute('fill', 'none');
-                circle.setAttribute('stroke', '#D4AF37');
-                circle.setAttribute('stroke-width', '3');
+                if (icon === 'Házas') {
+                    // Két egymásba kapcsolódó, valóban kör alakú arany gyűrű.
+                    // Mindkét gyűrű tetején külön kis kék kő látható.
+                    const leftRing = document.createElementNS(NS, 'circle');
+                    leftRing.setAttribute('cx', '-4');
+                    leftRing.setAttribute('cy', '1');
+                    leftRing.setAttribute('r', '6.5');
+                    leftRing.setAttribute('fill', 'none');
+                    leftRing.setAttribute('stroke', '#D4AF37');
+                    leftRing.setAttribute('stroke-width', '2.6');
+                    group.appendChild(leftRing);
 
-                if (icon === 'Elvált') {
+                    const rightRing = document.createElementNS(NS, 'circle');
+                    rightRing.setAttribute('cx', '4');
+                    rightRing.setAttribute('cy', '1');
+                    rightRing.setAttribute('r', '6.5');
+                    rightRing.setAttribute('fill', 'none');
+                    rightRing.setAttribute('stroke', '#D4AF37');
+                    rightRing.setAttribute('stroke-width', '2.6');
+                    group.appendChild(rightRing);
+
+                    const leftStone = document.createElementNS(NS, 'polygon');
+                    leftStone.setAttribute('points', '-4,-10 -1.8,-7.2 -4,-4.4 -6.2,-7.2');
+                    leftStone.setAttribute('fill', '#2F80ED');
+                    leftStone.setAttribute('stroke', '#BFE3FF');
+                    leftStone.setAttribute('stroke-width', '0.9');
+                    leftStone.setAttribute('stroke-linejoin', 'round');
+                    group.appendChild(leftStone);
+
+                    const rightStone = document.createElementNS(NS, 'polygon');
+                    rightStone.setAttribute('points', '4,-10 6.2,-7.2 4,-4.4 1.8,-7.2');
+                    rightStone.setAttribute('fill', '#2F80ED');
+                    rightStone.setAttribute('stroke', '#BFE3FF');
+                    rightStone.setAttribute('stroke-width', '0.9');
+                    rightStone.setAttribute('stroke-linejoin', 'round');
+                    group.appendChild(rightStone);
+                } else {
+                    const circle = document.createElementNS(NS, 'circle');
+                    circle.setAttribute('cx', '0');
+                    circle.setAttribute('cy', '0');
+                    circle.setAttribute('r', '8');
+                    circle.setAttribute('fill', 'none');
+                    circle.setAttribute('stroke', '#D4AF37');
+                    circle.setAttribute('stroke-width', '3');
                     circle.setAttribute('stroke-dasharray', '12 4 5 4');
                     circle.setAttribute('transform', 'rotate(-28)');
-                }
-                group.appendChild(circle);
+                    group.appendChild(circle);
 
-                if (icon === 'Elvált') {
                     const slash = document.createElementNS(NS, 'path');
                     slash.setAttribute('d', 'M -6 -7 L 6 7');
                     slash.setAttribute('fill', 'none');
