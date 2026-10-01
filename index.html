@@ -1119,6 +1119,7 @@
             filter:var(--public-avatar-filter, none);
             pointer-events:none;
         }
+        .public-tree-generation { position:absolute; bottom:-48px; white-space:nowrap; font-weight:800; font-size:9px; color:var(--text-color); background:rgba(30,26,24,.92); padding:2px 7px; border-radius:9px; border:1px solid var(--border-color); box-shadow:0 3px 8px var(--shadow-color); pointer-events:none; z-index:15; }
         .public-tree-label { position:absolute; bottom:-24px; white-space:nowrap; font-weight:700; font-size:11px; color:var(--text-color); background:var(--card-solid); padding:3px 10px; border-radius:12px; border:1px solid var(--border-color); box-shadow:0 4px 12px var(--shadow-color); }
         .public-tree-special { position:absolute; top:-28px; left:50%; transform:translateX(-50%); display:flex; gap:3px; }
         .public-tree-special span { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--card-solid); border:1px solid var(--border-color); font-size:21px; box-shadow:0 4px 10px var(--shadow-color); }
@@ -1309,6 +1310,10 @@
             background-color: transparent; background-size: cover; background-position: center; 
             pointer-events: none; border: 3px solid #ffffff; box-shadow: 0 8px 20px var(--shadow-color);
             transition: all 0.2s ease;
+        }
+
+        .sim-generation-badge {
+            position:absolute; bottom:-48px; white-space:nowrap; font-weight:800; font-size:9px; color:var(--text-color); background:rgba(30,26,24,.92); padding:2px 7px; border-radius:9px; border:1px solid var(--border-color); box-shadow:0 3px 8px var(--shadow-color); pointer-events:none; z-index:15;
         }
 
         .sim-node-label {
@@ -6329,6 +6334,7 @@ function openSimsFamily(treeId) {
             svg.innerHTML = '';
 
             const visibleSims = (tree.sims || []).filter(s => !isAnimalSim(s));
+            const generationMap = getGenerationMap(tree);
             visibleSims.forEach(sim => {
                 normalizeSimExtraFields(sim);
                 const node = document.createElement('div');
@@ -6394,6 +6400,10 @@ function openSimsFamily(treeId) {
                 label.className = 'public-tree-label';
                 label.textContent = `${sim.firstName || ''} ${sim.lastName || ''}`.trim() || 'Névtelen Sim';
 
+                const generationBadge = document.createElement('div');
+                generationBadge.className = 'public-tree-generation';
+                generationBadge.textContent = `${generationMap.get(String(sim.id)) || 1}. generáció`;
+
                 const special = document.createElement('div');
                 special.className = 'public-tree-special';
                 const occultIcons = {'Idegen':'👽','Vámpír':'🧛','Sellő':'🧜','Varázsló':'🧙','Farkasember':'🐺','Szellem':'👻','NövénySim':'🌱'};
@@ -6409,6 +6419,7 @@ function openSimsFamily(treeId) {
 
                 node.appendChild(avatar);
                 node.appendChild(label);
+                node.appendChild(generationBadge);
                 if (special.children.length) node.appendChild(special);
 
                 const animalIds = Array.isArray(sim.animalIds) ? sim.animalIds : [];
@@ -7305,8 +7316,42 @@ function openSimsFamily(treeId) {
             return newSim;
         }
 
+        // Meghatározza az egyes Simek családfán belüli generációját.
+        // A legfelső, szülő nélküli ág az 1. generáció; minden gyermek egy
+        // generációval lejjebb kerül. Több szülő esetén a legmagasabb szülői
+        // generációból számolunk, a körkörös kapcsolatok pedig nem növelik a szintet.
+        function getGenerationMap(tree) {
+            const map = new Map();
+            if (!tree || !Array.isArray(tree.sims)) return map;
+            const sims = tree.sims.filter(s => !isAnimalSim(s));
+            const byId = new Map(sims.map(s => [String(s.id), s]));
+            const visiting = new Set();
+
+            function generation(sim) {
+                const key = String(sim.id);
+                if (map.has(key)) return map.get(key);
+                if (visiting.has(key)) return 1;
+                visiting.add(key);
+                const parentIds = Array.isArray(sim.parentIds)
+                    ? sim.parentIds.filter(Boolean)
+                    : (sim.parentId ? [sim.parentId] : []);
+                const parentGenerations = parentIds
+                    .map(id => byId.get(String(id)))
+                    .filter(Boolean)
+                    .map(parent => generation(parent));
+                const value = parentGenerations.length ? Math.max(...parentGenerations) + 1 : 1;
+                visiting.delete(key);
+                map.set(key, value);
+                return value;
+            }
+
+            sims.forEach(generation);
+            return map;
+        }
+
         function renderSimNode(sim) {
             normalizeSimExtraFields(sim);
+            const tree = getCurrentTree();
             const node = document.createElement('div');
             node.className = `sim-node ${selectedSimId === sim.id ? 'selected' : ''}`;
             node.id = sim.id;
@@ -7369,6 +7414,12 @@ function openSimsFamily(treeId) {
             label.className = 'sim-node-label';
             label.innerText = `${sim.firstName} ${sim.lastName}`;
 
+            const generationBadge = document.createElement('div');
+            generationBadge.className = 'sim-generation-badge';
+            const generation = getGenerationMap(tree).get(String(sim.id)) || 1;
+            generationBadge.textContent = `${generation}. generáció`;
+            node.appendChild(generationBadge);
+
             // Okkult és cím ikonok a Sim feje fölött
             const occultIcons = {
                 'Idegen': '👽',
@@ -7413,7 +7464,6 @@ function openSimsFamily(treeId) {
 
             // Állatok profilképeinek megjelenítése a Simnél bal oldalon lefelé
             const animalIds = Array.isArray(sim.animalIds) ? sim.animalIds : [];
-            const tree = getCurrentTree();
 
             if (animalIds.length > 0 && tree) {
                 let topOffset = 10; // Első állat pozíciója (a node felett)
@@ -7469,6 +7519,7 @@ function openSimsFamily(treeId) {
 
             node.appendChild(avatar);
             node.appendChild(label);
+            node.appendChild(generationBadge);
 
             const partnerBtn = document.createElement('div');
             partnerBtn.className = 'add-btn-node add-partner-btn';
