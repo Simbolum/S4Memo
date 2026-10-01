@@ -4066,9 +4066,14 @@ function openStoryPreview(storyId,chapterId=null){
             const query=(document.getElementById('storiesSearchInput')?.value||'').trim().toLocaleLowerCase('hu-HU');
             const trees=(familyTrees||[]).filter(t=>{
                 if(!isStoryTreeOwnedByCurrentUser(t))return false;
+                // A Történetek oldalon csak azok a családfák jelenjenek meg,
+                // amelyekhez a felhasználó már létrehozott legalább egy történetet.
+                // Új családfa létrehozása önmagában nem hoz létre történetsávot.
+                const treeStories=getStoryList(t);
+                if(!treeStories.length)return false;
                 if(!query)return true;
                 const parts=[t.name||''];
-                getStoryList(t).forEach(st=>{
+                treeStories.forEach(st=>{
                     parts.push(st.title||'');
                     const sim=(t.sims||[]).find(s=>String(s.id)===String(st.simId));
                     parts.push(`${sim?.firstName||''} ${sim?.lastName||''}`.trim());
@@ -4081,7 +4086,7 @@ function openStoryPreview(storyId,chapterId=null){
                 const cover=tree.bgConfig?.publicIndexImage||tree.bgConfig?.coverImage||tree.cover||'';
                 const coverHtml=cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(tree.name||'Családfa')}" loading="lazy">`:'<div class="story-tree-start-placeholder">🌳</div>';
                 const stories=getStoryList(tree),storyCount=stories.length,chapterCount=stories.reduce((n,st)=>n+storyNormalizeChapters(st).length,0),publishedChapterCount=stories.reduce((n,st)=>n+storyGetPublishedChapters(st).length,0);
-                return `<article class="story-tree-start-card"><button type="button" class="story-tree-start-delete" onclick="event.stopPropagation();deleteTree('${escapeHtml(tree.id)}')" title="Családfa törlése" aria-label="Családfa törlése">🗑</button><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="${storyCount?'Történetek megnyitása':'Történetoldal megnyitása'}">${coverHtml}<div class="story-tree-start-overlay">📖 Történet megnyitása</div></div><div class="story-tree-start-body"><div class="story-tree-start-body-top"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong></div><span>${storyCount} történet · ${chapterCount} fejezet${publishedChapterCount?` · ${publishedChapterCount} publikált`:''}</span></div></article>`;
+                return `<article class="story-tree-start-card"><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="Történetek megnyitása">${coverHtml}<div class="story-tree-start-overlay">📖 Történet megnyitása</div></div><div class="story-tree-start-body"><div class="story-tree-start-body-top"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong></div><span>${storyCount} történet · ${chapterCount} fejezet${publishedChapterCount?` · ${publishedChapterCount} publikált`:''}</span></div></article>`;
             }).join('')}</div>`;
         }
         function startStoryForTree(treeId){
@@ -4105,7 +4110,7 @@ function openStoryPreview(storyId,chapterId=null){
             };
             const renderGroups=(trees,isOwn)=>{
                 const visible=(trees||[]).filter(t=>{
-                    if(isOwn)return isStoryTreeOwnedByCurrentUser(t)&&matches(t);
+                    if(isOwn)return isStoryTreeOwnedByCurrentUser(t)&&getStoryList(t).length>0&&matches(t);
                     return !!t?.isPublic&&getStoryList(t).some(st=>storyHasPublishedChapter(st))&&matches(t);
                 });
                 if(!visible.length)return `<div class="stories-sidebar-empty">${isOwn?(query?'Nincs saját találat.':'Nincs saját családfa.'):(query?'Nincs publikus találat.':'Nincs elérhető publikált történet.')}</div>`;
