@@ -1832,6 +1832,14 @@
 
 .stories-sidebar-sublist{display:flex;flex-direction:column;gap:3px;margin:2px 4px 8px 16px;padding-left:8px;border-left:1px solid var(--border-color);}
 .stories-sidebar-tree{display:flex;flex-direction:column;gap:2px;}
+.story-sidebar-story-row,.story-sidebar-chapter-row{display:flex;align-items:center;gap:3px;width:100%;}
+.story-sidebar-story-row .stories-sidebar-tree-btn,.story-sidebar-chapter-row .stories-sidebar-chapter-btn{flex:1;min-width:0;}
+.story-sidebar-delete-btn{
+    flex:0 0 auto;width:24px;height:24px;border:0;border-radius:7px;
+    background:transparent;color:var(--subtext-color);cursor:pointer;font-size:11px;
+    display:flex;align-items:center;justify-content:center;padding:0;
+}
+.story-sidebar-delete-btn:hover{background:rgba(229,72,77,.15);color:#ff6b7f;}
 .stories-sidebar-tree-btn,.stories-sidebar-story-btn,.stories-sidebar-chapter-btn{width:100%;border:0;background:transparent;color:var(--text-color);text-align:left;cursor:pointer;border-radius:8px;font-weight:800;}
 .stories-sidebar-tree-btn{padding:5px 6px;font-size:10px;display:flex;align-items:center;gap:5px;}
 .stories-sidebar-tree-btn:hover{background:rgba(255,255,255,.05);color:var(--accent-color);}
@@ -1843,6 +1851,13 @@
 .stories-sidebar-empty{padding:5px 4px;color:var(--subtext-color);font-size:8px;line-height:1.45;}
 .story-tree-start-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
 .story-tree-start-card{position:relative;overflow:hidden;}
+.story-tree-start-delete{
+    position:absolute;right:9px;top:9px;z-index:8;width:32px;height:32px;
+    border:1px solid rgba(255,255,255,.32);border-radius:9px;
+    background:rgba(0,0,0,.58);color:#fff;display:flex;align-items:center;
+    justify-content:center;font-size:14px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.28);
+}
+.story-tree-start-delete:hover{background:#e5484d;border-color:#fff;transform:scale(1.05);}
 .story-tree-start-cover{height:160px;cursor:pointer;}
 .story-tree-start-body{padding:10px 11px 11px;}
 .story-tree-start-body-top{display:flex;align-items:center;gap:8px;justify-content:space-between;}
@@ -3829,8 +3844,11 @@
             const sidebar=stories.length?stories.map(st=>{
                 const cs=storyNormalizeChapters(st);
                 return `<div class="stories-sidebar-tree">
-                    <button type="button" class="stories-sidebar-tree-btn" style="color:${String(st.id)===String(story?.id)?'var(--accent-color)':'var(--text-color)'}" onclick="openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}')">📖 ${escapeHtml(st.title||'Névtelen történet')}<span class="tree-count">${cs.length} fej.</span></button>
-                    ${cs.map((c,i)=>`<button type="button" class="stories-sidebar-chapter-btn" style="color:${chapter&&String(c.id)===String(chapter.id)?'var(--text-color)':'var(--subtext-color)'}" onclick="openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}','${escapeHtml(c.id)}')">${i+1}. ${escapeHtml(c.title||`Fejezet ${i+1}`)}</button>`).join('')}
+                    <div class="story-sidebar-story-row">
+                        <button type="button" class="stories-sidebar-tree-btn" style="color:${String(st.id)===String(story?.id)?'var(--accent-color)':'var(--text-color)'}" onclick="openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}')">📖 ${escapeHtml(st.title||'Névtelen történet')}<span class="tree-count">${cs.length} fej.</span></button>
+                        <button type="button" class="story-sidebar-delete-btn" onclick="event.stopPropagation();deleteStory('${escapeHtml(st.id)}')" title="Történet törlése" aria-label="Történet törlése">🗑</button>
+                    </div>
+                    ${cs.map((c,i)=>`<div class="story-sidebar-chapter-row"><button type="button" class="stories-sidebar-chapter-btn" style="color:${chapter&&String(c.id)===String(chapter.id)?'var(--text-color)':'var(--subtext-color)'}" onclick="openStoryWorkspace('${escapeHtml(tree.id)}','${escapeHtml(st.id)}','${escapeHtml(c.id)}')">${i+1}. ${escapeHtml(c.title||`Fejezet ${i+1}`)}</button><button type="button" class="story-sidebar-delete-btn" onclick="event.stopPropagation();deleteStoryWorkspaceChapter('${escapeHtml(st.id)}','${escapeHtml(c.id)}')" title="Fejezet törlése" aria-label="Fejezet törlése">🗑</button></div>`).join('')}
                 </div>`;
             }).join(''):'<div class="stories-sidebar-empty">Még nincs történet. Az oldalon belül létrehozhatod az elsőt.</div>';
             const editor=story&&chapter?`
@@ -3917,6 +3935,30 @@
             dirtyTreeIds.delete(tree.id);updateTreeSaveUI();storyWorkspaceStoryId=story.id;storyWorkspaceChapterId=id;renderStoryWorkspace();
         }
         
+        async function deleteStoryWorkspaceChapter(storyId,chapterId){
+            const tree=(familyTrees||[]).find(t=>String(t.id)===String(storyWorkspaceTreeId));
+            const story=tree?getStoryList(tree).find(st=>String(st.id)===String(storyId)):null;
+            if(!tree||!story||!storyOwnerCanManage(story,tree))return;
+            const chapters=storyNormalizeChapters(story);
+            const chapter=chapters.find(c=>String(c.id)===String(chapterId));
+            if(!chapter)return;
+            if(!confirm(`Biztosan törlöd a(z) "${chapter.title||'fejezet'}" fejezetet?`))return;
+            story.chapters=chapters.filter(c=>String(c.id)!==String(chapterId));
+            story.blocks=story.chapters[0]?.blocks||[];
+            story.updatedAt=new Date().toISOString();
+            setStoryList(tree,getStoryList(tree));
+            const ok=await saveFamilyTreeToSupabase(tree);
+            if(!ok)return;
+            try{localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));}catch(e){}
+            dirtyTreeIds.delete(tree.id);updateTreeSaveUI();
+            const remaining=storyNormalizeChapters(story);
+            if(String(storyWorkspaceStoryId)===String(storyId)){
+                storyWorkspaceChapterId=remaining[0]?.id||null;
+            }
+            renderStorySidebarNavigation();
+            renderStoryWorkspace();
+        }
+
         function openStoryDetail(storyId,chapterId=null,preview=false){
             const f=findStory(storyId);if(!f)return;
             storyPreviewMode=!!preview;
@@ -4039,7 +4081,7 @@ function openStoryPreview(storyId,chapterId=null){
                 const cover=tree.bgConfig?.publicIndexImage||tree.bgConfig?.coverImage||tree.cover||'';
                 const coverHtml=cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(tree.name||'Családfa')}" loading="lazy">`:'<div class="story-tree-start-placeholder">🌳</div>';
                 const stories=getStoryList(tree),storyCount=stories.length,chapterCount=stories.reduce((n,st)=>n+storyNormalizeChapters(st).length,0),publishedChapterCount=stories.reduce((n,st)=>n+storyGetPublishedChapters(st).length,0);
-                return `<article class="story-tree-start-card"><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="${storyCount?'Történetek megnyitása':'Történetoldal megnyitása'}">${coverHtml}<div class="story-tree-start-overlay">📖 Történet megnyitása</div></div><div class="story-tree-start-body"><div class="story-tree-start-body-top"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong></div><span>${storyCount} történet · ${chapterCount} fejezet${publishedChapterCount?` · ${publishedChapterCount} publikált`:''}</span></div></article>`;
+                return `<article class="story-tree-start-card"><button type="button" class="story-tree-start-delete" onclick="event.stopPropagation();deleteTree('${escapeHtml(tree.id)}')" title="Családfa törlése" aria-label="Családfa törlése">🗑</button><div class="story-tree-start-cover" onclick="startStoryForTree('${escapeHtml(tree.id)}')" title="${storyCount?'Történetek megnyitása':'Történetoldal megnyitása'}">${coverHtml}<div class="story-tree-start-overlay">📖 Történet megnyitása</div></div><div class="story-tree-start-body"><div class="story-tree-start-body-top"><strong>${escapeHtml(tree.name||'Névtelen családfa')}</strong></div><span>${storyCount} történet · ${chapterCount} fejezet${publishedChapterCount?` · ${publishedChapterCount} publikált`:''}</span></div></article>`;
             }).join('')}</div>`;
         }
         function startStoryForTree(treeId){
