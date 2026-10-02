@@ -1271,6 +1271,14 @@
             justify-content: center; background: transparent;
         }
         .sim-node:hover { transform: scale(1.06); z-index: 5; }
+        .tree-auto-layout .sim-node { cursor: default; }
+        .tree-auto-layout .sim-node:hover { transform: none; }
+        .tree-auto-layout .sim-node.selected { animation: none; }
+        .tree-layout-mode-note {
+            margin-top: 6px; padding: 7px 9px; border-radius: 9px;
+            border: 1px solid var(--border-color); background: rgba(255,255,255,.035);
+            color: var(--subtext-color); font-size: 9px; line-height: 1.45;
+        }
         .sim-node.selected { animation: simFloat 3s ease-in-out infinite; z-index: 10 !important; }
         .sim-node.selected .sim-node-avatar { box-shadow: 0 0 0 3px var(--accent-color), 0 8px 25px var(--active-glow) !important; }
         .sim-node.drop-target .sim-node-avatar { box-shadow: 0 0 0 4px #00ff87 !important; transform: scale(1.1); }
@@ -2562,6 +2570,15 @@
                 <input type="range" id="bgBlurSlider" min="0" max="20" step="1" value="0" oninput="changeBgBlur(this.value)">
             </div>
 
+            <div class="style-group" id="treeLayoutGroup">
+                <label>Családfa elrendezése</label>
+                <select id="treeLayoutModeSelect" onchange="changeTreeLayoutMode(this.value)">
+                    <option value="freehand">Szabadkézi</option>
+                    <option value="automatic">Automatikus</option>
+                </select>
+                <div class="tree-layout-mode-note" id="treeLayoutModeNote">Szabadkézi módban a Simeket te rendezheted el és húzhatod a kívánt helyre.</div>
+            </div>
+
             <div class="style-group" id="lineStyleGroup">
                 <label>Vonal Animáció</label>
                 <select id="lineStyleSelect" onchange="changeLineStyle(this.value)">
@@ -3558,6 +3575,9 @@ Shift + Enter = új sor"></textarea>
             const isTree = currentView === 'tree';
             document.getElementById('lineStyleGroup').style.display = isTree ? 'flex' : 'none';
             document.getElementById('simShapeGroup').style.display = isTree ? 'flex' : 'none';
+            const layoutGroup = document.getElementById('treeLayoutGroup');
+            if (layoutGroup) layoutGroup.style.display = isTree ? 'flex' : 'none';
+            if (isTree) updateTreeLayoutUI();
             const indexGroup = document.getElementById('publicIndexImageGroup');
             const indexPreview = document.getElementById('publicIndexImagePreview');
             if (indexGroup) indexGroup.classList.toggle('visible', isTree);
@@ -4566,6 +4586,10 @@ function openStoryPreview(storyId,chapterId=null){
         });
 
         window.addEventListener('mouseup', () => {
+            if (activeDrag && getTreeLayoutMode(getCurrentTree()) === 'freehand') {
+                activeDrag.freeX = Number(activeDrag.x) || 0;
+                activeDrag.freeY = Number(activeDrag.y) || 0;
+            }
             if (activeDrag) markTreeDirty();
 
             if (activeDrag && currentDropTargetSim) {
@@ -7369,6 +7393,7 @@ function openSimsFamily(treeId) {
                         sims: tree.sims || [],
                         journal: tree.journal || [],
                         lineStyle: (tree.background_config && tree.background_config.lineStyle) || 'style-glow',
+                        layoutMode: (tree.background_config && tree.background_config.layoutMode) === 'automatic' ? 'automatic' : 'freehand',
                         isPublic: !!tree.is_public
                     }));
 
@@ -7417,7 +7442,7 @@ function openSimsFamily(treeId) {
                     id: tree.id,
                     user_id: currentUser.id,
                     name: tree.name || 'Névtelen családfa',
-                    background_config: { ...(tree.bgConfig || {}), stories: Array.isArray(tree.stories) ? tree.stories : (Array.isArray(tree.bgConfig?.stories) ? tree.bgConfig.stories : []), lineStyle: tree.lineStyle || 'style-glow' },
+                    background_config: { ...(tree.bgConfig || {}), stories: Array.isArray(tree.stories) ? tree.stories : (Array.isArray(tree.bgConfig?.stories) ? tree.bgConfig.stories : []), lineStyle: tree.lineStyle || 'style-glow', layoutMode: getTreeLayoutMode(tree) },
                     sims: tree.sims || [],
                     journal: tree.journal || [],
                     is_public: !!tree.isPublic,
@@ -7503,13 +7528,16 @@ function openSimsFamily(treeId) {
         function loadCurrentTreeCanvas() {
             const tree = getCurrentTree();
             const lineStyle = tree?.lineStyle || 'style-glow';
-            treeWorld.className = `tree-canvas-world ${lineStyle}`;
+            const layoutMode = getTreeLayoutMode(tree);
+            if (tree && layoutMode === 'automatic') applyAutomaticTreeLayout(tree);
+            treeWorld.className = `tree-canvas-world ${lineStyle}${layoutMode === 'automatic' ? ' tree-auto-layout' : ''}`;
             const lineSelect = document.getElementById('lineStyleSelect');
             if (lineSelect) lineSelect.value = lineStyle;
             const simShape = tree?.bgConfig?.simShape || 'circle';
             applySimShape(simShape);
             const simShapeSelect = document.getElementById('simShapeSelect');
             if (simShapeSelect) simShapeSelect.value = simShape;
+            updateTreeLayoutUI();
 
             const nodes = treeWorld.querySelectorAll('.sim-node');
             nodes.forEach(n => n.remove());
@@ -7545,13 +7573,16 @@ function openSimsFamily(treeId) {
                 firstName: firstName, lastName: lastName, age: 'Fiatal felnőtt',
                 traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y,
                 species: 'Ember', gender: 'Egyéb', parentId: parentId, parentIds: parentId ? [parentId] : [], partnerId: partnerId, partnerIds: partnerId ? [partnerId] : [],
-                relationType: relationType, animalIds: [], locked: false, isDead: false, gallery: []
+                relationType: relationType, animalIds: [], locked: false, isDead: false, gallery: [],
+                freeX: x, freeY: y
             };
 
             tree.sims.push(newSim);
+            if (getTreeLayoutMode(tree) === 'automatic') {
+                applyAutomaticTreeLayout(tree);
+            }
             markTreeDirty();
-            renderSimNode(newSim);
-            updateConnections();
+            loadCurrentTreeCanvas();
             setSelectedSim(newSim.id);
             return newSim;
         }
@@ -7587,6 +7618,191 @@ function openSimsFamily(treeId) {
 
             sims.forEach(generation);
             return map;
+        }
+
+        // =========================
+        // CSALÁDFA ELRENDEZÉSI MÓDOK
+        // =========================
+        // A kézi pozíciókat külön megőrizzük, ezért az Automatikus mód
+        // bekapcsolása nem írja felül véglegesen a Szabadkézi elrendezést.
+        function getTreeLayoutMode(tree) {
+            return tree?.layoutMode === 'automatic' ? 'automatic' : 'freehand';
+        }
+
+        function saveFreehandTreePositions(tree) {
+            if (!tree || !Array.isArray(tree.sims)) return;
+            tree.sims.forEach(sim => {
+                if (isAnimalSim(sim)) return;
+                if (Number.isFinite(Number(sim.x)) && Number.isFinite(Number(sim.y))) {
+                    sim.freeX = Number(sim.x);
+                    sim.freeY = Number(sim.y);
+                }
+            });
+        }
+
+        function restoreFreehandTreePositions(tree) {
+            if (!tree || !Array.isArray(tree.sims)) return;
+            tree.sims.forEach(sim => {
+                if (isAnimalSim(sim)) return;
+                if (Number.isFinite(Number(sim.freeX)) && Number.isFinite(Number(sim.freeY))) {
+                    sim.x = Number(sim.freeX);
+                    sim.y = Number(sim.freeY);
+                }
+            });
+        }
+
+        function applyAutomaticTreeLayout(tree) {
+            if (!tree || !Array.isArray(tree.sims)) return;
+
+            const sims = tree.sims.filter(sim => !isAnimalSim(sim));
+            if (!sims.length) return;
+
+            const byId = new Map(sims.map(sim => [String(sim.id), sim]));
+            const generations = getGenerationMap(tree);
+            const rows = new Map();
+
+            sims.forEach(sim => {
+                const gen = generations.get(String(sim.id)) || 1;
+                if (!rows.has(gen)) rows.set(gen, []);
+                rows.get(gen).push(sim);
+            });
+
+            const nodeSize = 100;
+            const horizontalGap = 90;
+            const rowGap = 170;
+            const rowCenterX = 650;
+            const topY = 120;
+
+            // A partnerpárokat egy egységként kezeljük, hogy az automatikus
+            // nézetben a kapcsolatuk mindig egymás mellett maradjon.
+            function buildComponents(row) {
+                const parent = new Map(row.map(sim => [String(sim.id), String(sim.id)]));
+                const find = (id) => {
+                    let root = id;
+                    while (parent.get(root) !== root) root = parent.get(root);
+                    while (parent.get(id) !== id) {
+                        const next = parent.get(id);
+                        parent.set(id, root);
+                        id = next;
+                    }
+                    return root;
+                };
+                const union = (a, b) => {
+                    const ra = find(a), rb = find(b);
+                    if (ra !== rb) parent.set(rb, ra);
+                };
+
+                row.forEach(sim => {
+                    const partnerIds = Array.isArray(sim.partnerIds)
+                        ? sim.partnerIds.filter(Boolean)
+                        : (sim.partnerId ? [sim.partnerId] : []);
+                    partnerIds.forEach(pid => {
+                        if (parent.has(String(pid))) union(String(sim.id), String(pid));
+                    });
+                });
+
+                const groups = new Map();
+                row.forEach(sim => {
+                    const root = find(String(sim.id));
+                    if (!groups.has(root)) groups.set(root, []);
+                    groups.get(root).push(sim);
+                });
+                return [...groups.values()];
+            }
+
+            const sortedGenerations = [...rows.keys()].sort((a, b) => a - b);
+            const placedX = new Map();
+
+            sortedGenerations.forEach(gen => {
+                const row = rows.get(gen) || [];
+                const groups = buildComponents(row);
+
+                groups.forEach(group => {
+                    group.sort((a, b) => {
+                        const ax = Number.isFinite(Number(a.freeX)) ? Number(a.freeX) : Number(a.x) || 0;
+                        const bx = Number.isFinite(Number(b.freeX)) ? Number(b.freeX) : Number(b.x) || 0;
+                        return ax - bx;
+                    });
+                });
+
+                // Gyerekeknél a szülők középpontja legyen az elsődleges rendezési szempont.
+                const groupAnchor = (group) => {
+                    let total = 0, count = 0;
+                    group.forEach(sim => {
+                        const parentIds = Array.isArray(sim.parentIds)
+                            ? sim.parentIds.filter(Boolean)
+                            : (sim.parentId ? [sim.parentId] : []);
+                        parentIds.forEach(pid => {
+                            if (placedX.has(String(pid))) {
+                                total += placedX.get(String(pid));
+                                count++;
+                            }
+                        });
+                    });
+                    if (count) return total / count;
+                    return group.reduce((sum, sim) => {
+                        const x = Number.isFinite(Number(sim.freeX)) ? Number(sim.freeX) : Number(sim.x) || 0;
+                        return sum + x;
+                    }, 0) / Math.max(1, group.length);
+                };
+
+                groups.sort((a, b) => groupAnchor(a) - groupAnchor(b));
+
+                const groupWidths = groups.map(group => Math.max(nodeSize, group.length * nodeSize + Math.max(0, group.length - 1) * horizontalGap));
+                const totalWidth = groupWidths.reduce((a, b) => a + b, 0) + Math.max(0, groups.length - 1) * horizontalGap;
+                let cursor = rowCenterX - totalWidth / 2;
+                const y = topY + (gen - 1) * rowGap;
+
+                groups.forEach((group, groupIndex) => {
+                    const width = groupWidths[groupIndex];
+                    group.forEach((sim, index) => {
+                        const x = cursor + index * (nodeSize + horizontalGap);
+                        sim.x = Math.round(x);
+                        sim.y = Math.round(y);
+                        placedX.set(String(sim.id), sim.x + nodeSize / 2);
+                    });
+                    cursor += width + horizontalGap;
+                });
+            });
+        }
+
+        function changeTreeLayoutMode(mode) {
+            const tree = getCurrentTree();
+            if (!tree) return;
+
+            const nextMode = mode === 'automatic' ? 'automatic' : 'freehand';
+            const currentMode = getTreeLayoutMode(tree);
+            if (currentMode === nextMode) {
+                updateTreeLayoutUI();
+                return;
+            }
+
+            if (nextMode === 'automatic') {
+                // Belépés előtt elmentjük a jelenlegi kézi pozíciókat.
+                saveFreehandTreePositions(tree);
+                tree.layoutMode = 'automatic';
+                applyAutomaticTreeLayout(tree);
+            } else {
+                tree.layoutMode = 'freehand';
+                restoreFreehandTreePositions(tree);
+            }
+
+            markTreeDirty();
+            updateTreeLayoutUI();
+            loadCurrentTreeCanvas();
+        }
+
+        function updateTreeLayoutUI() {
+            const tree = getCurrentTree();
+            const mode = getTreeLayoutMode(tree);
+            const select = document.getElementById('treeLayoutModeSelect');
+            const note = document.getElementById('treeLayoutModeNote');
+            if (select) select.value = mode;
+            if (note) {
+                note.textContent = mode === 'automatic'
+                    ? 'Automatikus módban a rendszer generációnként rendezi el a Simeket és a kapcsolatokat. A Simek nem húzhatók.'
+                    : 'Szabadkézi módban a Simeket te rendezheted el és húzhatod a kívánt helyre.';
+            }
         }
 
         function renderSimNode(sim) {
@@ -7784,7 +8000,7 @@ function openSimsFamily(treeId) {
                 if (e.target.classList.contains('add-btn-node') || e.target.classList.contains('sim-edit-pencil')) return;
                 
                 setSelectedSim(sim.id);
-                if (sim.locked) return;
+                if (sim.locked || getTreeLayoutMode(getCurrentTree()) === 'automatic') return;
 
                 activeDrag = sim;
                 dragStartMouse = { x: e.clientX, y: e.clientY };
