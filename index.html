@@ -3136,8 +3136,23 @@ Shift + Enter = új sor"></textarea>
         // A legutóbb megnyitott nézetet már az indulás előtt visszaállítjuk,
         // így egy böngésző által újraaktivált/újratöltött lap sem villan át a Kezdőlapra.
         let currentView = (() => {
-            try { return sessionStorage.getItem('s4memo_current_view') || 'home'; }
-            catch (e) { return 'home'; }
+            try {
+                return sessionStorage.getItem('s4memo_current_view')
+                    || localStorage.getItem('s4memo_current_view')
+                    || 'home';
+            } catch (e) {
+                return 'home';
+            }
+        })();
+
+        let savedTreeId = (() => {
+            try {
+                return sessionStorage.getItem('s4memo_current_tree')
+                    || localStorage.getItem('s4memo_current_tree')
+                    || null;
+            } catch (e) {
+                return null;
+            }
         })();
         
         let pageBackgrounds = {
@@ -3178,7 +3193,7 @@ Shift + Enter = új sor"></textarea>
         let editConnectionsNewType = null;
 
         let familyTrees = loadTreesFromStorage();
-        let currentTreeId = familyTrees.length > 0 ? familyTrees[0].id : null;
+        let currentTreeId = (savedTreeId && familyTrees.some(t => String(t.id) === String(savedTreeId))) ? savedTreeId : (familyTrees.length > 0 ? familyTrees[0].id : null);
         let dirtyTreeIds = new Set();
         let isSavingTreeChanges = false;
         let publicFamilyTrees = [];
@@ -4277,7 +4292,10 @@ function openStoryPreview(storyId,chapterId=null){
         }
         function switchView(viewName) {
             currentView = viewName;
-            try { sessionStorage.setItem('s4memo_current_view', viewName); } catch(e) {}
+            try {
+                sessionStorage.setItem('s4memo_current_view', viewName);
+                localStorage.setItem('s4memo_current_view', viewName);
+            } catch(e) {}
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.right-sidebar a').forEach(el => el.classList.remove('active'));
@@ -5883,6 +5901,7 @@ function openSimsFamily(treeId) {
 
         card.onclick = () => {
             currentTreeId = tree.id;
+            try { sessionStorage.setItem('s4memo_current_tree', tree.id); localStorage.setItem('s4memo_current_tree', tree.id); } catch(e) {}
             switchView('tree');
 
             requestAnimationFrame(() => {
@@ -7207,6 +7226,13 @@ function openSimsFamily(treeId) {
                     await loadOrCreateUserProfile();
                     updateProfileButton();
                     await fetchFamilyTreesFromSupabase();
+
+                    // INITIAL esetén pontosan arra a nézetre térünk vissza,
+                    // ahol a felhasználó az oldal elhagyásakor volt.
+                    if (event === 'INITIAL') {
+                        const savedView = currentView || 'home';
+                        switchView(savedView);
+                    }
                 } else {
                     updateProfileButton();
                     // TOKEN_REFRESHED / USER_UPDATED / PASSWORD_RECOVERY esetén semmilyen
@@ -7219,9 +7245,18 @@ function openSimsFamily(treeId) {
                 if (sharedBlogId) {
                     await openSharedBlogFromUrl(sharedBlogId);
                 } else if (event === 'SIGNED_IN') {
-                    // Valódi belépés után lehet Kezdőlapra lépni, de egy meglévő
-                    // session újraaktiválásakor nem írjuk felül az utolsó nézetet.
-                    switchView('home');
+                    // Csak akkor induljunk a Főoldalon, ha nincs korábban elmentett
+                    // nézet. Így a visszatérés nem dobja el a legutóbbi oldalt.
+                    const rememberedView = (() => {
+                        try {
+                            return sessionStorage.getItem('s4memo_current_view')
+                                || localStorage.getItem('s4memo_current_view');
+                        } catch (e) {
+                            return null;
+                        }
+                    })();
+
+                    switchView(rememberedView || 'home');
                 }
             } else {
                 // Nyilvános megosztott Sim blogot bejelentkezés nélkül is lehessen olvasni.
@@ -7338,9 +7373,26 @@ function openSimsFamily(treeId) {
                     }));
 
                     if (familyTrees.length > 0) {
-                        currentTreeId = familyTrees[0].id;
+                        const rememberedTree = (savedTreeId || (() => {
+                            try {
+                                return sessionStorage.getItem('s4memo_current_tree')
+                                    || localStorage.getItem('s4memo_current_tree');
+                            } catch (e) {
+                                return null;
+                            }
+                        })());
+
+                        const remembered = rememberedTree
+                            ? familyTrees.find(t => String(t.id) === String(rememberedTree))
+                            : null;
+
+                        currentTreeId = remembered ? remembered.id : familyTrees[0].id;
+                        savedTreeId = currentTreeId;
+                        try {
+                            sessionStorage.setItem('s4memo_current_tree', currentTreeId);
+                            localStorage.setItem('s4memo_current_tree', currentTreeId);
+                        } catch (e) {}
                     }
-                    console.log("Családfák sikeresen betöltve:", familyTrees.length);
                 } else {
                     familyTrees = [];
                     currentTreeId = null;
@@ -7482,10 +7534,10 @@ function openSimsFamily(treeId) {
                 alert('Először hozz létre vagy válassz ki egy családfát!');
                 return;
             }
-            addNewSim("Új", "Sim", 500 - panX / zoomLevel, 300 - panY / zoomLevel);
+            addNewSim("", "", 500 - panX / zoomLevel, 300 - panY / zoomLevel);
         }
 
-        function addNewSim(firstName = "Új", lastName = "Sim", x = 400, y = 200, parentId = null, partnerId = null, relationType = null) {
+        function addNewSim(firstName = "", lastName = "", x = 400, y = 200, parentId = null, partnerId = null, relationType = null) {
             const tree = getCurrentTree(); if (!tree) return;
 
             const newSim = {
@@ -7948,14 +8000,14 @@ function openSimsFamily(treeId) {
             if (!cancel) {
                 const firstName = firstInput.value.trim();
                 const lastName = lastInput.value.trim();
-                if (firstName || lastName) {
-                    sim.firstName = firstName || sim.firstName || '';
-                    sim.lastName = lastName;
-                    document.getElementById('editFirstName').value = sim.firstName;
-                    document.getElementById('editLastName').value = sim.lastName;
-                    markTreeDirty();
-                    loadCurrentTreeCanvas();
-                }
+                // Mindkét mező külön menthető: ha az egyik üres, az maradjon üres.
+                // Nem használunk régi vagy alapértelmezett nevet pótlásként.
+                sim.firstName = firstName;
+                sim.lastName = lastName;
+                document.getElementById('editFirstName').value = sim.firstName;
+                document.getElementById('editLastName').value = sim.lastName;
+                markTreeDirty();
+                loadCurrentTreeCanvas();
             }
 
             nameEl.innerText = `${sim.firstName || ''} ${sim.lastName || ''}`.trim();
@@ -8837,7 +8889,7 @@ function openSimsFamily(treeId) {
             tempUploadedImage = sim.image || '';
             currentRotation = sim.imageTransform?.rotate || 0;
 
-            document.getElementById('modalName').innerText = `${sim.firstName} ${sim.lastName}`;
+            document.getElementById('modalName').innerText = `${sim.firstName || ''} ${sim.lastName || ''}`.trim();
             document.getElementById('editStatus').value = sim.isDead ? 'dead' : 'alive';
 
             const modalAvatar = document.getElementById('modalAvatar');
