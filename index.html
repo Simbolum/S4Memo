@@ -3133,7 +3133,12 @@ Shift + Enter = új sor"></textarea>
         const styleDrawer = document.getElementById('styleDrawer');
         const zoomPercentLabel = document.getElementById('zoomPercentLabel');
 
-        let currentView = 'home';
+        // A legutóbb megnyitott nézetet már az indulás előtt visszaállítjuk,
+        // így egy böngésző által újraaktivált/újratöltött lap sem villan át a Kezdőlapra.
+        let currentView = (() => {
+            try { return sessionStorage.getItem('s4memo_current_view') || 'home'; }
+            catch (e) { return 'home'; }
+        })();
         
         let pageBackgrounds = {
             home: { style: 'dots', customUrl: '', size: 'cover', position: 'center', blur: 0, publicIndexImage: '' },
@@ -7213,7 +7218,9 @@ function openSimsFamily(treeId) {
                 const sharedBlogId = getSharedBlogIdFromUrl();
                 if (sharedBlogId) {
                     await openSharedBlogFromUrl(sharedBlogId);
-                } else if (event === 'SIGNED_IN' || !currentView) {
+                } else if (event === 'SIGNED_IN') {
+                    // Valódi belépés után lehet Kezdőlapra lépni, de egy meglévő
+                    // session újraaktiválásakor nem írjuk felül az utolsó nézetet.
                     switchView('home');
                 }
             } else {
@@ -10075,12 +10082,10 @@ function openSimsFamily(treeId) {
 
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
-                let savedView = 'home';
-                try { savedView = sessionStorage.getItem('s4memo_current_view') || 'home'; } catch(e) {}
+                // A currentView már a script elején a sessionStorage-ból jön.
+                // Nem hívunk külön switchView()-t az indulás végén, mert az
+                // felesleges második renderelést okozna és ettől a felület villoghat.
                 await handleSession(session, 'INITIAL');
-                if (session?.user && savedView && savedView !== 'home' && !getSharedBlogIdFromUrl()) {
-                    switchView(savedView);
-                }
 
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     await handleSession(session, event);
