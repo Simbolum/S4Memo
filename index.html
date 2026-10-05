@@ -8429,7 +8429,7 @@ function openSimsFamily(treeId) {
 
         function openSimJournalEntryModal(entryId=null) {
             const tree=getCurrentTree(); const sim=tree&&tree.sims.find(s=>s.id===editingSimId); if(!sim) return;
-            normalizeSimExtraFields(sim); simJournalBookPage=0; editingSimJournalId=entryId; tempSimJournalImage=''; tempSimJournalImages=[];
+            normalizeSimExtraFields(sim); if(!entryId) simJournalBookPage=0; editingSimJournalId=entryId; tempSimJournalImage=''; tempSimJournalImages=[];
             const modal=document.getElementById('simJournalEntryModal');
             const title=document.getElementById('simJournalEntryModalTitle');
             const related=document.getElementById('simJournalRelatedSimInput');
