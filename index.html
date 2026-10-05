@@ -813,6 +813,19 @@
     border-radius:20px; background:linear-gradient(135deg,#5a321e,#7a472b 48%,#4a2818);
     box-shadow:0 18px 40px rgba(0,0,0,.28), inset 0 0 0 2px rgba(255,255,255,.08);
 }
+/* A Napló fülön a Sim Card széles, teljes kétoldalas könyvet mutat */
+#simModal .modal-card:has(#tabContentDiary.active) {
+    width:min(1240px, calc(100vw - 36px));
+    max-width:none;
+}
+#simModal #tabContentDiary { width:100%; }
+#simModal .sim-journal-book-wrap { width:100%; }
+#simModal .sim-journal-book { width:100%; max-width:none; box-sizing:border-box; }
+#simModal .sim-journal-book-inner { min-height:560px; }
+#simModal .sim-journal-page { min-height:560px; }
+.sim-journal-editor-image { cursor:move; }
+.sim-journal-editor-image.selected { outline:3px solid #7b5cff; outline-offset:2px; }
+
 .sim-journal-book::before { content:""; position:absolute; left:10px; top:12px; bottom:12px; width:12px; border-radius:10px; background:rgba(0,0,0,.18); box-shadow:inset -2px 0 rgba(255,255,255,.08); }
 .sim-journal-book-inner { position:relative; margin-left:13px; min-height:520px; display:grid; grid-template-columns:1fr 1fr; gap:2px; border-radius:13px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.25); }
 .sim-journal-page { position:relative; min-height:520px; padding:30px 32px; color:#3f2b20; background:linear-gradient(90deg,#eee0bc 0%,#fff8df 8%,#fffdf0 100%); font-family:Georgia,'Times New Roman',serif; overflow:hidden; }
@@ -858,7 +871,58 @@
 @media(max-width:760px){ .sim-journal-book-inner{grid-template-columns:1fr}.sim-journal-page.left{display:none}.sim-journal-page.right{min-height:500px}.sim-journal-book{padding:12px}.sim-journal-spread-text{font-size:13px}.sim-journal-spread-image{max-height:300px}.sim-journal-book-inner{min-height:500px}.sim-journal-page{min-height:500px} }
 
 
-        /* AKTIVITÁS / SIM BLOG STÍLUSOK */
+        /* Megtekintés: a naplókönyv kisebb legyen, hogy a teljes kétoldalas könyv elférjen a publikus SimCardban */
+#publicSimModal .sim-journal-book {
+    width:min(860px, 100%);
+    max-width:860px;
+    padding:10px;
+    border-radius:16px;
+}
+#publicSimModal .sim-journal-book-inner {
+    min-height:400px;
+}
+#publicSimModal .sim-journal-page {
+    min-height:400px;
+    padding:20px 22px;
+}
+#publicSimModal .sim-journal-spread-title {
+    font-size:19px;
+    margin-bottom:7px;
+}
+#publicSimModal .sim-journal-spread-meta {
+    font-size:9px;
+    gap:4px;
+    margin-bottom:10px;
+}
+#publicSimModal .sim-journal-spread-pill {
+    padding:3px 6px;
+}
+#publicSimModal .sim-journal-image-area,
+#publicSimModal .sim-journal-public-image-area {
+    min-height:230px;
+    height:230px;
+}
+#publicSimModal .sim-journal-no-image {
+    height:210px;
+}
+#publicSimModal .sim-journal-spread-text {
+    font-size:12px;
+    line-height:1.55;
+}
+#publicSimModal .sim-journal-page-number {
+    bottom:8px;
+}
+#publicSimModal .sim-journal-page.left .sim-journal-page-number { left:20px; }
+#publicSimModal .sim-journal-page.right .sim-journal-page-number { right:20px; }
+#publicSimModal .sim-journal-book-controls {
+    margin-top:7px;
+    gap:7px;
+}
+#publicSimModal .sim-journal-book-controls button {
+    padding:6px 10px;
+}
+
+/* AKTIVITÁS / SIM BLOG STÍLUSOK */
         .activity-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:12px; }
         .activity-header-left h1 { margin:0 0 5px 0; font-size:28px; font-weight:800; }
         .activity-header-left p { margin:0; color:var(--subtext-color); font-size:13px; font-weight:600; }
@@ -6902,6 +6966,7 @@ function openSimsFamily(treeId) {
 
         function openPublicSimModal(tree, simId) {
             if (!tree) return;
+            window.currentPublicTree = tree;
             const sim = (tree.sims || []).find(s => s.id === simId);
             if (!sim) return;
             normalizeSimExtraFields(sim);
@@ -7253,23 +7318,48 @@ function openSimsFamily(treeId) {
 
             const publicJournal = document.getElementById('publicSimJournal');
             if (publicJournal && journalEntries.length) {
-                journalEntries.forEach(entry => {
-                    const card=document.createElement('div'); card.className='public-sim-journal-card';
-                    const related=(!entry._isRelatedJournalEntry && entry.relatedSimId) ? (tree.sims||[]).find(s=>s.id===entry.relatedSimId) : null;
-                    const relatedName=related ? publicSimDisplayName(related) : '';
-                    const sourceSim=entry._isRelatedJournalEntry && entry._journalOwnerSimId ? (tree.sims||[]).find(s=>s.id===entry._journalOwnerSimId) : null;
-                    const sourceName=sourceSim ? publicSimDisplayName(sourceSim) : '';
-                    const relatedLabel=entry._isRelatedJournalEntry
-                        ? (sourceName ? `<span class="sim-journal-date">🔗 ${escapeHtml(sourceName)} naplójából</span>` : '')
-                        : (relatedName ? `<span class="sim-journal-date">👤 ${escapeHtml(relatedName)}</span>` : '');
-                    const imgs=getSimJournalImages(entry);
-                    const imageArea=imgs.length?`<div class="sim-journal-public-image-area">${imgs.map((im,i)=>`<img class="sim-journal-positioned-image" src="${escapeHtml(im.src)}" alt="Napló kép ${i+1}" style="left:${im.x}%;top:${im.y}%;width:${im.w}%;" data-journal-image-index="${i}">`).join('')}</div>`:'';
-                    card.innerHTML=`<div class="sim-journal-title">${simJournalTypeIcon(entry.type)} ${escapeHtml(entry.title||'')}</div><div class="sim-journal-meta"><span class="sim-journal-pill">${escapeHtml(entry.type||'Egyéb')}</span>${entry.date?`<span class="sim-journal-date">📅 ${escapeHtml(entry.date)}</span>`:''}${entry.location?`<span class="sim-journal-date">📍 ${escapeHtml(entry.location)}</span>`:''}${relatedLabel}</div><div class="sim-journal-content">${escapeHtml(entry.content||'')}</div>${imageArea}`;
-                    card.querySelectorAll('.sim-journal-positioned-image').forEach(img=>img.onclick=()=>openPublicGalleryLightbox(img.src,entry.title||'Napló kép')); publicJournal.appendChild(card);
-                });
+                renderPublicSimJournalBook(tree, sim, 0);
             }
 
             modal.classList.add('active');
+        }
+
+        let publicSimJournalBookPage = 0;
+        let publicSimJournalBookSimId = null;
+
+        function renderPublicSimJournalBook(tree, sim, pageIndex = 0) {
+            const box = document.getElementById('publicSimJournal');
+            if (!box || !tree || !sim) return;
+            const entries = getSimJournalEntriesForSim(tree, sim);
+            if (!entries.length) { box.innerHTML=''; return; }
+            publicSimJournalBookSimId = sim.id;
+            publicSimJournalBookPage = Math.max(0, Math.min(pageIndex, entries.length - 1));
+            const entry = entries[publicSimJournalBookPage];
+            const related = !entry._isRelatedJournalEntry && entry.relatedSimId ? (tree.sims||[]).find(s=>s.id===entry.relatedSimId) : null;
+            const relatedName = related ? publicSimDisplayName(related) : '';
+            const sourceSim = entry._isRelatedJournalEntry && entry._journalOwnerSimId ? (tree.sims||[]).find(s=>s.id===entry._journalOwnerSimId) : null;
+            const sourceName = sourceSim ? publicSimDisplayName(sourceSim) : '';
+            const relatedLabel = entry._isRelatedJournalEntry
+                ? (sourceName ? `🔗 ${escapeHtml(sourceName)} naplójából` : '')
+                : (relatedName ? `👤 ${escapeHtml(relatedName)}` : '');
+            const images = getSimJournalImages(entry);
+            const imageArea = images.length ? `<div class="sim-journal-image-area">${images.map((im,i)=>`<img class="sim-journal-positioned-image" src="${escapeHtml(im.src)}" alt="Napló kép ${i+1}" style="left:${Number(im.x)||0}%;top:${Number(im.y)||0}%;width:${Number(im.w)||36}%;" data-journal-image-index="${i}">`).join('')}</div>` : '<div class="sim-journal-no-image">✒️</div>';
+            box.innerHTML = `<div class="sim-journal-book"><div class="sim-journal-book-inner"><div class="sim-journal-page left"><div class="sim-journal-spread-title">${simJournalTypeIcon(entry.type)} ${escapeHtml(entry.title || 'Névtelen esemény')}</div><div class="sim-journal-spread-meta">${entry.date ? `<span class="sim-journal-spread-pill">📅 ${escapeHtml(entry.date)}</span>` : ''}${entry.location ? `<span class="sim-journal-spread-pill">📍 ${escapeHtml(entry.location)}</span>` : ''}${relatedLabel ? `<span class="sim-journal-spread-pill">${relatedLabel}</span>` : ''}</div>${imageArea}<div class="sim-journal-page-number">${publicSimJournalBookPage * 2 + 1}</div></div><div class="sim-journal-page right"><div style="font-size:12px;color:#8a7056;margin-bottom:10px;">Kedves Naplóm,</div><div class="sim-journal-spread-text">${escapeHtml(entry.content || '')}</div><div class="sim-journal-page-number">${publicSimJournalBookPage * 2 + 2}</div></div></div><div class="sim-journal-book-controls"><button type="button" onclick="flipPublicSimJournalPage(-1)" ${publicSimJournalBookPage===0?'disabled':''}>‹ Előző</button><div class="sim-journal-book-counter">${publicSimJournalBookPage+1} / ${entries.length} bejegyzés</div><button type="button" onclick="flipPublicSimJournalPage(1)" ${publicSimJournalBookPage===entries.length-1?'disabled':''}>Következő ›</button></div></div>`;
+            box.querySelectorAll('.sim-journal-positioned-image').forEach(img=>{ img.onclick=()=>openPublicGalleryLightbox(img.src,entry.title||'Napló kép'); });
+        }
+
+        function flipPublicSimJournalPage(direction) {
+            const tree = window.currentPublicTree || (typeof currentPublicTree !== 'undefined' ? currentPublicTree : null);
+            const modal = document.getElementById('publicSimModal');
+            if (!modal || !modal.classList.contains('active')) return;
+            const simId = publicSimJournalBookSimId;
+            if (!tree || !simId) return;
+            const sim = (tree.sims||[]).find(s=>s.id===simId);
+            if (!sim) return;
+            const entries = getSimJournalEntriesForSim(tree, sim);
+            const next = publicSimJournalBookPage + direction;
+            if (next < 0 || next >= entries.length) return;
+            renderPublicSimJournalBook(tree, sim, next);
         }
 
         function closePublicSimModal() {
@@ -8362,7 +8452,7 @@ function openSimsFamily(treeId) {
             if(!tempSimJournalImages.length){ box.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#927a61;font:13px Arial,sans-serif;">A feltöltött képek itt jelennek meg. Húzd őket a kívánt helyre, a lila fogóponttal pedig méretezd őket.</div>'; return; }
             tempSimJournalImages.forEach((im,index)=>{
                 const wrap=document.createElement('div'); wrap.style.cssText=`position:absolute;left:${im.x}%;top:${im.y}%;width:${im.w}%;`;
-                const img=document.createElement('img'); img.className='sim-journal-editor-image'; img.src=im.src; img.draggable=false; img.style.cssText='position:relative;left:0;top:0;width:100%;height:auto;display:block;';
+                const img=document.createElement('img'); img.className='sim-journal-editor-image'; img.src=im.src; img.draggable=false; img.style.cssText='position:relative;left:0;top:0;width:100%;height:auto;display:block;'; img.addEventListener('click',e=>{ e.stopPropagation(); box.querySelectorAll('.sim-journal-editor-image.selected').forEach(el=>el.classList.remove('selected')); img.classList.add('selected'); });
                 wrap.appendChild(img);
                 const del=document.createElement('button'); del.type='button'; del.className='sim-journal-delete-image'; del.textContent='×'; del.title='Kép törlése'; del.onclick=e=>{e.stopPropagation();tempSimJournalImages.splice(index,1);renderSimJournalImageEditor();}; wrap.appendChild(del);
                 const handle=document.createElement('span'); handle.className='sim-journal-resize-handle'; wrap.appendChild(handle); box.appendChild(wrap);
