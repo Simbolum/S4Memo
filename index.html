@@ -8827,6 +8827,21 @@ function openSimsFamily(treeId) {
             const entries = getSimJournalEntriesForSim(tree, sim);
             const next = simJournalBookPage + direction;
             if (next < 0 || next >= entries.length) return;
+
+            // FONTOS: minden naplóoldalnak saját képlistája van.
+            // Lapozáskor mindig az éppen megnyitott oldal képeit töltjük
+            // a szerkesztő ideiglenes állapotába, így az előző oldal képei
+            // nem maradnak aktívak az új oldalon.
+            const nextEntry = entries[next];
+            tempSimJournalImages = (nextEntry && Array.isArray(nextEntry.images))
+                ? nextEntry.images.map(im => ({ ...ensureSimJournalImageDefaults({ ...im }) }))
+                : [];
+
+            simJournalBookPage = next;
+            editingSimJournalId = nextEntry && !nextEntry._isRelatedJournalEntry
+                ? nextEntry.id
+                : null;
+
             renderSimJournalEntries(sim, next, true);
         }
 
