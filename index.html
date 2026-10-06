@@ -843,7 +843,20 @@
 .sim-journal-image-area { position:absolute; left:32px; right:32px; top:100px; bottom:28px; min-height:0; height:auto; margin:0; overflow:hidden; border-radius:8px; }
 .sim-journal-positioned-image { position:absolute; display:block; object-fit:contain; max-width:none; cursor:grab; user-select:none; -webkit-user-drag:none; border:6px solid #fffaf0; box-shadow:0 6px 14px rgba(0,0,0,.20); box-sizing:border-box; }
 .sim-journal-positioned-image:active { cursor:grabbing; }
-.sim-journal-image-editor { position:relative; min-height:430px; height:430px; margin-top:8px; overflow:hidden; border-radius:10px; background:rgba(255,255,255,.25); border:1px dashed rgba(92,63,39,.28); }
+.sim-journal-image-editor { position:relative; width:calc(50% - 1px); min-height:560px; height:560px; margin:8px auto 0; overflow:hidden; border-radius:10px; background:linear-gradient(90deg,#fffdf0 0%,#fff8df 88%,#eadbb7 100%); border:1px solid rgba(92,63,39,.28); box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); touch-action:none; }
+.sim-journal-image-editor::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,rgba(112,91,62,.10) 32px);opacity:.65;z-index:0}
+.sim-journal-editor-wrap{position:absolute;transform-origin:center center;z-index:1;touch-action:none;}
+.sim-journal-editor-image{display:block;width:100%;height:auto;cursor:grab;user-select:none;-webkit-user-drag:none;border:5px solid #fffaf0;box-shadow:0 5px 12px rgba(0,0,0,.2);box-sizing:border-box;}
+.sim-journal-editor-wrap.active .sim-journal-editor-image{outline:2px solid #7b5cff;}
+.sim-journal-rotate-handle{position:absolute;left:50%;top:-24px;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;background:#7b5cff;border:2px solid #fff;cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.28);z-index:4;}
+.sim-journal-rotate-handle::after{content:'↻';position:absolute;left:50%;top:50%;transform:translate(-50%,-53%);font:700 11px Arial;color:#fff}
+.sim-journal-resize-handle{position:absolute;width:14px;height:14px;right:-7px;bottom:-7px;border-radius:50%;background:#7b5cff;border:2px solid #fff;cursor:nwse-resize;box-shadow:0 2px 5px rgba(0,0,0,.25);z-index:4}
+.sim-journal-image-context{position:fixed;z-index:2147483647;min-width:170px;padding:5px;background:var(--card-solid);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 12px 35px rgba(0,0,0,.35);display:none}
+.sim-journal-image-context button{display:block;width:100%;border:0;background:transparent;color:var(--text-color);text-align:left;padding:8px 10px;border-radius:7px;font-size:10px;font-weight:800;cursor:pointer}
+.sim-journal-image-context button:hover{background:rgba(255,255,255,.07);color:var(--accent-color)}
+.tree-drag-handle{display:inline-flex;align-items:center;justify-content:center;width:18px;cursor:grab;color:var(--subtext-color);font-weight:900;user-select:none}.tree-tab-item[draggable="true"]{cursor:grab}.tree-tab-item.tree-dragging{opacity:.45}.tree-tab-item.tree-drag-over{outline:2px dashed var(--accent-color);outline-offset:2px}
+@media(max-width:760px){.sim-journal-image-editor{width:100%;min-height:500px;height:500px}.sim-journal-book-inner{min-height:500px}.sim-journal-page{min-height:500px}}
+
 .sim-journal-editor-image { position:absolute; display:block; object-fit:contain; max-width:none; cursor:grab; user-select:none; -webkit-user-drag:none; border:5px solid #fffaf0; box-shadow:0 5px 12px rgba(0,0,0,.2); box-sizing:border-box; }
 .sim-journal-editor-image.active { outline:2px solid #7b5cff; }
 .sim-journal-resize-handle { position:absolute; width:14px; height:14px; right:-7px; bottom:-7px; border-radius:50%; background:#7b5cff; border:2px solid #fff; cursor:nwse-resize; box-shadow:0 2px 5px rgba(0,0,0,.25); }
@@ -3520,6 +3533,8 @@ Shift + Enter = új sor"></textarea>
         let currentTreeId = (savedTreeId && familyTrees.some(t => String(t.id) === String(savedTreeId))) ? savedTreeId : (familyTrees.length > 0 ? familyTrees[0].id : null);
         let dirtyTreeIds = new Set();
         let isSavingTreeChanges = false;
+        let treeOrderDirty = false;
+        let activeTreeDraftKey = null;
         let publicFamilyTrees = [];
         let publicViewerTree = null;
         let publicOwnerProfiles = new Map();
@@ -4013,8 +4028,42 @@ Shift + Enter = új sor"></textarea>
             }
         }
 
+        function getTreeDraftStorageKey(){
+            const uid = currentUser?.id || 'guest';
+            return `s4memo_family_trees_draft_${uid}`;
+        }
+        function saveUnsavedTreeDrafts(){
+            try{
+                const payload={version:1,trees:familyTrees,treeOrder:(familyTrees||[]).map(t=>t.id),currentTreeId:currentTreeId,currentView:currentView,savedAt:Date.now()};
+                localStorage.setItem(getTreeDraftStorageKey(),JSON.stringify(payload));
+                localStorage.setItem('s4memo_current_tree',String(currentTreeId||''));
+                localStorage.setItem('s4memo_current_view',String(currentView||'home'));
+            }catch(e){console.warn('Mentetlen családfa-vázlat mentése sikertelen:',e);}
+        }
+        function loadUnsavedTreeDrafts(baseTrees){
+            try{
+                const raw=localStorage.getItem(getTreeDraftStorageKey());
+                if(!raw) return {trees:baseTrees||[],order:null,hasDraft:false};
+                const draft=JSON.parse(raw);
+                if(!draft || !Array.isArray(draft.trees)) return {trees:baseTrees||[],order:null,hasDraft:false};
+                const base=Array.isArray(baseTrees)?baseTrees:[];
+                const baseMap=new Map(base.map(t=>[String(t.id),t]));
+                const draftMap=new Map(draft.trees.map(t=>[String(t.id),t]));
+                const merged=draft.trees.map(t=>t);
+                base.forEach(t=>{if(!draftMap.has(String(t.id))) merged.push(t);});
+                return {trees:merged,order:Array.isArray(draft.treeOrder)?draft.treeOrder:null,hasDraft:true};
+            }catch(e){return {trees:baseTrees||[],order:null,hasDraft:false};}
+        }
+        function clearUnsavedTreeDrafts(){try{localStorage.removeItem(getTreeDraftStorageKey());}catch(e){}}
+        function applyTreeOrder(order){
+            if(!Array.isArray(order)||!order.length) return;
+            const map=new Map((familyTrees||[]).map(t=>[String(t.id),t]));
+            const ordered=[]; order.forEach(id=>{const t=map.get(String(id));if(t){ordered.push(t);map.delete(String(id));}});
+            map.forEach(t=>ordered.push(t)); familyTrees=ordered;
+        }
         function markTreeDirty() {
             if (currentTreeId) dirtyTreeIds.add(currentTreeId);
+            saveUnsavedTreeDrafts();
             updateTreeSaveUI();
         }
 
@@ -4022,13 +4071,13 @@ Shift + Enter = új sor"></textarea>
             const btn = document.getElementById('treeSaveBtn');
             const status = document.getElementById('treeSaveStatus');
             if (!btn || !status) return;
-            const hasChanges = dirtyTreeIds.size > 0;
+            const hasChanges = dirtyTreeIds.size > 0 || treeOrderDirty;
             btn.disabled = !hasChanges || isSavingTreeChanges;
             status.textContent = isSavingTreeChanges ? 'Mentés folyamatban…' : (hasChanges ? 'Mentetlen módosítások' : 'Nincs mentetlen módosítás');
         }
 
         async function saveTreeChanges() {
-            if (isSavingTreeChanges || dirtyTreeIds.size === 0) return true;
+            if (isSavingTreeChanges || (dirtyTreeIds.size === 0 && !treeOrderDirty)) return true;
             isSavingTreeChanges = true;
             updateTreeSaveUI();
             try {
@@ -4040,7 +4089,10 @@ Shift + Enter = új sor"></textarea>
                     }
                 }
                 localStorage.setItem('s4memo_family_trees', JSON.stringify(familyTrees));
+                try{ localStorage.setItem('s4memo_tree_order',JSON.stringify((familyTrees||[]).map(t=>t.id))); }catch(e){}
                 dirtyTreeIds.clear();
+                treeOrderDirty=false;
+                clearUnsavedTreeDrafts();
                 updateAddSimButtonVisibility();
                 if (currentView === 'public') await loadPublicFamilyTrees();
                 if (publicViewerTree) {
@@ -4064,20 +4116,12 @@ Shift + Enter = új sor"></textarea>
         }
 
         function loadTreesFromStorage() {
-            // Ha van bejelentkezett felhasználó, akkor a Supabase-ból töltünk
-            if (currentUser && supabaseClient) {
-                fetchFamilyTreesFromSupabase();
-                return familyTrees;
-            }
-
-            // Egyébként a localStorage-ból töltünk
-            try {
-                const saved = localStorage.getItem('s4memo_family_trees');
-                if (saved) return JSON.parse(saved);
-            } catch (e) {
-                console.error("Hiba a betöltéskor:", e);
-            }
-            return defaultTrees;
+            let base=defaultTrees;
+            try { const saved=localStorage.getItem('s4memo_family_trees'); if(saved) base=JSON.parse(saved); } catch(e){ console.error('Hiba a betöltéskor:',e); }
+            const draft=loadUnsavedTreeDrafts(base);
+            if(draft.hasDraft){ applyTreeOrder(draft.order); return draft.trees; }
+            try{ const order=JSON.parse(localStorage.getItem('s4memo_tree_order')||'null'); if(order) { familyTrees=base; applyTreeOrder(order); return familyTrees; } }catch(e){}
+            return base;
         }
 
         // =========================
@@ -5059,40 +5103,33 @@ function openStoryPreview(storyId,chapterId=null){
             }
         }
 
+        let draggedTreeTabId=null;
         function renderTreeTabs() {
             treeTabsList.innerHTML = '';
             familyTrees.forEach(tree => {
                 const wrapper = document.createElement('div');
                 wrapper.className = `tree-tab-item ${tree.id === currentTreeId ? 'active' : ''}`;
+                wrapper.draggable=true;
+                wrapper.dataset.treeId=tree.id;
+                wrapper.innerHTML=`<span class="tree-drag-handle" title="Húzd a sorrend módosításához">⋮⋮</span>`;
 
-                const btn = document.createElement('button');
-                btn.className = 'tree-tab-btn';
-                btn.innerText = tree.name;
-                btn.onclick = () => selectTree(tree.id);
+                const btn = document.createElement('button'); btn.className='tree-tab-btn'; btn.innerText=tree.name; btn.onclick=()=>selectTree(tree.id);
+                const renameBtn=document.createElement('button'); renameBtn.className='tree-rename-btn'; renameBtn.innerText='✎'; renameBtn.title='Családfa átnevezése'; renameBtn.onclick=e=>{e.stopPropagation();renameTree(tree.id);};
+                const delBtn=document.createElement('button'); delBtn.className='tree-delete-btn'; delBtn.innerText='🗑️'; delBtn.title='Családfa törlése'; delBtn.onclick=e=>{e.stopPropagation();deleteTree(tree.id);};
+                wrapper.append(btn,renameBtn,delBtn); treeTabsList.appendChild(wrapper);
 
-                const renameBtn = document.createElement('button');
-                renameBtn.className = 'tree-rename-btn';
-                renameBtn.innerText = '✎';
-                renameBtn.title = 'Családfa átnevezése';
-                renameBtn.setAttribute('aria-label', 'Családfa átnevezése');
-                renameBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    renameTree(tree.id);
-                };
-
-                const delBtn = document.createElement('button');
-                delBtn.className = 'tree-delete-btn';
-                delBtn.innerText = '🗑️';
-                delBtn.title = 'Családfa törlése';
-                delBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    deleteTree(tree.id);
-                };
-
-                wrapper.appendChild(btn);
-                wrapper.appendChild(renameBtn);
-                wrapper.appendChild(delBtn);
-                treeTabsList.appendChild(wrapper);
+                wrapper.addEventListener('dragstart',e=>{draggedTreeTabId=tree.id;wrapper.classList.add('tree-dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',tree.id);});
+                wrapper.addEventListener('dragend',()=>{wrapper.classList.remove('tree-dragging');draggedTreeTabId=null;treeTabsList.querySelectorAll('.tree-drag-over').forEach(x=>x.classList.remove('tree-drag-over'));});
+                wrapper.addEventListener('dragover',e=>{e.preventDefault();if(draggedTreeTabId&&draggedTreeTabId!==tree.id)wrapper.classList.add('tree-drag-over');});
+                wrapper.addEventListener('dragleave',()=>wrapper.classList.remove('tree-drag-over'));
+                wrapper.addEventListener('drop',e=>{
+                    e.preventDefault(); wrapper.classList.remove('tree-drag-over');
+                    const from=familyTrees.findIndex(t=>String(t.id)===String(draggedTreeTabId));
+                    const to=familyTrees.findIndex(t=>String(t.id)===String(tree.id));
+                    if(from<0||to<0||from===to)return;
+                    const [moved]=familyTrees.splice(from,1); familyTrees.splice(to,0,moved);
+                    treeOrderDirty=true; saveUnsavedTreeDrafts(); updateTreeSaveUI(); renderTreeTabs();
+                });
             });
         }
 
@@ -6411,6 +6448,7 @@ function openSimsFamily(treeId) {
 
         function selectTree(treeId) {
             currentTreeId = treeId;
+            try{sessionStorage.setItem('s4memo_current_tree',String(treeId));localStorage.setItem('s4memo_current_tree',String(treeId));}catch(e){}
             updateTreeSaveUI();
             setSelectedSim(null);
             renderTreeTabs();
@@ -7866,6 +7904,11 @@ function openSimsFamily(treeId) {
                         isPublic: !!tree.is_public
                     }));
 
+                    // A böngészőből visszatérve a helyi, még el nem mentett változat mindig elsőbbséget kap.
+                    const draft=loadUnsavedTreeDrafts(familyTrees);
+                    if(draft.hasDraft){ familyTrees=draft.trees; applyTreeOrder(draft.order); }
+                    else { try{ const order=JSON.parse(localStorage.getItem('s4memo_tree_order')||'null'); applyTreeOrder(order); }catch(e){} }
+
                     if (familyTrees.length > 0) {
                         const rememberedTree = (savedTreeId || (() => {
                             try {
@@ -8641,7 +8684,7 @@ function openSimsFamily(treeId) {
             const grid=document.getElementById('simProfileHistoryGrid'); if(!grid||!sim)return;
             const items=normalizeSimProfileHistory(sim);
             if(!items.length){grid.innerHTML='<div class="sim-profile-history-empty">Ennek a Simnek még nincs korábbi profilképe.</div>';return;}
-            grid.innerHTML=items.map((item,i)=>{const src=typeof item==='string'?item:item.src; const d=typeof item==='string'?'':(item.createdAt||''); return `<div class="sim-profile-history-item" data-profile-src="${escapeHtml(src)}" onclick="openPublicGalleryLightbox(this.dataset.profileSrc,'Profilkép ${i+1}')"><img src="${escapeHtml(src)}" alt="Profilkép ${i+1}" loading="lazy">${d?`<div class="sim-profile-history-date">${escapeHtml(formatNewsDate(d))}</div>`:''}</div>`;}).join('');
+            grid.innerHTML=items.map((item,i)=>{const src=typeof item==='string'?item:item.src; const d=typeof item==='string'?'':(item.createdAt||''); return `<div class="sim-profile-history-item" onclick="openPublicGalleryLightbox('${escapeHtml(src)}','Profilkép ${i+1}')"><img src="${escapeHtml(src)}" alt="Profilkép ${i+1}" loading="lazy">${d?`<div class="sim-profile-history-date">${escapeHtml(formatNewsDate(d))}</div>`:''}</div>`;}).join('');
         }
 
         function switchSimTab(tabName) {
@@ -8705,13 +8748,13 @@ function openSimsFamily(treeId) {
             if (!Array.isArray(entry.images)) {
                 entry.images = entry.image ? [{id:'ji_'+Math.random().toString(36).slice(2), src:entry.image, x:8, y:8, w:44}] : [];
             }
-            return entry.images.filter(im => im && im.src);
+            return entry.images.filter(im => im && im.src).map((im,i)=>ensureSimJournalImageDefaults(im));
         }
 
         function renderJournalImagesOnPage(entry) {
             const images = getSimJournalImages(entry);
             if (!images.length) return '<div class="sim-journal-no-image">✒️</div>';
-            return `<div class="sim-journal-image-area">${images.map((im,i)=>`<img class="sim-journal-positioned-image" src="${escapeHtml(im.src)}" alt="Napló kép ${i+1}" style="left:${im.x}%;top:${im.y}%;width:${im.w}%;" data-journal-image-index="${i}">`).join('')}</div>`;
+            return `<div class="sim-journal-image-area">${images.map((im,i)=>`<img class="sim-journal-positioned-image" src="${escapeHtml(im.src)}" alt="Napló kép ${i+1}" style="left:${im.x}%;top:${im.y}%;width:${im.w}%;transform:rotate(${Number(im.rotation||0)}deg);z-index:${10+i};" data-journal-image-index="${i}">`).join('')}</div>`;
         }
 
         function renderSimJournalEntries(sim, pageIndex = null, animate = false) {
@@ -8773,30 +8816,58 @@ function openSimsFamily(treeId) {
 
         function closeSimJournalEntryModal(){ const modal=document.getElementById('simJournalEntryModal'); if(modal) modal.classList.remove('active'); editingSimJournalId=null; tempSimJournalImage=''; tempSimJournalImages=[]; }
 
+        function ensureSimJournalImageDefaults(im){
+            im.x=Number.isFinite(Number(im.x))?Number(im.x):8;
+            im.y=Number.isFinite(Number(im.y))?Number(im.y):8;
+            im.w=Number.isFinite(Number(im.w))?Number(im.w):36;
+            im.rotation=Number.isFinite(Number(im.rotation))?Number(im.rotation):0;
+            im.z=Number.isFinite(Number(im.z))?Number(im.z):0;
+            return im;
+        }
+        function journalImageContextMenu(){
+            let m=document.getElementById('simJournalImageContext');
+            if(!m){m=document.createElement('div');m.id='simJournalImageContext';m.className='sim-journal-image-context';m.innerHTML=`<button data-act="front">⬆️ Legfelülre</button><button data-act="up">⬆️ Egy réteggel feljebb</button><button data-act="down">⬇️ Egy réteggel lejjebb</button><button data-act="back">⬇️ Legalulra</button>`;document.body.appendChild(m);}
+            return m;
+        }
+        function setJournalImageLayer(index,action){
+            const arr=tempSimJournalImages;if(!arr[index])return;
+            arr.forEach((x,i)=>ensureSimJournalImageDefaults(x));
+            const item=arr[index]; let target=index;
+            if(action==='front')target=arr.length-1; else if(action==='back')target=0; else if(action==='up')target=Math.min(arr.length-1,index+1); else if(action==='down')target=Math.max(0,index-1);
+            if(target!==index){arr.splice(index,1);arr.splice(target,0,item);arr.forEach((x,i)=>x.z=i);}
+            renderSimJournalImageEditor();
+        }
         function renderSimJournalImageEditor(){
-            const box=document.getElementById('simJournalImageEditor'); if(!box) return;
+            const box=document.getElementById('simJournalImageEditor'); if(!box)return;
             box.innerHTML='';
-            if(!tempSimJournalImages.length){ box.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#927a61;font:13px Arial,sans-serif;">A feltöltött képek itt jelennek meg. Húzd őket a kívánt helyre, a lila fogóponttal pedig méretezd őket.</div>'; return; }
+            const context=journalImageContextMenu();
+            if(!tempSimJournalImages.length){box.innerHTML='<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#927a61;font:13px Arial,sans-serif;position:relative;z-index:1;">A képek pontosan a könyv bal oldalának méretében jelennek meg. Húzd, méretezd vagy forgasd őket.</div>';return;}
             tempSimJournalImages.forEach((im,index)=>{
-                const wrap=document.createElement('div'); wrap.style.cssText=`position:absolute;left:${im.x}%;top:${im.y}%;width:${im.w}%;`;
-                const img=document.createElement('img'); img.className='sim-journal-editor-image'; img.src=im.src; img.draggable=false; img.style.cssText='position:relative;left:0;top:0;width:100%;height:auto;display:block;'; img.addEventListener('click',e=>{ e.stopPropagation(); box.querySelectorAll('.sim-journal-editor-image.selected').forEach(el=>el.classList.remove('selected')); img.classList.add('selected'); });
+                ensureSimJournalImageDefaults(im);
+                const wrap=document.createElement('div');wrap.className='sim-journal-editor-wrap';wrap.dataset.index=index;wrap.style.cssText=`left:${im.x}%;top:${im.y}%;width:${im.w}%;transform:rotate(${im.rotation}deg);z-index:${10+index};`;
+                const img=document.createElement('img');img.className='sim-journal-editor-image';img.src=im.src;img.draggable=false;img.addEventListener('click',e=>{e.stopPropagation();box.querySelectorAll('.sim-journal-editor-wrap.active').forEach(el=>el.classList.remove('active'));wrap.classList.add('active');});
                 wrap.appendChild(img);
-                const del=document.createElement('button'); del.type='button'; del.className='sim-journal-delete-image'; del.textContent='×'; del.title='Kép törlése'; del.onclick=e=>{e.stopPropagation();tempSimJournalImages.splice(index,1);renderSimJournalImageEditor();}; wrap.appendChild(del);
-                const handle=document.createElement('span'); handle.className='sim-journal-resize-handle'; wrap.appendChild(handle); box.appendChild(wrap);
-                let mode=null,startX=0,startY=0,startLeft=0,startTop=0,startW=0,boxW=0,boxH=0;
-                wrap.addEventListener('pointerdown',e=>{
-                    if(e.target===del || e.target===handle) return;
-                    mode='drag'; startX=e.clientX; startY=e.clientY; startLeft=im.x; startTop=im.y; boxW=box.clientWidth; boxH=box.clientHeight; wrap.setPointerCapture(e.pointerId); img.classList.add('active');
-                });
-                handle.addEventListener('pointerdown',e=>{e.stopPropagation();mode='resize';startX=e.clientX;startY=e.clientY;startW=im.w;boxW=box.clientWidth;boxH=box.clientHeight;wrap.setPointerCapture(e.pointerId);img.classList.add('active');});
-                wrap.addEventListener('pointermove',e=>{if(!mode)return;if(mode==='drag'){im.x=Math.max(0,Math.min(100-im.w,startLeft+(e.clientX-startX)/boxW*100));im.y=Math.max(0,Math.min(100-8,startTop+(e.clientY-startY)/boxH*100));}else{im.w=Math.max(12,Math.min(90,startW+(e.clientX-startX)/boxW*100));im.x=Math.min(im.x,100-im.w);} wrap.style.left=im.x+'%';wrap.style.top=im.y+'%';wrap.style.width=im.w+'%';});
-                wrap.addEventListener('pointerup',e=>{mode=null;img.classList.remove('active');try{wrap.releasePointerCapture(e.pointerId);}catch(_){}});
+                const del=document.createElement('button');del.type='button';del.className='sim-journal-delete-image';del.textContent='×';del.title='Kép törlése';del.onclick=e=>{e.stopPropagation();tempSimJournalImages.splice(index,1);renderSimJournalImageEditor();};wrap.appendChild(del);
+                const resize=document.createElement('span');resize.className='sim-journal-resize-handle';wrap.appendChild(resize);
+                const rotate=document.createElement('span');rotate.className='sim-journal-rotate-handle';rotate.title='Forgatás';wrap.appendChild(rotate);
+                let mode=null,startX=0,startY=0,startLeft=0,startTop=0,startW=0,startRot=0,raf=0,pending=null,boxW=0,boxH=0;
+                const flush=()=>{raf=0;if(!pending)return;const q=pending;pending=null;im.x=q.x;im.y=q.y;im.w=q.w;im.rotation=q.rotation;wrap.style.left=im.x+'%';wrap.style.top=im.y+'%';wrap.style.width=im.w+'%';wrap.style.transform=`rotate(${im.rotation}deg)`;};
+                const schedule=(q)=>{pending=q;if(!raf)raf=requestAnimationFrame(flush);};
+                wrap.addEventListener('pointerdown',e=>{if(e.target===del||e.target===resize||e.target===rotate)return;e.preventDefault();mode='drag';startX=e.clientX;startY=e.clientY;startLeft=im.x;startTop=im.y;boxW=box.clientWidth;boxH=box.clientHeight;wrap.setPointerCapture(e.pointerId);wrap.classList.add('active');});
+                resize.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();mode='resize';startX=e.clientX;startW=im.w;boxW=box.clientWidth;wrap.setPointerCapture(e.pointerId);wrap.classList.add('active');});
+                rotate.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();mode='rotate';startX=e.clientX;startY=e.clientY;startRot=im.rotation;const r=wrap.getBoundingClientRect();wrap.setPointerCapture(e.pointerId);wrap.dataset.centerX=r.left+r.width/2;wrap.dataset.centerY=r.top+r.height/2;wrap.classList.add('active');});
+                wrap.addEventListener('pointermove',e=>{if(!mode)return;e.preventDefault();let q={x:im.x,y:im.y,w:im.w,rotation:im.rotation};if(mode==='drag'){q.x=Math.max(0,Math.min(100-im.w,startLeft+(e.clientX-startX)/boxW*100));q.y=Math.max(0,Math.min(100-10,startTop+(e.clientY-startY)/boxH*100));}else if(mode==='resize'){q.w=Math.max(8,Math.min(96,startW+(e.clientX-startX)/boxW*100));q.x=Math.min(q.x,100-q.w);}else if(mode==='rotate'){const cx=Number(wrap.dataset.centerX),cy=Number(wrap.dataset.centerY);const a=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI;const a0=Math.atan2(startY-cy,startX-cx)*180/Math.PI;q.rotation=startRot+(a-a0);}schedule(q);});
+                const stop=e=>{if(!mode)return;flush();mode=null;try{wrap.releasePointerCapture(e.pointerId);}catch(_){};saveUnsavedTreeDrafts();};wrap.addEventListener('pointerup',stop);wrap.addEventListener('pointercancel',stop);
+                wrap.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();context.style.display='block';context.style.left=Math.min(e.clientX,window.innerWidth-190)+'px';context.style.top=Math.min(e.clientY,window.innerHeight-150)+'px';context.dataset.index=index;});
+                box.appendChild(wrap);
             });
+            context.onmousedown=e=>e.stopPropagation();context.onclick=e=>{const act=e.target.closest('button')?.dataset.act;if(!act)return;setJournalImageLayer(Number(context.dataset.index),act);context.style.display='none';};
+            document.addEventListener('mousedown',function closeCtx(e){if(!context.contains(e.target)){context.style.display='none';document.removeEventListener('mousedown',closeCtx);}});
         }
 
         function previewSimJournalImage(event){
             const files=[...(event.target.files||[])];
-            files.forEach(file=>{const reader=new FileReader();reader.onload=e=>{tempSimJournalImages.push({id:'ji_'+Date.now()+'_'+Math.random().toString(36).slice(2),src:e.target.result,x:8+(tempSimJournalImages.length*4)%35,y:8+(tempSimJournalImages.length*5)%35,w:36});renderSimJournalImageEditor();};reader.readAsDataURL(file);});
+            files.forEach(file=>{const reader=new FileReader();reader.onload=e=>{const im={id:'ji_'+Date.now()+'_'+Math.random().toString(36).slice(2),src:e.target.result,x:8+(tempSimJournalImages.length*4)%35,y:8+(tempSimJournalImages.length*5)%35,w:36,rotation:0,z:tempSimJournalImages.length};tempSimJournalImages.push(im);renderSimJournalImageEditor();};reader.readAsDataURL(file);});
             event.target.value='';
         }
 
@@ -8805,7 +8876,7 @@ function openSimsFamily(treeId) {
             normalizeSimExtraFields(sim); const type=document.getElementById('simJournalTypeInput').value, title=document.getElementById('simJournalTitleInput').value.trim(), date=document.getElementById('simJournalDateInput').value, location=document.getElementById('simJournalLocationInput').value.trim(), relatedSimId=document.getElementById('simJournalRelatedSimInput').value, content=document.getElementById('simJournalContentInput').value.trim();
             if(!title||!content){ alert('A cím és a történet megadása kötelező.'); return; }
             const images=[];
-            for(const im of tempSimJournalImages){ let src=im.src; if(src && src.startsWith('data:image/')){ try{src=await uploadImageToStorage(src,'journal');}catch(e){console.warn(e);} } images.push({...im,src}); }
+            for(const original of tempSimJournalImages){ const im=ensureSimJournalImageDefaults({...original}); let src=im.src; if(src && src.startsWith('data:image/')){ try{src=await uploadImageToStorage(src,'journal');}catch(e){console.warn(e);} } images.push({...im,src}); }
             const payload={id:editingSimJournalId||('sj_'+Date.now()), type,title,date,location,relatedSimId:relatedSimId||null,content,images,image:images[0]?.src||''};
             if(editingSimJournalId) sim.journal=(sim.journal||[]).map(e=>e.id===editingSimJournalId?payload:e); else sim.journal.push(payload);
             markTreeDirty(); renderSimJournalEntries(sim); closeSimJournalEntryModal();
@@ -11036,6 +11107,18 @@ function openSimsFamily(treeId) {
             closeSimModal();
         }
 
+        // A lap elhagyásakor / másik Google-oldalra vagy játékba váltáskor a még el nem mentett állapot is megmarad.
+        function persistSessionState(){
+            try{
+                localStorage.setItem('s4memo_current_view',String(currentView||'home'));
+                localStorage.setItem('s4memo_current_tree',String(currentTreeId||''));
+                if(dirtyTreeIds.size||treeOrderDirty) saveUnsavedTreeDrafts();
+            }catch(e){}
+        }
+        window.addEventListener('beforeunload',persistSessionState);
+        document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistSessionState();});
+        window.addEventListener('pagehide',persistSessionState);
+
         // SUPABASE INITIALIZATION
         window.addEventListener('DOMContentLoaded', async () => {
             updateNotificationBadge();
@@ -11045,9 +11128,8 @@ function openSimsFamily(treeId) {
                 console.warn("Supabase kliens nem elérhető");
                 // Ha nincs Supabase, akkor a localStorage-ból töltünk
                 familyTrees = loadTreesFromStorage();
-                if (familyTrees.length > 0) {
-                    currentTreeId = familyTrees[0].id;
-                }
+                if (familyTrees.length > 0 && !familyTrees.some(t=>String(t.id)===String(currentTreeId))) currentTreeId = familyTrees[0].id;
+                switchView(currentView || 'home');
                 return;
             }
 
