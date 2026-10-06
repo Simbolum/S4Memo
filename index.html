@@ -1801,6 +1801,26 @@
         .right-sidebar ul li { margin-bottom: 8px; }
         .right-sidebar ul li a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text-color); text-decoration: none; font-size: 14px; font-weight: 700; border-radius: 16px; cursor: pointer; }
         .right-sidebar ul li a:hover, .right-sidebar ul li a.active { background-color: transparent; color: var(--accent-color); box-shadow: none; transform: translateX(-2px); }
+        .news-page-card{max-width:1000px;margin:0 auto;}
+        .news-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;}
+        .news-header h1{margin:0;font-size:28px;}
+        .news-admin-badge{font-size:11px;font-weight:800;padding:6px 10px;border:1px solid var(--border-color);border-radius:999px;color:var(--accent-color);background:rgba(46,213,115,.08);}
+        .news-admin-box{padding:16px;border:1px solid var(--border-color);border-radius:18px;background:var(--card-solid);margin-bottom:20px;}
+        .news-admin-box h3{margin:0 0 12px;}
+        .news-form-grid{display:grid;gap:10px;}
+        .news-form-grid input,.news-form-grid textarea{width:100%;box-sizing:border-box;border:1px solid var(--border-color);border-radius:12px;padding:10px 12px;background:transparent;color:var(--text-color);font:inherit;}
+        .news-form-grid textarea{min-height:130px;resize:vertical;}
+        .news-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+        .news-list{display:flex;flex-direction:column;gap:14px;}
+        .news-post{padding:18px;border:1px solid var(--border-color);border-radius:18px;background:var(--card-solid);box-shadow:0 8px 22px rgba(0,0,0,.08);}
+        .news-post-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:9px;}
+        .news-post-title{font-size:19px;font-weight:900;margin:0;}
+        .news-post-date{font-size:10px;color:var(--subtext-color);white-space:nowrap;}
+        .news-post-body{font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+        .news-post-delete{border:0;background:transparent;color:#ff6b7f;cursor:pointer;font-size:11px;font-weight:800;margin-top:12px;padding:4px 0;}
+        .news-empty{padding:36px 18px;text-align:center;color:var(--subtext-color);border:1px dashed var(--border-color);border-radius:18px;}
+        @media(max-width:700px){.news-header{align-items:flex-start;flex-direction:column}.news-post-head{flex-direction:column}.news-post-date{white-space:normal}}
+
         .toggle-btn { position: fixed; top: 50%; right: 0; transform: translateY(-50%); background-color: var(--nav-bg); color: var(--text-color); border: 1px solid var(--border-color); border-right: none; padding: 14px 10px; cursor: pointer; font-size: 14px; border-radius: 14px 0 0 14px; transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2001; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         .toggle-btn.open { right: 270px; }
         .arrow-icon { display: inline-block; transition: transform 0.4s ease; }
@@ -2297,6 +2317,32 @@
         <main class="main-card">
             <h1>Üdvözöllek a Sims 4 Memorable oldalán!</h1>
             <p>Készíts interaktív Sims családfákat, animált vonalakkal és szabad karaktermintákkal.</p>
+        </main>
+    </div>
+
+    <!-- NEWS NÉZET -->
+    <div class="page-view" id="newsView">
+        <main class="main-card news-page-card">
+            <div class="news-header">
+                <div>
+                    <h1>📰 NEWS</h1>
+                    <p style="margin:6px 0 0;color:var(--subtext-color);">Az oldal frissítései és fontos újdonságai.</p>
+                </div>
+                <span class="news-admin-badge" id="newsAdminBadge" style="display:none;">ADMIN</span>
+            </div>
+            <div class="news-admin-box" id="newsAdminBox" style="display:none;">
+                <h3>Új frissítés közzététele</h3>
+                <form onsubmit="publishNewsPost(event)">
+                    <div class="news-form-grid">
+                        <input id="newsTitleInput" type="text" maxlength="140" placeholder="Cím" required>
+                        <textarea id="newsBodyInput" maxlength="10000" placeholder="Írd le az oldal frissítését…" required></textarea>
+                    </div>
+                    <div class="news-actions">
+                        <button type="submit" class="btn-primary">📰 Közzététel</button>
+                    </div>
+                </form>
+            </div>
+            <div id="newsList" class="news-list"></div>
         </main>
     </div>
 
@@ -3230,6 +3276,7 @@ Shift + Enter = új sor"></textarea>
             <li><a onclick="switchView('activity')" id="menuActivity">📜 SimBlog</a></li>
             <li><a onclick="switchView('stories')" id="menuStories">📚 Történetek</a></li>
             <li><a href="#">🎮 Kisebb játékok</a></li>
+            <li><a onclick="switchView('news')" id="menuNews">📰 NEWS</a></li>
         </ul>
     </div>
 
@@ -4437,6 +4484,47 @@ function openStoryPreview(storyId,chapterId=null){
             setStoryList(f.tree,getStoryList(f.tree).filter(s=>String(s.id)!==String(storyId)));let ok=true;if(currentUser&&supabaseClient)ok=await saveFamilyTreeToSupabase(f.tree);else{try{localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));}catch(e){ok=false;}}
             if(ok){localStorage.removeItem(getStoryInteractionKey(storyId));if(currentView==='story-detail')switchView('stories');else renderStoriesPage();}
         }
+        const NEWS_ADMIN_EMAIL = 'simbolum002@gmail.com';
+        const NEWS_TABLE = 'site_news';
+        function isNewsAdmin(){ return String(currentUser?.email||'').trim().toLowerCase() === NEWS_ADMIN_EMAIL; }
+        function formatNewsDate(value){ try{return new Intl.DateTimeFormat('hu-HU',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}catch(e){return String(value||'');} }
+        async function getNewsPosts(){
+            if(!supabaseClient) return [];
+            try{
+                const {data,error}=await supabaseClient.from(NEWS_TABLE).select('id,title,body,created_at,author_id').order('created_at',{ascending:false});
+                if(error){ console.error('NEWS betöltési hiba:',error); return []; }
+                return Array.isArray(data)?data:[];
+            }catch(e){ console.error('NEWS betöltési hiba:',e); return []; }
+        }
+        async function renderNewsPage(){
+            const box=document.getElementById('newsAdminBox'),badge=document.getElementById('newsAdminBadge'),list=document.getElementById('newsList');
+            if(!box||!list)return;
+            const admin=isNewsAdmin();
+            box.style.display=admin?'block':'none'; badge.style.display=admin?'inline-flex':'none';
+            list.innerHTML='<div class="news-empty">Frissítések betöltése…</div>';
+            const posts=await getNewsPosts();
+            if(!posts.length){list.innerHTML='<div class="news-empty">Még nincs közzétett frissítés.</div>';return;}
+            list.innerHTML=posts.map(post=>`<article class="news-post"><div class="news-post-head"><h2 class="news-post-title">${escapeHtml(post.title||'Frissítés')}</h2><span class="news-post-date">${escapeHtml(formatNewsDate(post.created_at))}</span></div><div class="news-post-body">${escapeHtml(post.body||'')}</div>${admin?`<button type="button" class="news-post-delete" onclick="deleteNewsPost('${escapeHtml(post.id)}')">🗑 Törlés</button>`:''}</article>`).join('');
+        }
+        async function publishNewsPost(event){
+            event.preventDefault();
+            if(!isNewsAdmin()){alert('Csak az adminisztrátor tehet közzé NEWS bejegyzést.');return;}
+            const title=document.getElementById('newsTitleInput')?.value.trim(),body=document.getElementById('newsBodyInput')?.value.trim();
+            if(!title||!body)return;
+            if(!supabaseClient){alert('A NEWS adatbázis-kapcsolata nem érhető el.');return;}
+            const {error}=await supabaseClient.from(NEWS_TABLE).insert([{title,body,author_id:currentUser.id}]);
+            if(error){console.error('NEWS közzétételi hiba:',error);alert('Nem sikerült közzétenni a frissítést: '+error.message);return;}
+            document.getElementById('newsTitleInput').value='';document.getElementById('newsBodyInput').value='';await renderNewsPage();
+        }
+        async function deleteNewsPost(id){
+            if(!isNewsAdmin())return;
+            if(!confirm('Biztosan törlöd ezt a NEWS bejegyzést?'))return;
+            if(!supabaseClient)return;
+            const {error}=await supabaseClient.from(NEWS_TABLE).delete().eq('id',id);
+            if(error){console.error('NEWS törlési hiba:',error);alert('Nem sikerült törölni a frissítést: '+error.message);return;}
+            await renderNewsPage();
+        }
+
         function switchView(viewName) {
             currentView = viewName;
             try {
@@ -4461,6 +4549,10 @@ function openStoryPreview(storyId,chapterId=null){
                 document.getElementById('homeView').classList.add('active');
                 document.getElementById('navHome').classList.add('active');
                 document.getElementById('menuHome').classList.add('active');
+            } else if (viewName === 'news') {
+                document.getElementById('newsView').classList.add('active');
+                document.getElementById('menuNews').classList.add('active');
+                renderNewsPage();
             } else if (viewName === 'tree') {
                 document.getElementById('treeView').classList.add('active');
                 document.getElementById('navTree').classList.add('active');
