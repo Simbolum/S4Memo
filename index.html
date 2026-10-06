@@ -8785,7 +8785,20 @@ function openSimsFamily(treeId) {
             }
             const index = Math.max(0, Math.min(simJournalBookPage, entries.length - 1));
             simJournalBookPage = index;
-            const entry = entries[index];
+
+            // A megjelenítő lista másolatokat készít a naplóbejegyzésekből.
+            // Szerkesztéskor mindig a valódi, saját bejegyzést kell módosítani,
+            // különben lapozáskor a cím/szöveg visszaállhat.
+            const entryView = entries[index];
+            let entry = entryView;
+            if (entryView && !entryView._isRelatedJournalEntry) {
+                const realEntry = (sim.journal || []).find(e => e && e.id === entryView.id);
+                if (realEntry) entry = realEntry;
+            } else if (entryView && entryView._isRelatedJournalEntry) {
+                const ownerSim = tree && (tree.sims || []).find(s => s && s.id === entryView._journalOwnerSimId);
+                const realEntry = ownerSim && (ownerSim.journal || []).find(e => e && e.id === entryView.id);
+                if (realEntry) entry = realEntry;
+            }
             const related = !entry._isRelatedJournalEntry && entry.relatedSimId && tree ? tree.sims.find(s=>s.id===entry.relatedSimId) : null;
             const relatedName = related ? `${related.firstName||''} ${related.lastName||''}`.trim() : '';
             const sourceSim = entry._isRelatedJournalEntry && tree ? tree.sims.find(s=>s.id===entry._journalOwnerSimId) : null;
@@ -8825,23 +8838,23 @@ function openSimsFamily(treeId) {
             const sim = tree && tree.sims.find(s=>s.id===editingSimId);
             if (!sim) return;
             const entries = getSimJournalEntriesForSim(tree, sim);
+            const current = entries[simJournalBookPage];
             const next = simJournalBookPage + direction;
             if (next < 0 || next >= entries.length) return;
 
-            // FONTOS: minden naplóoldalnak saját képlistája van.
-            // Lapozáskor mindig az éppen megnyitott oldal képeit töltjük
-            // a szerkesztő ideiglenes állapotába, így az előző oldal képei
-            // nem maradnak aktívak az új oldalon.
+            // Lapozás előtt az aktuális oldal minden képét visszaírjuk a saját oldalára.
+            // Így a kép, méret, pozíció, forgatás és rétegsorrend sem folyik át másik oldalra.
+            if (current && !current._isRelatedJournalEntry && editingSimJournalId === current.id) {
+                syncCurrentJournalImages();
+            }
+
             const nextEntry = entries[next];
             tempSimJournalImages = (nextEntry && Array.isArray(nextEntry.images))
                 ? nextEntry.images.map(im => ({ ...ensureSimJournalImageDefaults({ ...im }) }))
                 : [];
 
             simJournalBookPage = next;
-            editingSimJournalId = nextEntry && !nextEntry._isRelatedJournalEntry
-                ? nextEntry.id
-                : null;
-
+            editingSimJournalId = nextEntry && !nextEntry._isRelatedJournalEntry ? nextEntry.id : null;
             renderSimJournalEntries(sim, next, true);
         }
 
