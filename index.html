@@ -1806,9 +1806,52 @@
         .info-header h1{margin:0;font-size:28px;}
         .info-header p{margin:6px 0 0;color:var(--subtext-color);}
         .info-admin-badge{font-size:11px;font-weight:800;padding:6px 10px;border:1px solid var(--border-color);border-radius:999px;color:var(--accent-color);background:rgba(46,213,115,.08);}
-        .info-post-index{display:flex;flex-wrap:wrap;gap:7px;padding:12px;margin-bottom:18px;border:1px solid var(--border-color);border-radius:16px;background:var(--card-solid);position:sticky;top:10px;z-index:10;}
-        .info-post-index a{display:block;padding:7px 10px;border-radius:9px;color:var(--text-color);text-decoration:none;font-size:10px;font-weight:800;border:1px solid var(--border-color);background:rgba(255,255,255,.025);}
-        .info-post-index a:hover{color:var(--accent-color);border-color:var(--accent-color);}
+        /* INFO oldali kattintható tartalomjegyzék – függőleges, felsorolásszerű megjelenés */
+        .info-post-index{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-start;
+            gap:6px;
+            padding:0;
+            margin:0 0 22px;
+            border:0;
+            border-radius:0;
+            background:transparent;
+            position:static;
+        }
+        .info-post-index a{
+            position:relative;
+            display:block;
+            width:100%;
+            padding:1px 0 1px 20px;
+            border:0;
+            border-radius:0;
+            background:transparent;
+            color:var(--subtext-color);
+            text-decoration:underline;
+            text-decoration-thickness:1px;
+            text-underline-offset:2px;
+            font-size:13px;
+            line-height:1.55;
+            font-weight:600;
+            text-align:left;
+            box-shadow:none;
+        }
+        .info-post-index a::before{
+            content:'•';
+            position:absolute;
+            left:3px;
+            top:1px;
+            color:var(--accent-color);
+            font-size:14px;
+            line-height:1.55;
+        }
+        .info-post-index a:hover{
+            color:var(--accent-color);
+            border:0;
+            background:transparent;
+            transform:none;
+        }
         .info-admin-box{padding:16px;border:1px solid var(--border-color);border-radius:18px;background:var(--card-solid);margin-bottom:20px;}
         .info-admin-box h3{margin:0 0 12px;}
         .info-form-grid{display:grid;gap:10px;}
@@ -1829,8 +1872,24 @@
         .info-media-grid img{width:100%;max-height:420px;object-fit:contain;border-radius:12px;border:1px solid var(--border-color);background:#000;}
         .info-media-grid video{width:100%;max-height:420px;border-radius:12px;border:1px solid var(--border-color);background:#000;}
         .info-post-delete{margin-top:14px;border:1px solid rgba(255,80,80,.35);background:transparent;color:#ff6b6b;border-radius:9px;padding:7px 10px;font-size:10px;font-weight:800;cursor:pointer;}
+        .info-post-edit{margin-top:14px;margin-right:7px;border:1px solid var(--border-color);background:transparent;color:var(--text-color);border-radius:9px;padding:7px 10px;font-size:10px;font-weight:800;cursor:pointer;}
+        .info-post-edit:hover{border-color:var(--accent-color);color:var(--accent-color);}
+        .news-post-edit{margin-top:14px;margin-right:7px;border:1px solid var(--border-color);background:transparent;color:var(--text-color);border-radius:9px;padding:7px 10px;font-size:10px;font-weight:800;cursor:pointer;}
+        .news-post-edit:hover{border-color:var(--accent-color);color:var(--accent-color);}
+        .admin-edit-note{font-size:10px;color:var(--accent-color);font-weight:800;margin:0 0 10px;}
+        .sim-profile-history{margin:12px 0 18px;padding:14px;border:1px solid var(--border-color);border-radius:16px;background:rgba(255,255,255,.025);}
+        .sim-profile-history-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+        .sim-profile-history-title{font-size:13px;font-weight:900;color:var(--text-color);}
+        .sim-profile-history-sub{font-size:9px;color:var(--subtext-color);margin-top:3px;}
+        .sim-profile-history-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;}
+        .sim-profile-history-item{position:relative;border:1px solid var(--border-color);border-radius:12px;overflow:hidden;background:var(--card-solid);cursor:pointer;min-height:110px;}
+        .sim-profile-history-item img{width:100%;height:110px;display:block;object-fit:cover;}
+        .sim-profile-history-item:hover{border-color:var(--accent-color);transform:translateY(-1px);}
+        .sim-profile-history-empty{padding:22px 10px;text-align:center;color:var(--subtext-color);font-size:10px;border:1px dashed var(--border-color);border-radius:12px;}
+        .sim-profile-history-date{position:absolute;left:5px;bottom:5px;right:5px;padding:4px 6px;border-radius:7px;background:rgba(0,0,0,.62);color:#fff;font-size:8px;font-weight:700;}
+
         .info-empty{padding:50px 20px;text-align:center;color:var(--subtext-color);}
-        @media(max-width:700px){.info-post-index{position:static}.info-post{padding:14px}.info-post-title{font-size:18px}}
+        @media(max-width:700px){.info-post-index{position:static;gap:5px}.info-post-index a{font-size:12px}.info-post{padding:14px}.info-post-title{font-size:18px}}
         .news-page-card{max-width:1000px;margin:0 auto;}
         .news-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;}
         .news-header h1{margin:0;font-size:28px;}
@@ -2361,14 +2420,16 @@
                 <span class="news-admin-badge" id="newsAdminBadge" style="display:none;">ADMIN</span>
             </div>
             <div class="news-admin-box" id="newsAdminBox" style="display:none;">
-                <h3>Új frissítés közzététele</h3>
+                <h3 id="newsAdminBoxTitle">Új frissítés közzététele</h3>
+                <div id="newsAdminEditNote" class="admin-edit-note" style="display:none;">Szerkesztés mód – a már publikált NEWS bejegyzést módosítod.</div>
                 <form onsubmit="publishNewsPost(event)">
                     <div class="news-form-grid">
                         <input id="newsTitleInput" type="text" maxlength="140" placeholder="Cím" required>
                         <textarea id="newsBodyInput" maxlength="10000" placeholder="Írd le az oldal frissítését…" required></textarea>
                     </div>
                     <div class="news-actions">
-                        <button type="submit" class="btn-primary">📰 Közzététel</button>
+                        <button type="button" class="btn-secondary" id="newsCancelEditBtn" onclick="cancelNewsEdit()" style="display:none;">Mégse</button>
+                        <button type="submit" class="btn-primary" id="newsSubmitBtn">📰 Közzététel</button>
                     </div>
                 </form>
             </div>
@@ -2388,7 +2449,8 @@
             </div>
             <nav class="info-post-index" id="infoPostIndex" aria-label="INFO bejegyzések"></nav>
             <div class="info-admin-box" id="infoAdminBox" style="display:none;">
-                <h3>Új INFO bejegyzés</h3>
+                <h3 id="infoAdminBoxTitle">Új INFO bejegyzés</h3>
+                <div id="infoAdminEditNote" class="admin-edit-note" style="display:none;">Szerkesztés mód – a már publikált INFO bejegyzést módosítod.</div>
                 <form onsubmit="publishInfoPost(event)">
                     <div class="info-form-grid">
                         <input id="infoTitleInput" type="text" maxlength="180" placeholder="Cím" required>
@@ -2397,7 +2459,7 @@
                         <label class="info-upload-label">🎬 Videó hozzáadása <input id="infoVideoInput" type="file" accept="video/*" multiple></label>
                     </div>
                     <div id="infoUploadStatus" class="info-upload-status"></div>
-                    <div class="info-actions"><button type="submit" class="btn-primary">ℹ️ Közzététel</button></div>
+                    <div class="info-actions"><button type="button" class="btn-secondary" id="infoCancelEditBtn" onclick="cancelInfoEdit()" style="display:none;">Mégse</button><button type="submit" class="btn-primary" id="infoSubmitBtn">ℹ️ Közzététel</button></div>
                 </form>
             </div>
             <div id="infoList" class="info-list"></div>
@@ -2941,6 +3003,7 @@
                 <div class="tab-menu">
                     <button type="button" class="tab-btn active" onclick="switchSimTab('info')">Információk</button>
                     <button type="button" class="tab-btn" onclick="switchSimTab('diary')">Napló</button>
+                    <button type="button" class="tab-btn" onclick="switchSimTab('profiles')">Profilok</button>
                 </div>
             </div>
 
@@ -3119,6 +3182,18 @@ Shift + Enter = új sor"></textarea>
             </div>
 
             <!-- FÜL 2: Személyes Napló -->
+            <div class="tab-content" id="tabContentProfiles">
+                <div class="sim-profile-history">
+                    <div class="sim-profile-history-header">
+                        <div>
+                            <div class="sim-profile-history-title">📷 Profilképek</div>
+                            <div class="sim-profile-history-sub">Az összes profilkép, amelyet ehhez a Simhez korábban beállítottál.</div>
+                        </div>
+                    </div>
+                    <div class="sim-profile-history-grid" id="simProfileHistoryGrid"></div>
+                </div>
+            </div>
+
             <div class="tab-content" id="tabContentDiary">
                 <div style="padding: 10px 0;">
                     <div class="sim-journal-toolbar">
@@ -3643,6 +3718,8 @@ Shift + Enter = új sor"></textarea>
                 if (tree) {
                     const sim = tree.sims.find(s => s.id === editingSimId);
                     if (sim) {
+                        normalizeSimProfileHistory(sim);
+                        if (tempUploadedImage && !sim.profileImages.some(x=>String(typeof x==='string'?x:x?.src)===String(tempUploadedImage))) sim.profileImages.unshift({src:tempUploadedImage,transform:{scale:imageScale,rotate:currentRotation,offsetX:imageOffsetX,offsetY:imageOffsetY,filter:currentFilter},createdAt:new Date().toISOString()});
                         sim.image = tempUploadedImage;
                         sim.imageTransform = {
                             scale: imageScale,
@@ -4543,6 +4620,9 @@ function openStoryPreview(storyId,chapterId=null){
             setStoryList(f.tree,getStoryList(f.tree).filter(s=>String(s.id)!==String(storyId)));let ok=true;if(currentUser&&supabaseClient)ok=await saveFamilyTreeToSupabase(f.tree);else{try{localStorage.setItem('s4memo_family_trees',JSON.stringify(familyTrees));}catch(e){ok=false;}}
             if(ok){localStorage.removeItem(getStoryInteractionKey(storyId));if(currentView==='story-detail')switchView('stories');else renderStoriesPage();}
         }
+        let editingInfoPostId = null;
+        let editingNewsPostId = null;
+
         const INFO_ADMIN_EMAIL = 'simbolum002@gmail.com';
         const INFO_TABLE = 'site_info';
         const INFO_STORAGE_BUCKET = 'info-media';
@@ -4561,13 +4641,31 @@ function openStoryPreview(storyId,chapterId=null){
             const el=document.getElementById('infoPostIndex'); if(!el)return;
             el.innerHTML=posts.length?posts.map(p=>`<a href="#info-post-${escapeHtml(p.id)}">${escapeHtml(p.title||'Névtelen bejegyzés')}</a>`).join(''):'<span style="font-size:10px;color:var(--subtext-color);">A közzétett INFO bejegyzések címei itt jelennek majd meg.</span>';
         }
+        function resetInfoAdminForm(){
+            editingInfoPostId=null;
+            const title=document.getElementById('infoTitleInput'),body=document.getElementById('infoBodyInput');
+            if(title)title.value=''; if(body)body.value='';
+            const ii=document.getElementById('infoImageInput'),vi=document.getElementById('infoVideoInput'); if(ii)ii.value=''; if(vi)vi.value='';
+            const h=document.getElementById('infoAdminBoxTitle'),n=document.getElementById('infoAdminEditNote'),b=document.getElementById('infoSubmitBtn'),c=document.getElementById('infoCancelEditBtn');
+            if(h)h.textContent='Új INFO bejegyzés'; if(n)n.style.display='none'; if(b)b.textContent='ℹ️ Közzététel'; if(c)c.style.display='none';
+        }
+        function editInfoPost(id){
+            const posts=window._infoPostsCache||[]; const post=posts.find(p=>String(p.id)===String(id)); if(!post)return;
+            editingInfoPostId=post.id;
+            document.getElementById('infoTitleInput').value=post.title||''; document.getElementById('infoBodyInput').value=post.body||'';
+            document.getElementById('infoImageInput').value=''; document.getElementById('infoVideoInput').value='';
+            document.getElementById('infoAdminBoxTitle').textContent='INFO bejegyzés szerkesztése';
+            document.getElementById('infoAdminEditNote').style.display='block'; document.getElementById('infoSubmitBtn').textContent='💾 Módosítás mentése'; document.getElementById('infoCancelEditBtn').style.display='inline-flex';
+            document.getElementById('infoAdminBox')?.scrollIntoView({behavior:'smooth',block:'start'});
+        }
+        function cancelInfoEdit(){resetInfoAdminForm();}
         async function renderInfoPage(){
             const box=document.getElementById('infoAdminBox'),badge=document.getElementById('infoAdminBadge'),list=document.getElementById('infoList'); if(!box||!list)return;
             const admin=isInfoAdmin(); box.style.display=admin?'block':'none'; badge.style.display=admin?'inline-flex':'none';
             list.innerHTML='<div class="info-empty">Információk betöltése…</div>';
-            const posts=await getInfoPosts(); renderInfoPostIndex(posts);
+            const posts=await getInfoPosts(); window._infoPostsCache=posts; renderInfoPostIndex(posts);
             if(!posts.length){list.innerHTML='<div class="info-empty">Még nincs közzétett információ.</div>';return;}
-            list.innerHTML=posts.map(post=>`<article class="info-post" id="info-post-${escapeHtml(post.id)}"><div><h2 class="info-post-title"><a href="#info-post-${escapeHtml(post.id)}">${escapeHtml(post.title||'Névtelen bejegyzés')}</a></h2><span class="info-post-date">${escapeHtml(formatNewsDate(post.created_at))}</span></div><div class="info-post-body">${escapeHtml(post.body||'')}</div>${renderInfoMedia(post)}${admin?`<button type="button" class="info-post-delete" onclick="deleteInfoPost('${escapeHtml(post.id)}')">🗑 Törlés</button>`:''}</article>`).join('');
+            list.innerHTML=posts.map(post=>`<article class="info-post" id="info-post-${escapeHtml(post.id)}"><div><h2 class="info-post-title"><a href="#info-post-${escapeHtml(post.id)}">${escapeHtml(post.title||'Névtelen bejegyzés')}</a></h2><span class="info-post-date">${escapeHtml(formatNewsDate(post.created_at))}</span></div><div class="info-post-body">${escapeHtml(post.body||'')}</div>${renderInfoMedia(post)}${admin?`<button type="button" class="info-post-edit" onclick="editInfoPost('${escapeHtml(post.id)}')">✏️ Szerkesztés</button><button type="button" class="info-post-delete" onclick="deleteInfoPost('${escapeHtml(post.id)}')">🗑 Törlés</button>`:''}</article>`).join('');
             if(location.hash.startsWith('#info-post-')) setTimeout(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView({behavior:'smooth',block:'start'}),50);
         }
         async function uploadInfoFiles(inputId){
@@ -4578,9 +4676,21 @@ function openStoryPreview(storyId,chapterId=null){
         async function publishInfoPost(event){
             event.preventDefault(); if(!isInfoAdmin()){alert('Csak az adminisztrátor tehet közzé INFO bejegyzést.');return;} if(!supabaseClient){alert('Az INFO adatbázis-kapcsolata nem érhető el.');return;}
             const title=document.getElementById('infoTitleInput')?.value.trim(),body=document.getElementById('infoBodyInput')?.value.trim(),status=document.getElementById('infoUploadStatus'); if(!title||!body)return;
-            try{ status.textContent='Fájlok feltöltése…'; const image_urls=await uploadInfoFiles('infoImageInput'); const video_urls=await uploadInfoFiles('infoVideoInput'); const {error}=await supabaseClient.from(INFO_TABLE).insert([{title,body,image_urls,video_urls,author_id:currentUser.id}]); if(error)throw error; document.getElementById('infoTitleInput').value='';document.getElementById('infoBodyInput').value='';document.getElementById('infoImageInput').value='';document.getElementById('infoVideoInput').value='';status.textContent=''; await renderInfoPage(); }catch(e){console.error('INFO közzétételi hiba:',e);alert('Nem sikerült közzétenni az INFO bejegyzést: '+e.message);status.textContent='';}
+            try{
+                status.textContent='Fájlok feltöltése…';
+                const newImages=await uploadInfoFiles('infoImageInput'),newVideos=await uploadInfoFiles('infoVideoInput');
+                if(editingInfoPostId){
+                    const old=window._infoPostsCache?.find(p=>String(p.id)===String(editingInfoPostId));
+                    const image_urls=[...(Array.isArray(old?.image_urls)?old.image_urls:[]),...newImages];
+                    const video_urls=[...(Array.isArray(old?.video_urls)?old.video_urls:[]),...newVideos];
+                    const {error}=await supabaseClient.from(INFO_TABLE).update({title,body,image_urls,video_urls}).eq('id',editingInfoPostId); if(error)throw error;
+                }else{
+                    const {error}=await supabaseClient.from(INFO_TABLE).insert([{title,body,image_urls:newImages,video_urls:newVideos,author_id:currentUser.id}]); if(error)throw error;
+                }
+                resetInfoAdminForm(); status.textContent=''; await renderInfoPage();
+            }catch(e){console.error('INFO közzétételi/szerkesztési hiba:',e);alert('Nem sikerült menteni az INFO bejegyzést: '+e.message);status.textContent='';}
         }
-        async function deleteInfoPost(id){ if(!isInfoAdmin()||!supabaseClient)return; if(!confirm('Biztosan törlöd ezt az INFO bejegyzést?'))return; const {error}=await supabaseClient.from(INFO_TABLE).delete().eq('id',id); if(error){alert('Nem sikerült törölni: '+error.message);return;} await renderInfoPage(); }
+        async function deleteInfoPost(id){ if(!isInfoAdmin()||!supabaseClient)return; if(!confirm('Biztosan törlöd ezt az INFO bejegyzést?'))return; const {error}=await supabaseClient.from(INFO_TABLE).delete().eq('id',id); if(error){alert('Nem sikerült törölni: '+error.message);return;} if(String(editingInfoPostId)===String(id))resetInfoAdminForm(); await renderInfoPage(); }
         const NEWS_ADMIN_EMAIL = 'simbolum002@gmail.com';
         const NEWS_TABLE = 'site_news';
         function isNewsAdmin(){ return String(currentUser?.email||'').trim().toLowerCase() === NEWS_ADMIN_EMAIL; }
@@ -4593,34 +4703,34 @@ function openStoryPreview(storyId,chapterId=null){
                 return Array.isArray(data)?data:[];
             }catch(e){ console.error('NEWS betöltési hiba:',e); return []; }
         }
+        function resetNewsAdminForm(){
+            editingNewsPostId=null;
+            const title=document.getElementById('newsTitleInput'),body=document.getElementById('newsBodyInput'); if(title)title.value=''; if(body)body.value='';
+            const h=document.getElementById('newsAdminBoxTitle'),n=document.getElementById('newsAdminEditNote'),b=document.getElementById('newsSubmitBtn'),c=document.getElementById('newsCancelEditBtn');
+            if(h)h.textContent='Új frissítés közzététele'; if(n)n.style.display='none'; if(b)b.textContent='📰 Közzététel'; if(c)c.style.display='none';
+        }
+        function editNewsPost(id){
+            const posts=window._newsPostsCache||[]; const post=posts.find(p=>String(p.id)===String(id)); if(!post)return;
+            editingNewsPostId=post.id; document.getElementById('newsTitleInput').value=post.title||''; document.getElementById('newsBodyInput').value=post.body||'';
+            document.getElementById('newsAdminBoxTitle').textContent='NEWS bejegyzés szerkesztése'; document.getElementById('newsAdminEditNote').style.display='block'; document.getElementById('newsSubmitBtn').textContent='💾 Módosítás mentése'; document.getElementById('newsCancelEditBtn').style.display='inline-flex';
+            document.getElementById('newsAdminBox')?.scrollIntoView({behavior:'smooth',block:'start'});
+        }
+        function cancelNewsEdit(){resetNewsAdminForm();}
         async function renderNewsPage(){
-            const box=document.getElementById('newsAdminBox'),badge=document.getElementById('newsAdminBadge'),list=document.getElementById('newsList');
-            if(!box||!list)return;
-            const admin=isNewsAdmin();
-            box.style.display=admin?'block':'none'; badge.style.display=admin?'inline-flex':'none';
-            list.innerHTML='<div class="news-empty">Frissítések betöltése…</div>';
-            const posts=await getNewsPosts();
+            const box=document.getElementById('newsAdminBox'),badge=document.getElementById('newsAdminBadge'),list=document.getElementById('newsList'); if(!box||!list)return;
+            const admin=isNewsAdmin(); box.style.display=admin?'block':'none'; badge.style.display=admin?'inline-flex':'none'; list.innerHTML='<div class="news-empty">Frissítések betöltése…</div>';
+            const posts=await getNewsPosts(); window._newsPostsCache=posts;
             if(!posts.length){list.innerHTML='<div class="news-empty">Még nincs közzétett frissítés.</div>';return;}
-            list.innerHTML=posts.map(post=>`<article class="news-post"><div class="news-post-head"><h2 class="news-post-title">${escapeHtml(post.title||'Frissítés')}</h2><span class="news-post-date">${escapeHtml(formatNewsDate(post.created_at))}</span></div><div class="news-post-body">${escapeHtml(post.body||'')}</div>${admin?`<button type="button" class="news-post-delete" onclick="deleteNewsPost('${escapeHtml(post.id)}')">🗑 Törlés</button>`:''}</article>`).join('');
+            list.innerHTML=posts.map(post=>`<article class="news-post"><div class="news-post-head"><h2 class="news-post-title">${escapeHtml(post.title||'Frissítés')}</h2><span class="news-post-date">${escapeHtml(formatNewsDate(post.created_at))}</span></div><div class="news-post-body">${escapeHtml(post.body||'')}</div>${admin?`<button type="button" class="news-post-edit" onclick="editNewsPost('${escapeHtml(post.id)}')">✏️ Szerkesztés</button><button type="button" class="news-post-delete" onclick="deleteNewsPost('${escapeHtml(post.id)}')">🗑 Törlés</button>`:''}</article>`).join('');
         }
         async function publishNewsPost(event){
-            event.preventDefault();
-            if(!isNewsAdmin()){alert('Csak az adminisztrátor tehet közzé NEWS bejegyzést.');return;}
-            const title=document.getElementById('newsTitleInput')?.value.trim(),body=document.getElementById('newsBodyInput')?.value.trim();
-            if(!title||!body)return;
-            if(!supabaseClient){alert('A NEWS adatbázis-kapcsolata nem érhető el.');return;}
-            const {error}=await supabaseClient.from(NEWS_TABLE).insert([{title,body,author_id:currentUser.id}]);
-            if(error){console.error('NEWS közzétételi hiba:',error);alert('Nem sikerült közzétenni a frissítést: '+error.message);return;}
-            document.getElementById('newsTitleInput').value='';document.getElementById('newsBodyInput').value='';await renderNewsPage();
+            event.preventDefault(); if(!isNewsAdmin()){alert('Csak az adminisztrátor tehet közzé NEWS bejegyzést.');return;}
+            const title=document.getElementById('newsTitleInput')?.value.trim(),body=document.getElementById('newsBodyInput')?.value.trim(); if(!title||!body)return; if(!supabaseClient){alert('A NEWS adatbázis-kapcsolata nem érhető el.');return;}
+            if(editingNewsPostId){ const {error}=await supabaseClient.from(NEWS_TABLE).update({title,body}).eq('id',editingNewsPostId); if(error){console.error('NEWS szerkesztési hiba:',error);alert('Nem sikerült módosítani a frissítést: '+error.message);return;} }
+            else { const {error}=await supabaseClient.from(NEWS_TABLE).insert([{title,body,author_id:currentUser.id}]); if(error){console.error('NEWS közzétételi hiba:',error);alert('Nem sikerült közzétenni a frissítést: '+error.message);return;} }
+            resetNewsAdminForm(); await renderNewsPage();
         }
-        async function deleteNewsPost(id){
-            if(!isNewsAdmin())return;
-            if(!confirm('Biztosan törlöd ezt a NEWS bejegyzést?'))return;
-            if(!supabaseClient)return;
-            const {error}=await supabaseClient.from(NEWS_TABLE).delete().eq('id',id);
-            if(error){console.error('NEWS törlési hiba:',error);alert('Nem sikerült törölni a frissítést: '+error.message);return;}
-            await renderNewsPage();
-        }
+        async function deleteNewsPost(id){ if(!isNewsAdmin())return; if(!confirm('Biztosan törlöd ezt a NEWS bejegyzést?'))return; if(!supabaseClient)return; const {error}=await supabaseClient.from(NEWS_TABLE).delete().eq('id',id); if(error){console.error('NEWS törlési hiba:',error);alert('Nem sikerült törölni a frissítést: '+error.message);return;} if(String(editingNewsPostId)===String(id))resetNewsAdminForm(); await renderNewsPage(); }
 
         function switchView(viewName) {
             currentView = viewName;
@@ -7932,7 +8042,7 @@ function openSimsFamily(treeId) {
                 firstName: firstName, lastName: lastName, age: 'Fiatal felnőtt',
                 traits: '', color: '#2ed573', image: '', imageTransform: null, x: x, y: y,
                 species: 'Ember', gender: 'Egyéb', parentId: parentId, parentIds: parentId ? [parentId] : [], partnerId: partnerId, partnerIds: partnerId ? [partnerId] : [],
-                relationType: relationType, animalIds: [], locked: false, isDead: false, gallery: [],
+                relationType: relationType, animalIds: [], locked: false, isDead: false, gallery: [], profileImages: [],
                 freeX: x, freeY: y
             };
 
@@ -8519,6 +8629,21 @@ function openSimsFamily(treeId) {
             treeWorld.appendChild(node);
         }
 
+        function normalizeSimProfileHistory(sim){
+            if(!sim)return [];
+            if(!Array.isArray(sim.profileImages)) sim.profileImages=[];
+            if(sim.image && !sim.profileImages.some(x=>String(typeof x==='string'?x:x?.src)===String(sim.image))){
+                sim.profileImages.unshift({src:sim.image,transform:sim.imageTransform||null,createdAt:new Date().toISOString()});
+            }
+            return sim.profileImages.filter(x=>x && (typeof x==='string'?x:x.src));
+        }
+        function renderSimProfileHistory(sim){
+            const grid=document.getElementById('simProfileHistoryGrid'); if(!grid||!sim)return;
+            const items=normalizeSimProfileHistory(sim);
+            if(!items.length){grid.innerHTML='<div class="sim-profile-history-empty">Ennek a Simnek még nincs korábbi profilképe.</div>';return;}
+            grid.innerHTML=items.map((item,i)=>{const src=typeof item==='string'?item:item.src; const d=typeof item==='string'?'':(item.createdAt||''); return `<div class="sim-profile-history-item" data-profile-src="${escapeHtml(src)}" onclick="openPublicGalleryLightbox(this.dataset.profileSrc,'Profilkép ${i+1}')"><img src="${escapeHtml(src)}" alt="Profilkép ${i+1}" loading="lazy">${d?`<div class="sim-profile-history-date">${escapeHtml(formatNewsDate(d))}</div>`:''}</div>`;}).join('');
+        }
+
         function switchSimTab(tabName) {
             document.querySelectorAll('#simModal .tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('#simModal .tab-content').forEach(c => c.classList.remove('active'));
@@ -8529,6 +8654,10 @@ function openSimsFamily(treeId) {
             } else if (tabName === 'diary') {
                 document.querySelectorAll('#simModal .tab-btn')[1].classList.add('active');
                 document.getElementById('tabContentDiary').classList.add('active');
+            } else if (tabName === 'profiles') {
+                document.querySelectorAll('#simModal .tab-btn')[2].classList.add('active');
+                document.getElementById('tabContentProfiles').classList.add('active');
+                const tree=getCurrentTree(); const sim=tree?.sims?.find(s=>s.id===editingSimId); if(sim) renderSimProfileHistory(sim);
             }
         }
 
@@ -9640,8 +9769,10 @@ function openSimsFamily(treeId) {
             const sim = tree.sims.find(s => s.id === simId); if (!sim) return;
 
             editingSimId = simId;
+            normalizeSimProfileHistory(sim);
             tempUploadedImage = sim.image || '';
             currentRotation = sim.imageTransform?.rotate || 0;
+            renderSimProfileHistory(sim);
 
             document.getElementById('modalName').innerText = `${sim.firstName || ''} ${sim.lastName || ''}`.trim();
             document.getElementById('editStatus').value = sim.isDead ? 'dead' : 'alive';
@@ -10870,6 +11001,8 @@ function openSimsFamily(treeId) {
             sim.parentIds = [...tempParentIds];
             sim.parentId = sim.parentIds[0] || null;
             sim.animalIds = [...tempAnimalIds];
+            normalizeSimProfileHistory(sim);
+            if (tempUploadedImage && !sim.profileImages.some(x=>String(typeof x==='string'?x:x?.src)===String(tempUploadedImage))) sim.profileImages.unshift({src:tempUploadedImage,transform:sim.imageTransform||null,createdAt:new Date().toISOString()});
             sim.image = tempUploadedImage;
             sim.isDead = document.getElementById('editStatus').value === 'dead';
 
