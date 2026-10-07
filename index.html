@@ -2707,18 +2707,21 @@
         <div class="modal-card" style="max-width:620px;">
             <button type="button" class="close-btn" onclick="closeBlogModal()">&times;</button>
             <h2 id="simBlogModalTitle">Új Sim blog</h2>
-            <p class="blog-modal-note" style="margin:0 0 14px;">Válassz egy saját családfádból származó Simet. Ugyanahhoz a Simhez több külön blogot is létrehozhatsz.</p>
+            <p class="blog-modal-note" style="margin:0 0 14px;">A blogot egy családfához nem kötött, teljesen kitalált Simnek is létrehozhatod.</p>
             <form id="simBlogForm" onsubmit="saveSimBlog(event)">
-                <div class="form-row">
-                    <div class="form-group" style="flex:1;">
-                        <label>Családfa</label>
-                        <select id="simBlogTreeInput" required onchange="populateBlogSimSelect()"></select>
+                <div class="form-group" id="simBlogStandaloneFields">
+                    <label>Blogot író Sim</label>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1;">
+                            <input id="simBlogStandaloneFirstNameInput" placeholder="Keresztnév" required>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <input id="simBlogStandaloneLastNameInput" placeholder="Vezetéknév">
+                        </div>
                     </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Sim</label>
-                        <select id="simBlogSimInput" required onchange="previewSelectedBlogSim()"></select>
-                    </div>
+                    <p class="blog-modal-note" style="margin:4px 0 0;">Ez lehet teljesen kitalált Sim is; nem kell hozzá családfát választanod.</p>
                 </div>
+                <div id="simBlogLinkedFields" style="display:none;"></div>
                 <div class="form-group">
                     <label>Blog neve</label>
                     <input id="simBlogNameInput" placeholder="Pl. Amanda mindennapjai (nem kötelező)">
@@ -2749,7 +2752,7 @@
                     <label style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;">
                         <input type="checkbox" id="simBlogPublicInput"> Ez a blog legyen nyilvánosan olvasható
                     </label>
-                    <p class="blog-modal-note">Nyilvános megosztáshoz a hozzá tartozó családfát is publikussá kell tenni a Publikum oldalon.</p>
+                    <p class="blog-modal-note">A családfához nem kötött SimBlogok önállóan is megjelölhetők nyilvánosként.</p>
                 </div>
                 <div id="simBlogAvatarPreview" style="display:flex;align-items:center;gap:10px;margin:8px 0 14px;"></div>
                 <div class="modal-actions">
@@ -3579,6 +3582,8 @@ Shift + Enter = új sor"></textarea>
         // SIM BLOG ÁLLAPOT
         let activeSimBlogId = null;
         let editingSimBlogId = null;
+        let editingSimBlogStandalone = false;
+        let standaloneSimBlogsCache = null;
         let editingSimBlogPostId = null;
         let tempSimBlogAvatar = '';
         let tempSimBlogCover = '';
@@ -5308,6 +5313,28 @@ function openStoryPreview(storyId,chapterId=null){
             return tree.bgConfig.blogs;
         }
 
+        function getStandaloneBlogs() {
+            if (Array.isArray(standaloneSimBlogsCache)) return standaloneSimBlogsCache;
+            try {
+                const raw = localStorage.getItem('s4memo_standalone_sim_blogs');
+                const list = raw ? JSON.parse(raw) : [];
+                standaloneSimBlogsCache = Array.isArray(list) ? list : [];
+            } catch (e) { standaloneSimBlogsCache = []; }
+            return standaloneSimBlogsCache;
+        }
+
+        function saveStandaloneBlogs(list) {
+            try {
+                standaloneSimBlogsCache = Array.isArray(list) ? list : [];
+                localStorage.setItem('s4memo_standalone_sim_blogs', JSON.stringify(standaloneSimBlogsCache));
+                return true;
+            } catch (e) {
+                console.error('Önálló SimBlog mentési hiba:', e);
+                alert('A kitalált Sim blogját nem sikerült elmenteni.');
+                return false;
+            }
+        }
+
         function getAllOwnBlogs() {
             const blogs = [];
             (familyTrees || []).forEach(tree => {
@@ -5315,6 +5342,7 @@ function openStoryPreview(storyId,chapterId=null){
                     blogs.push({ ...blog, _treeId: tree.id });
                 });
             });
+            getStandaloneBlogs().forEach(blog => blogs.push({ ...blog, _treeId: null, _standalone: true }));
             return blogs;
         }
 
@@ -5324,18 +5352,21 @@ function openStoryPreview(storyId,chapterId=null){
                 const blog = blogs.find(b => b.id === blogId);
                 if (blog) return { tree, blog };
             }
-            return null;
+            const standalone = getStandaloneBlogs().find(b => b.id === blogId);
+            return standalone ? { tree: null, blog: standalone, standalone: true } : null;
         }
 
         function blogSimName(tree, blog) {
             const sim = tree && (tree.sims || []).find(s => s.id === blog.simId);
-            return sim ? `${sim.firstName || ''} ${sim.lastName || ''}`.trim() || 'Névtelen Sim' : (blog.name || 'Névtelen blog');
+            if (sim) return `${sim.firstName || ''} ${sim.lastName || ''}`.trim() || 'Névtelen Sim';
+            if (blog?.simSnapshot) return `${blog.simSnapshot.firstName || ''} ${blog.simSnapshot.lastName || ''}`.trim() || 'Névtelen Sim';
+            return blog?.simName || blog?.name || 'Névtelen blog';
         }
 
         function blogImage(blog, tree) {
             if (blog && blog.avatar) return blog.avatar;
             const sim = tree && (tree.sims || []).find(s => s.id === blog.simId);
-            return sim?.image || '';
+            return sim?.image || blog?.simSnapshot?.image || '';
         }
 
         function blogHandle(blog, tree) {
@@ -5844,23 +5875,30 @@ function renderOwnBlogDetail(blogId) {
         }
 
         function openBlogCreateModal(){
-            editingSimBlogId=null; tempSimBlogAvatar=''; tempSimBlogCover=''; tempSimBlogAvatarTransform=null; tempSimBlogCoverTransform=null; blogCropTarget=null;
+            editingSimBlogId=null; editingSimBlogStandalone=true;
+            tempSimBlogAvatar=''; tempSimBlogCover=''; tempSimBlogAvatarTransform=null; tempSimBlogCoverTransform=null; blogCropTarget=null;
             const modal=document.getElementById('simBlogModal'); if(!modal) return;
             document.getElementById('simBlogModalTitle').textContent='Új Sim blog';
-            const treeSelect=document.getElementById('simBlogTreeInput'); treeSelect.innerHTML='';
-            familyTrees.forEach((tree,i)=>{ const o=document.createElement('option'); o.value=tree.id; o.textContent=tree.name; if(tree.id===currentTreeId||(!currentTreeId&&i===0)) o.selected=true; treeSelect.appendChild(o); });
-            populateBlogSimSelect();
-            document.getElementById('simBlogNameInput').value=''; document.getElementById('simBlogHandleInput').value=''; document.getElementById('simBlogBioInput').value=''; document.getElementById('simBlogPublicInput').checked=false; document.getElementById('simBlogAvatarInput').value=''; document.getElementById('simBlogCoverInput').value=''; document.getElementById('simBlogAvatarPreview').innerHTML=''; renderBlogCoverPreview('');
+            document.getElementById('simBlogStandaloneFirstNameInput').value='';
+            document.getElementById('simBlogStandaloneLastNameInput').value='';
+            document.getElementById('simBlogNameInput').value=''; document.getElementById('simBlogHandleInput').value=''; document.getElementById('simBlogBioInput').value='';
+            document.getElementById('simBlogPublicInput').checked=false; document.getElementById('simBlogAvatarInput').value=''; document.getElementById('simBlogCoverInput').value='';
+            document.getElementById('simBlogAvatarPreview').innerHTML=''; renderBlogCoverPreview('');
             modal.classList.add('active');
         }
 
         function openBlogEditModal(blogId){
             const found=findOwnBlog(blogId); if(!found) return;
-            editingSimBlogId=blogId; tempSimBlogAvatar=found.blog.avatar||''; tempSimBlogCover=found.blog.cover||''; tempSimBlogAvatarTransform=found.blog.avatarTransform||null; tempSimBlogCoverTransform=found.blog.coverTransform||null; blogCropTarget=null;
+            editingSimBlogId=blogId; editingSimBlogStandalone=!!found.standalone;
+            tempSimBlogAvatar=found.blog.avatar||''; tempSimBlogCover=found.blog.cover||''; tempSimBlogAvatarTransform=found.blog.avatarTransform||null; tempSimBlogCoverTransform=found.blog.coverTransform||null; blogCropTarget=null;
             const modal=document.getElementById('simBlogModal'); document.getElementById('simBlogModalTitle').textContent='Sim blog szerkesztése';
-            const treeSelect=document.getElementById('simBlogTreeInput'); treeSelect.innerHTML=''; familyTrees.forEach(tree=>{const o=document.createElement('option');o.value=tree.id;o.textContent=tree.name;o.selected=tree.id===found.tree.id;treeSelect.appendChild(o);});
-            populateBlogSimSelect(found.blog.simId);
-            document.getElementById('simBlogNameInput').value=found.blog.name||''; document.getElementById('simBlogHandleInput').value=found.blog.handle||''; document.getElementById('simBlogBioInput').value=found.blog.bio||''; document.getElementById('simBlogPublicInput').checked=!!found.blog.isPublic; document.getElementById('simBlogAvatarInput').value=''; document.getElementById('simBlogCoverInput').value='';
+            const snap=found.blog.simSnapshot||{}; const linkedSim=found.tree?.sims?.find(s=>s.id===found.blog.simId); const source=linkedSim||snap;
+            document.getElementById('simBlogStandaloneFirstNameInput').value=source.firstName||'';
+            document.getElementById('simBlogStandaloneLastNameInput').value=source.lastName||'';
+            document.getElementById('simBlogStandaloneFields').style.display='block';
+            document.getElementById('simBlogStandaloneFirstNameInput').required=true;
+            document.getElementById('simBlogNameInput').value=found.blog.name||''; document.getElementById('simBlogHandleInput').value=found.blog.handle||''; document.getElementById('simBlogBioInput').value=found.blog.bio||''; document.getElementById('simBlogPublicInput').checked=!!found.blog.isPublic;
+            document.getElementById('simBlogAvatarInput').value=''; document.getElementById('simBlogCoverInput').value='';
             renderBlogAvatarPreview(tempSimBlogAvatar || blogImage(found.blog,found.tree)); renderBlogCoverPreview(tempSimBlogCover || blogCoverFor(found.tree,found.blog)); modal.classList.add('active');
         }
 
@@ -5894,7 +5932,7 @@ function renderOwnBlogDetail(blogId) {
         }
 
         async function persistBlogTree(tree, extraTreeIds = []) {
-            if (!tree) return false;
+            if (!tree) return saveStandaloneBlogs(getStandaloneBlogs());
             markSpecificTreeDirty(tree.id);
             (extraTreeIds || []).filter(Boolean).forEach(id => markSpecificTreeDirty(id));
             return await saveTreeChanges();
@@ -5902,42 +5940,31 @@ function renderOwnBlogDetail(blogId) {
 
         async function saveSimBlog(event){
             event.preventDefault();
-            const tree=familyTrees.find(t=>t.id===document.getElementById('simBlogTreeInput').value); if(!tree) return;
-            const simId=document.getElementById('simBlogSimInput').value; const sim=tree.sims.find(s=>s.id===simId); if(!sim) return;
-            const blogs=ensureTreeBlogStore(tree);
-            const previousFound = editingSimBlogId ? findOwnBlog(editingSimBlogId) : null;
+            const firstName=document.getElementById('simBlogStandaloneFirstNameInput')?.value.trim();
+            const lastName=document.getElementById('simBlogStandaloneLastNameInput')?.value.trim();
+            if(!firstName){ alert('Add meg a Sim keresztnevét.'); return; }
+            const blogs=getStandaloneBlogs();
+            const existing=editingSimBlogId ? blogs.find(b=>b.id===editingSimBlogId) : null;
             const payload={
-                id: editingSimBlogId || ('blog_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),
-                ownerUserId: editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.ownerUserId || currentUser?.id || '') : (currentUser?.id || ''),
-                treeId:tree.id, simId,
+                id:editingSimBlogId || ('blog_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),
+                ownerUserId:existing?.ownerUserId || currentUser?.id || '',
+                treeId:null, simId:null,
+                simSnapshot:{firstName,lastName,image:tempSimBlogAvatar||existing?.simSnapshot?.image||''},
+                simName:`${firstName} ${lastName}`.trim(),
                 name:document.getElementById('simBlogNameInput').value.trim(),
-                handle:document.getElementById('simBlogHandleInput').value.trim(),
+                handle:document.getElementById('simBlogHandleInput').value.trim() || `@${firstName.toLowerCase().replace(/[^a-z0-9]+/gi,'_')}`,
                 bio:document.getElementById('simBlogBioInput').value.trim(),
-                avatar:tempSimBlogAvatar || (editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.avatar||'') : ''),
-                cover:tempSimBlogCover || (editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.cover||'') : ''),
-                avatarTransform:tempSimBlogAvatarTransform || (editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.avatarTransform||null) : null),
-                coverTransform:tempSimBlogCoverTransform || (editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.coverTransform||null) : null),
-                isPublic:document.getElementById('simBlogPublicInput').checked,
-                posts: editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.posts || []) : [],
-                createdAt:editingSimBlogId ? (blogs.find(b=>b.id===editingSimBlogId)?.createdAt||new Date().toISOString()) : new Date().toISOString(),
-                updatedAt:new Date().toISOString()
+                avatar:tempSimBlogAvatar || existing?.avatar || '', cover:tempSimBlogCover || existing?.cover || '',
+                avatarTransform:tempSimBlogAvatarTransform || existing?.avatarTransform || null, coverTransform:tempSimBlogCoverTransform || existing?.coverTransform || null,
+                isPublic:document.getElementById('simBlogPublicInput').checked, posts:existing?.posts||[],
+                createdAt:existing?.createdAt||new Date().toISOString(), updatedAt:new Date().toISOString()
             };
-            let movedFromTreeId = null;
-            if(editingSimBlogId){
-                const index=blogs.findIndex(b=>b.id===editingSimBlogId);
-                if(index>=0) blogs[index]=payload; else blogs.push(payload);
-                if(previousFound && previousFound.tree.id !== tree.id){
-                    const oldBlogs=ensureTreeBlogStore(previousFound.tree);
-                    previousFound.tree.bgConfig.blogs=oldBlogs.filter(b=>b.id!==editingSimBlogId);
-                    movedFromTreeId = previousFound.tree.id;
-                }
-            } else blogs.push(payload);
-            const ok=await persistBlogTree(tree, movedFromTreeId ? [movedFromTreeId] : []);
-            if(!ok) return;
+            const idx=blogs.findIndex(b=>b.id===payload.id); if(idx>=0) blogs[idx]=payload; else blogs.push(payload);
+            if(!saveStandaloneBlogs(blogs)) return;
             closeBlogModal(); activeSimBlogId=payload.id; renderOwnBlogDetail(payload.id);
         }
 
-        function closeBlogModal(){ document.getElementById('simBlogModal')?.classList.remove('active'); editingSimBlogId=null; tempSimBlogAvatar=''; tempSimBlogCover=''; tempSimBlogAvatarTransform=null; tempSimBlogCoverTransform=null; blogCropTarget=null; }
+        function closeBlogModal(){ document.getElementById('simBlogModal')?.classList.remove('active'); editingSimBlogId=null; editingSimBlogStandalone=false; tempSimBlogAvatar=''; tempSimBlogCover=''; tempSimBlogAvatarTransform=null; tempSimBlogCoverTransform=null; blogCropTarget=null; }
 
         async function setSimBlogPublic(blogId, isPublic){
             const found=findOwnBlog(blogId); if(!found) return;
@@ -6057,11 +6084,16 @@ function renderOwnBlogDetail(blogId) {
             const found=findOwnBlog(blogId);
             if(!found) return;
             if(!confirm(`Biztosan törölni szeretnéd a(z) "${String(found.blog.name||'Névtelen blog').replace(/\"/g,'\\\"')}" blogot?\n\nA blog minden bejegyzése is törlődik.`)) return;
-            const tree=found.tree;
-            const blogs=ensureTreeBlogStore(tree).filter(b=>b.id!==blogId);
-            tree.bgConfig=tree.bgConfig||{};
-            tree.bgConfig.blogs=blogs;
-            const ok=await persistBlogTree(tree);
+            let ok=false;
+            if(found.standalone || !found.tree){
+                ok=saveStandaloneBlogs(getStandaloneBlogs().filter(b=>b.id!==blogId));
+            } else {
+                const tree=found.tree;
+                const blogs=ensureTreeBlogStore(tree).filter(b=>b.id!==blogId);
+                tree.bgConfig=tree.bgConfig||{};
+                tree.bgConfig.blogs=blogs;
+                ok=await persistBlogTree(tree);
+            }
             if(!ok) return;
             try{
                 localStorage.removeItem(getBlogFollowKey(blogId));
@@ -6083,11 +6115,9 @@ function renderOwnBlogDetail(blogId) {
 
         async function shareOwnBlog(blogId){
             const found=findOwnBlog(blogId); if(!found) return;
-            if(!found.tree.isPublic){
-                alert('A blog megosztásához először publikáld a hozzá tartozó családfát a Publikum oldalon.');
-                return;
-            }
-            found.blog.isPublic=true; markTreeDirty(); const ok=await saveTreeChanges(); if(!ok) return;
+            found.blog.isPublic=true;
+            const ok=found.standalone ? saveStandaloneBlogs(getStandaloneBlogs()) : (markTreeDirty(), await saveTreeChanges());
+            if(!ok) return;
             const url=`${location.origin}${location.pathname}?blog=${encodeURIComponent(blogId)}`;
             try{ await navigator.clipboard.writeText(url); alert('A megosztási link kimásolva.'); }catch(e){ prompt('Másold ki ezt a megosztási linket:',url); }
             renderOwnBlogDetail(blogId);
@@ -8748,11 +8778,19 @@ function openSimsFamily(treeId) {
                 });
             });
             const seen = new Set();
-            return entries.filter(entry => {
+            const unique = entries.filter(entry => {
                 const key = `${entry._journalOwnerSimId}|${entry.id}`;
                 if (seen.has(key)) return false;
                 seen.add(key);
                 return true;
+            });
+            // A napló oldalsorrendje közös és időrendben folytatódik.
+            // Így ha egy Simhez már 4 korábbi, kapcsolódó bejegyzés tartozik,
+            // az új saját bejegyzése az 5. oldalra kerül, nem vissza az 1.-re.
+            return unique.sort((a,b)=>{
+                const ta=Number(a?.createdAt||0), tb=Number(b?.createdAt||0);
+                if(ta!==tb) return ta-tb;
+                return String(a?.id||'').localeCompare(String(b?.id||''));
             });
         }
 
@@ -8870,7 +8908,8 @@ function openSimsFamily(treeId) {
                 const entry={id:'sj_'+Date.now()+'_'+Math.random().toString(36).slice(2),type:'Egyéb',title:'',content:'',relatedSimId:null,images:[],image:'',createdAt:Date.now()};
                 sim.journal.push(entry);
                 editingSimJournalId=entry.id;
-                simJournalBookPage=getSimJournalEntriesForSim(tree,sim).length-1;
+                const updatedEntries=getSimJournalEntriesForSim(tree,sim);
+                simJournalBookPage=Math.max(0,updatedEntries.findIndex(e=>e.id===entry.id && !e._isRelatedJournalEntry));
                 markTreeDirty();
                 saveUnsavedTreeDrafts();
             }
