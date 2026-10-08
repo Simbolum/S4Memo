@@ -5763,6 +5763,13 @@ function openStoryPreview(storyId,chapterId=null){
                     <div class="blog-profile-bio">${escapeHtml(blog.bio||'Nincs még bemutatkozás.')}</div>
                     <div class="blog-profile-meta"><span class="blog-meta-pill">📖 ${getBlogPostCount(blog)} bejegyzés</span><span class="blog-meta-pill">🌳 ${escapeHtml(tree?.name||'Családfa')}</span>${(tree?.ownerProfile?.display_name||tree?.userId||tree?.user_id||blog?.ownerUserId)?`<span class="blog-meta-pill">👤 ${escapeHtml(tree?.ownerProfile?.display_name||'Felhasználó')}</span>`:''}${blog.isPublic?'<span class="blog-public-badge">🌐 Nyilvános</span>':''}</div>
                 </div>`;
+            const avatarEl=card.querySelector('.blog-profile-avatar');
+            const linkedSim=tree && (tree.sims||[]).find(s=>s.id===blog.simId);
+            if(avatarEl && linkedSim){
+                avatarEl.style.cursor='pointer';
+                avatarEl.title='Sim profiljának megnyitása';
+                avatarEl.onclick=(e)=>{e.stopPropagation();openPublicSimModal(tree,linkedSim.id);};
+            }
             return card;
         }
 
