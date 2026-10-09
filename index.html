@@ -8998,24 +8998,34 @@ function openSimsFamily(treeId) {
             if (!tree || !sim) return [];
             normalizeSimExtraFields(sim);
             const entries = [];
-            (sim.journal || []).forEach(entry => {
-                entries.push({ ...entry, _journalOwnerSimId: sim.id, _isRelatedJournalEntry: false });
+            (sim.journal || []).forEach((entry, originalIndex) => {
+                if (!entry) return;
+                entries.push({ ...entry, _journalOwnerSimId: sim.id, _isRelatedJournalEntry: false,
+                    _journalOriginalIndex: originalIndex,
+                    _journalSortTime: Number(entry.createdAt || entry.updatedAt || 0) || 0 });
             });
             (tree.sims || []).forEach(sourceSim => {
                 if (!sourceSim || sourceSim.id === sim.id) return;
-                (sourceSim.journal || []).forEach(entry => {
+                (sourceSim.journal || []).forEach((entry, originalIndex) => {
                     if (entry && entry.relatedSimId === sim.id) {
-                        entries.push({ ...entry, _journalOwnerSimId: sourceSim.id, _isRelatedJournalEntry: true });
+                        entries.push({ ...entry, _journalOwnerSimId: sourceSim.id, _isRelatedJournalEntry: true,
+                            _journalOriginalIndex: originalIndex,
+                            // A Simhez kapcsolás időpontja határozza meg, hová kerül a másik naplójában.
+                            _journalSortTime: Number(entry.relatedSimLinkedAt || entry.createdAt || entry.updatedAt || 0) || 0 });
                     }
                 });
             });
             const seen = new Set();
-            return entries.filter(entry => {
+            const uniqueEntries = entries.filter(entry => {
                 const key = `${entry._journalOwnerSimId}|${entry.id}`;
                 if (seen.has(key)) return false;
                 seen.add(key);
                 return true;
             });
+            // A régi, időbélyeg nélküli oldalak a lista elején maradnak a korábbi sorrendjükben.
+            // Az új saját és kapcsolt oldalak időrendben követik őket, így a napló nem kezdődik újra az 1. oldalon.
+            return uniqueEntries.map((entry, stableIndex) => ({ ...entry, _journalStableIndex: stableIndex }))
+                .sort((a, b) => (a._journalSortTime - b._journalSortTime) || (a._journalStableIndex - b._journalStableIndex));
         }
 
         let simJournalBookPage = 0;
@@ -9090,7 +9100,7 @@ function openSimsFamily(treeId) {
             if(ownerEntry){
                 titleEl?.addEventListener('input',e=>{entry.title=e.target.value; markTreeDirty(); saveUnsavedTreeDrafts();});
                 typeEl?.addEventListener('change',e=>{entry.type=e.target.value; markTreeDirty(); saveUnsavedTreeDrafts();});
-                relEl?.addEventListener('change',e=>{entry.relatedSimId=e.target.value||null; markTreeDirty(); saveUnsavedTreeDrafts();});
+                relEl?.addEventListener('change',e=>{const nextRelatedId=e.target.value||null; if(nextRelatedId!== (entry.relatedSimId||null)){entry.relatedSimId=nextRelatedId; entry.relatedSimLinkedAt=nextRelatedId?Date.now():null;} markTreeDirty(); saveUnsavedTreeDrafts();});
                 contentEl?.addEventListener('input',e=>{entry.content=e.target.value; markTreeDirty(); saveUnsavedTreeDrafts();});
             }
         }
@@ -9223,7 +9233,10 @@ function openSimsFamily(treeId) {
             if(!title||!content){ alert('A cím és a történet megadása kötelező.'); return; }
             const images=[];
             for(const original of tempSimJournalImages){ const im=ensureSimJournalImageDefaults({...original}); let src=im.src; if(src && src.startsWith('data:image/')){ try{src=await uploadImageToStorage(src,'journal');}catch(e){console.warn(e);} } images.push({...im,src}); }
-            const payload={id:editingSimJournalId||('sj_'+Date.now()), type,title,date,location,relatedSimId:relatedSimId||null,content,images,image:images[0]?.src||''};
+            const existingEntry=editingSimJournalId ? (sim.journal||[]).find(e=>e && e.id===editingSimJournalId) : null;
+            const normalizedRelatedId=relatedSimId||null;
+            const relatedChanged=(existingEntry?.relatedSimId||null)!==normalizedRelatedId;
+            const payload={id:editingSimJournalId||('sj_'+Date.now()+'_'+Math.random().toString(36).slice(2)), type,title,date,location,relatedSimId:normalizedRelatedId,content,images,image:images[0]?.src||'',createdAt:existingEntry?.createdAt||Date.now(),relatedSimLinkedAt:normalizedRelatedId?(relatedChanged?Date.now():(existingEntry?.relatedSimLinkedAt||existingEntry?.createdAt||Date.now())):null};
             if(editingSimJournalId) sim.journal=(sim.journal||[]).map(e=>e.id===editingSimJournalId?payload:e); else sim.journal.push(payload);
             markTreeDirty(); renderSimJournalEntries(sim); closeSimJournalEntryModal();
         }
