@@ -6970,7 +6970,11 @@ function openSimsFamily(treeId) {
                     // Regisztráció után automatikus bejelentkezés
                     const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (signInError) {
-                        alert('Sikeres regisztráció, de a bejelentkezés sikertelen: ' + signInError.message);
+                        if (/email not confirmed/i.test(signInError.message || '')) {
+                            alert('Sikeres regisztráció! Kérjük, ellenőrizd az e-mail-fiókodat, és erősítsd meg az e-mail-címedet a bejelentkezés előtt.');
+                        } else {
+                            alert('Sikeres regisztráció, de a bejelentkezés sikertelen: ' + signInError.message);
+                        }
                         isSignUpMode = false;
                         toggleAuthMode();
                     } else {
